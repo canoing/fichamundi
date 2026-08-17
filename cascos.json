@@ -1,0 +1,94 @@
+{
+  "cascos": {
+    "destructores": [
+      {
+        "nombre": "Casco destructor básico",
+        "capacidad_modulos": 3,
+        "velocidad": 5,
+        "coste": "5M"
+      },
+      {
+        "nombre": "Casco destructor refinado",
+        "capacidad_modulos": 5,
+        "velocidad": 15,
+        "coste": "6M"
+      }
+    ],
+    "fragatas": [
+      {
+        "nombre": "Casco fragata básico",
+        "capacidad_modulos": 2,
+        "velocidad": 15,
+        "coste": "2M"
+      },
+      {
+        "nombre": "Casco fragata refinado",
+        "capacidad_modulos": 3,
+        "velocidad": 20,
+        "coste": "3M"
+      }
+    ],
+    "cruceros_ligeros": [
+      {
+        "nombre": "Casco crucero ligero básico",
+        "capacidad_modulos": 8,
+        "velocidad": 10,
+        "coste": "10M"
+      },
+      {
+        "nombre": "Casco crucero ligero refinado",
+        "capacidad_modulos": 10,
+        "velocidad": 15,
+        "coste": "12M"
+      }
+    ],
+    "cruceros_pesados": [
+      {
+        "nombre": "Casco crucero pesado básico",
+        "capacidad_modulos": 10,
+        "velocidad": 0,
+        "coste": "30M"
+      },
+      {
+        "nombre": "Casco crucero pesado refinado",
+        "capacidad_modulos": 12,
+        "velocidad": 5,
+        "coste": "40M"
+      }
+    ],
+    "cruceros_de_batalla": [
+      {
+        "nombre": "Casco crucero de batalla básico",
+        "capacidad_modulos": 13,
+        "velocidad": -5,
+        "coste": "40M"
+      },
+      {
+        "nombre": "Casco crucero de batalla refinado",
+        "capacidad_modulos": 15,
+        "velocidad": -10,
+        "coste": "50M"
+      }
+    ],
+    "acorazados_dreadnoughts": [
+      {
+        "nombre": "Casco de Dreadnought básico",
+        "capacidad_modulos": 15,
+        "velocidad": -10,
+        "coste": "80M"
+      },
+      {
+        "nombre": "Casco de Dreadnought refinado",
+        "capacidad_modulos": 20,
+        "velocidad": -20,
+        "coste": "90M"
+      },
+      {
+        "nombre": "Casco Pre-Dreadnought",
+        "capacidad_modulos": 14,
+        "velocidad": -15,
+        "coste": "70M"
+      }
+    ]
+  }
+}

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>betaWorld</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>betaWorld</h1>
+            <p>Versión de 1910</p>
+        </header>
+
+        <main>
+            <!-- SECCIÓN 1: INFORMACIÓN GENERAL -->
+            <section class="seccion" id="seccion1">
+                <h2> Sección 1: Información General</h2>
+                <div class="formulario">
+                    <div class="campo">
+                        <label for="nombre">Nombre de clase o buque:</label>
+                        <input type="text" id="nombre" placeholder="Ej: SMS Bayern">
+                    </div>
+                    <div class="campo">
+                        <label for="tipo">Tipo:</label>
+                        <select id="tipo">
+                            <option value="">Seleccionar tipo...</option>
+                            <option value="Acorazado">Acorazado</option>
+                            <option value="Crucero">Crucero</option>
+                            <option value="Destructor">Destructor</option>
+                            <option value="Submarino">Submarino</option>
+                            <option value="Transporte">Transporte</option>
+                        </select>
+                    </div>
+                    <div class="campo">
+                        <label for="pais">País de origen:</label>
+                        <input type="text" id="pais" placeholder="Ej: Imperio Alemán">
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN 2: ESTADÍSTICAS Y MÓDULOS -->
+            <section class="seccion" id="seccion2">
+                <h2>⚙️ Sección 2: Módulos y Estadísticas</h2>
+                
+                <div id="modulos-container" class="modulos-container">
+                    <!-- Los módulos se generarán dinámicamente aquí -->
+                </div>
+
+                <!-- RESUMEN DE ESTADÍSTICAS -->
+                <div class="resumen-stats">
+                    <h3> Estadísticas Totales</h3>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <label>Módulos Colocados:</label>
+                            <span id="capacidad-modulos" class="stat-value">0 / 0</span>
+                        </div>
+                        <div class="stat-box">
+                            <label>Velocidad:</label>
+                            <span id="velocidad-total" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-box">
+                            <label>Ataque:</label>
+                            <span id="ataque-total" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-box">
+                            <label>Defensa:</label>
+                            <span id="defensa-total" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-box">
+                            <label>Coste Total:</label>
+                            <span id="coste-total" class="stat-value">0M</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN 3: DESCRIPCIÓN -->
+            <section class="seccion" id="seccion3">
+                <h2>Sección 3: Descripción</h2>
+                <div class="formulario">
+                    <div class="campo">
+                        <label for="descripcion">Descripción del Lore:</label>
+                        <textarea id="descripcion" rows="5" placeholder="Describe la historia y características del buque..."></textarea>
+                    </div>
+                </div>
+            </section>
+
+            <!-- BOTONES DE ACCIÓN -->
+            <div class="acciones">
+                <button id="btn-guardar" class="btn btn-primary">💾 Guardar Ficha</button>
+                <button id="btn-limpiar" class="btn btn-secondary">🗑️ Limpiar Todo</button>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

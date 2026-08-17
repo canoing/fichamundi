@@ -1,0 +1,464 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #1a3a52 0%, #2d5a7b 100%);
+    color: #333;
+    line-height: 1.6;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+header {
+    background: linear-gradient(135deg, #0d1f2d 0%, #1a3a52 100%);
+    color: white;
+    padding: 30px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    text-align: center;
+}
+
+header h1 {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+header p {
+    font-size: 1.1em;
+    opacity: 0.9;
+}
+
+main {
+    background: white;
+    border-radius: 10px;
+    padding: 30px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.seccion {
+    margin-bottom: 40px;
+    padding-bottom: 30px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.seccion:last-child {
+    border-bottom: none;
+}
+
+.seccion h2 {
+    color: #1a3a52;
+    margin-bottom: 20px;
+    font-size: 1.5em;
+    padding-bottom: 10px;
+    border-bottom: 3px solid #2d5a7b;
+}
+
+/* FORMULARIO */
+.formulario {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.campo {
+    display: flex;
+    flex-direction: column;
+}
+
+.campo label {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.campo input,
+.campo select,
+.campo textarea {
+    padding: 10px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    font-size: 1em;
+    font-family: inherit;
+    transition: border-color 0.3s;
+}
+
+.campo input:focus,
+.campo select:focus,
+.campo textarea:focus {
+    outline: none;
+    border-color: #2d5a7b;
+    box-shadow: 0 0 5px rgba(45, 90, 123, 0.3);
+}
+
+.campo textarea {
+    grid-column: 1 / -1;
+    resize: vertical;
+}
+
+/* MÓDULOS DESPLEGABLES */
+.modulos-container {
+    margin: 20px 0;
+}
+
+/* SECCIÓN CASCOS */
+.seccion-cascos {
+    background: linear-gradient(135deg, #fff8f0 0%, #ffe8d6 100%);
+    padding: 25px;
+    border-radius: 8px;
+    border-left: 5px solid #ff6b6b;
+    margin-bottom: 30px;
+}
+
+.seccion-cascos h3 {
+    color: #c92a2a;
+    margin-bottom: 20px;
+    font-size: 1.2em;
+}
+
+.cascos-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 15px;
+}
+
+.opcion-casco {
+    background: white;
+    padding: 15px;
+    border-radius: 6px;
+    border: 2px solid #ff6b6b;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.opcion-casco:hover {
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.2);
+    transform: translateY(-2px);
+}
+
+.opcion-casco input[type="radio"] {
+    accent-color: #ff6b6b;
+}
+
+.opcion-casco label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.capacidad-badge {
+    margin-left: auto;
+    background: #ff6b6b;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: bold;
+}
+
+.casco-info {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.casco-info .info-item {
+    flex: 1;
+    background: #f5f5f5;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    font-size: 0.9em;
+}
+
+.modulo-categoria {
+    margin-bottom: 20px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid #e0e0e0;
+}
+
+.modulo-header {
+    background: linear-gradient(135deg, #2d5a7b 0%, #3d7aab 100%);
+    color: white;
+    padding: 15px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    user-select: none;
+    transition: all 0.3s;
+}
+
+.modulo-header:hover {
+    background: linear-gradient(135deg, #1a3a52 0%, #2d5a7b 100%);
+    transform: translateX(5px);
+}
+
+.modulo-header .toggle-icon {
+    font-size: 1.2em;
+    transition: transform 0.3s;
+}
+
+.modulo-header.active .toggle-icon {
+    transform: rotate(180deg);
+}
+
+.modulo-content {
+    display: none;
+    padding: 20px;
+    background: white;
+}
+
+.modulo-content.active {
+    display: block;
+}
+
+.opciones-modulo {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+}
+
+.opcion-modulo {
+    background: #f5f5f5;
+    padding: 15px;
+    border-radius: 6px;
+    border-left: 4px solid #2d5a7b;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.opcion-modulo:hover {
+    background: #efefef;
+    transform: translateX(5px);
+}
+
+.opcion-modulo input[type="radio"] {
+    margin-right: 10px;
+    cursor: pointer;
+    accent-color: #2d5a7b;
+}
+
+.opcion-modulo label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.modulo-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-top: 10px;
+    margin-left: 30px;
+    font-size: 0.95em;
+    color: #666;
+}
+
+.info-item {
+    background: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #333;
+    display: block;
+}
+
+.info-value {
+    color: #2d5a7b;
+    font-weight: 500;
+}
+
+/* RESUMEN DE ESTADÍSTICAS */
+.resumen-stats {
+    background: linear-gradient(135deg, #f0f7ff 0%, #e6f2ff 100%);
+    padding: 25px;
+    border-radius: 8px;
+    border-left: 5px solid #2d5a7b;
+    margin-top: 30px;
+}
+
+.resumen-stats h3 {
+    color: #1a3a52;
+    margin-bottom: 20px;
+    font-size: 1.3em;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.stat-box {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    border: 2px solid #2d5a7b;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.stat-box label {
+    display: block;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 10px;
+    font-size: 0.95em;
+}
+
+.stat-value {
+    display: block;
+    font-size: 2em;
+    font-weight: bold;
+    color: #2d5a7b;
+}
+
+/* BOTONES */
+.acciones {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+    justify-content: center;
+}
+
+.btn {
+    padding: 12px 30px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #2d5a7b 0%, #3d7aab 100%);
+    color: white;
+    box-shadow: 0 4px 6px rgba(45, 90, 123, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(45, 90, 123, 0.4);
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #e0e0e0 0%, #d0d0d0 100%);
+    color: #333;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .formulario {
+        grid-template-columns: 1fr;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .modulo-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .modulo-info {
+        margin-left: 10px;
+    }
+
+    header h1 {
+        font-size: 1.8em;
+    }
+
+    main {
+        padding: 20px;
+    }
+}
+
+/* ANIMACIONES */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modulo-content.active {
+    animation: slideIn 0.3s ease-out;
+}
+
+/* MÓDULOS CON CHECKBOX */
+.opcion-modulo input[type="checkbox"] {
+    margin-right: 10px;
+    cursor: pointer;
+    accent-color: #2d5a7b;
+}
+
+.opcion-modulo input[type="checkbox"]:checked ~ strong {
+    color: #2d5a7b;
+    font-weight: 700;
+}
+
+.opcion-modulo label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+/* CAPACIDAD DE MÓDULOS */
+.stat-value {
+    display: block;
+    font-size: 2em;
+    font-weight: bold;
+    color: #2d5a7b;
+}
+
+.capacidad-usado {
+    color: #ff6b6b;
+    font-weight: bold;
+}
+
+.capacidad-total {
+    color: #2d5a7b;
+    font-weight: bold;
+}
+
+.capacidad-restante {
+    display: block;
+    font-size: 0.7em;
+    color: #666;
+    margin-top: 5px;
+}

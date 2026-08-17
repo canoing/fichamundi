@@ -1,0 +1,106 @@
+{
+  "propulsion": [
+    {
+      "nombre": "Motor de vapor avanzado",
+      "velocidad": 20,
+      "coste": "1M"
+    },
+    {
+      "nombre": "Motor de diésel I",
+      "velocidad": 40,
+      "coste": "2M"
+    },
+    {
+      "nombre": "Motor de diésel II",
+      "velocidad": 60,
+      "coste": "2M"
+    },
+    {
+      "nombre": "Motor de diésel avanzado",
+      "velocidad": 80,
+      "coste": "2M"
+    }
+  ],
+  "armamento": [
+    {
+      "nombre": "Cañones pesados básicos",
+      "ataque": 45,
+      "velocidad": -5,
+      "coste": "2M"
+    },
+    {
+      "nombre": "Cañones pesados refinados",
+      "ataque": 60,
+      "velocidad": -10,
+      "coste": "4M"
+    },
+    {
+      "nombre": "Cañones pesados avanzados",
+      "ataque": 90,
+      "velocidad": -15,
+      "coste": "6M"
+    },
+    {
+      "nombre": "Cañón ligero básico",
+      "ataque": 10,
+      "velocidad": -5,
+      "coste": "1M"
+    },
+    {
+      "nombre": "Cañón ligero refinado",
+      "ataque": 25,
+      "velocidad": -5,
+      "coste": "2M"
+    },
+    {
+      "nombre": "Torpedo básico",
+      "ataque": "30(P) 10(L)",
+      "velocidad": -5,
+      "coste": "2M"
+    },
+    {
+      "nombre": "Torpedo II",
+      "ataque": "60(P) 15(L)",
+      "velocidad": -5,
+      "coste": "4M"
+    },
+    {
+      "nombre": "Cargas profundidad iniciales",
+      "ataque": 20,
+      "velocidad": -5,
+      "coste": "1M"
+    },
+    {
+      "nombre": "Carga de profundidad básica",
+      "ataque": 40,
+      "velocidad": -10,
+      "coste": "2M"
+    },
+    {
+      "nombre": "Torpedo siglo XIX",
+      "ataque": "10 P / 5 L",
+      "velocidad": -5,
+      "coste": "2M"
+    }
+  ],
+  "blindaje": [
+    {
+      "nombre": "Blindaje Remachado",
+      "defensa": "40(P) 20(L)",
+      "velocidad": -5,
+      "coste": "1M"
+    },
+    {
+      "nombre": "Blindaje remachado avanzado",
+      "defensa": "80(P) 30(L)",
+      "velocidad": -25,
+      "coste": "1M"
+    },
+    {
+      "nombre": "Casco soldado",
+      "defensa": "120(P) 60(L)",
+      "velocidad": -40,
+      "coste": "2M"
+    }
+  ]
+}

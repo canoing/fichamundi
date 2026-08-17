@@ -1,0 +1,309 @@
+{
+  "titulo": "Beta de la pagina, creacion de buques",
+  "convenciones_UI": {
+    "EU": "Escritura de usuario",
+    "MD": "Modulo con pagina desplegable",
+    "CA": "Calculo automatico",
+    "nn": "Nada"
+  },
+  "ficha_de_buques": {
+    "version": "1910",
+    "secciones": [
+      {
+        "seccion": "Sección 1: Información general",
+        "campos": [
+          {
+            "nombre": "Nombre de clase o buque",
+            "tipo_input": "EU"
+          },
+          {
+            "nombre": "Tipo",
+            "tipo_input": "MD"
+          },
+          {
+            "nombre": "País de origen",
+            "tipo_input": "EU"
+          }
+        ]
+      },
+      {
+        "seccion": "Sección 2: Estadísticas",
+        "campos": [
+          {
+            "nombre": "Casco",
+            "tipo_input": "MD"
+          },
+          {
+            "nombre": "Blindaje",
+            "tipo_input": "MD"
+          },
+          {
+            "nombre": "Defensa",
+            "tipo_input": "MD"
+          },
+          {
+            "nombre": "Armamento",
+            "tipo_input": "MD"
+          },
+          {
+            "nombre": "Ataque",
+            "tipo_input": "MD"
+          },
+          {
+            "nombre": "Propulsión",
+            "tipo_input": "MD"
+          },
+          {
+            "nombre": "Velocidad final",
+            "tipo_input": "CA"
+          },
+          {
+            "nombre": "Coste",
+            "tipo_input": "CA"
+          }
+        ]
+      },
+      {
+        "seccion": "Sección 3: Lore Descripción",
+        "campos": [
+          {
+            "nombre": "Descripción",
+            "tipo_input": "EU"
+          }
+        ]
+      }
+    ]
+  },
+  "modulos_y_tecnologias": {
+    "propulsion": [
+      {
+        "nombre": "Motor de vapor avanzado",
+        "velocidad": 20,
+        "coste": "1M",
+        "coste_investigacion": "TECNOLOGÍA INICIAL",
+        "tiempo_investigacion": null
+      },
+      {
+        "nombre": "Motor de diésel I",
+        "velocidad": 40,
+        "coste": "2M",
+        "coste_investigacion": "10M",
+        "tiempo_investigacion": "2 Años"
+      },
+      {
+        "nombre": "Motor de diésel II",
+        "velocidad": 60,
+        "coste": "2M",
+        "coste_investigacion": "10M",
+        "tiempo_investigacion": "1 Años"
+      },
+      {
+        "nombre": "Motor de diésel avanzado",
+        "velocidad": 80,
+        "coste": "2M",
+        "coste_investigacion": "15M",
+        "tiempo_investigacion": "2 Años"
+      }
+    ],
+    "armamento": [
+      {
+        "nombre": "Cañones pesados básicos",
+        "ataque": 45,
+        "velocidad": -5,
+        "coste": "2M",
+        "coste_investigacion": "TECNOLOGÍA INICIAL",
+        "tiempo_investigacion": null
+      },
+      {
+        "nombre": "Cañones pesados refinados",
+        "ataque": 60,
+        "velocidad": -10,
+        "coste": "4M",
+        "coste_investigacion": "10M",
+        "tiempo_investigacion": "2 Años"
+      },
+      {
+        "nombre": "Cañones pesados avanzados",
+        "ataque": 90,
+        "velocidad": -15,
+        "coste": "6M",
+        "coste_investigacion": "15M",
+        "tiempo_investigacion": "3 Años"
+      },
+      {
+        "nombre": "Cañón ligero básico",
+        "ataque": 10,
+        "velocidad": -5,
+        "coste": "1M",
+        "coste_investigacion": "TECNOLOGÍA INICIAL",
+        "tiempo_investigacion": null
+      },
+      {
+        "nombre": "Cañón ligero refinado",
+        "ataque": 25,
+        "velocidad": -5,
+        "coste": "2M",
+        "coste_investigacion": "3M",
+        "tiempo_investigacion": "1 Años"
+      },
+      {
+        "nombre": "Torpedo básico",
+        "ataque": "30(P) 10(L)",
+        "velocidad": -5,
+        "coste": "2M",
+        "coste_investigacion": "4M",
+        "tiempo_investigacion": "2 Años"
+      },
+      {
+        "nombre": "Torpedo II",
+        "ataque": "60(P) 15(L)",
+        "velocidad": -5,
+        "coste": "4M",
+        "coste_investigacion": "8M",
+        "tiempo_investigacion": "2 Años"
+      },
+      {
+        "nombre": "Cargas profundidad iniciales",
+        "ataque": 20,
+        "velocidad": -5,
+        "coste": "1M",
+        "coste_investigacion": "5M",
+        "tiempo_investigacion": "2 Años"
+      },
+      {
+        "nombre": "Carga de profundidad básica",
+        "ataque": 40,
+        "velocidad": -10,
+        "coste": "2M",
+        "coste_investigacion": "6M",
+        "tiempo_investigacion": "1 Años"
+      },
+      {
+        "nombre": "Torpedo siglo XIX",
+        "ataque": "10 P / 5 L",
+        "velocidad": -5,
+        "coste": "2M",
+        "coste_investigacion": "TECNOLOGÍA INICIAL",
+        "tiempo_investigacion": null
+      }
+    ],
+    "cascos": {
+      "destructores": [
+        {
+          "nombre": "Casco destructor básico",
+          "capacidad_modulos": 3,
+          "velocidad": 5,
+          "coste": "5M",
+          "coste_investigacion": "TECNOLOGÍA INICIAL",
+          "tiempo_investigacion": null
+        },
+        {
+          "nombre": "Casco destructor refinado",
+          "capacidad_modulos": 5,
+          "velocidad": 15,
+          "coste": "6M",
+          "coste_investigacion": "30M",
+          "tiempo_investigacion": "1 Años"
+        }
+      ],
+      "fragatas": [
+        {
+          "nombre": "Casco fragata básico",
+          "capacidad_modulos": 2,
+          "velocidad": 15,
+          "coste": "2M",
+          "coste_investigacion": "TECNOLOGÍA INICIAL",
+          "tiempo_investigacion": null
+        },
+        {
+          "nombre": "Casco fragata refinado",
+          "capacidad_modulos": 3,
+          "velocidad": 20,
+          "coste": "3M",
+          "coste_investigacion": "5M",
+          "tiempo_investigacion": "1 Años"
+        }
+      ],
+      "cruceros_ligeros": [
+        {
+          "nombre": "Casco crucero ligero básico",
+          "capacidad_modulos": 8,
+          "velocidad": 10,
+          "coste": "10M",
+          "coste_investigacion": "TECNOLOGÍA INICIAL",
+          "tiempo_investigacion": null
+        },
+        {
+          "nombre": "Casco crucero ligero refinado",
+          "capacidad_modulos": 10,
+          "velocidad": 15,
+          "coste": "12M",
+          "coste_investigacion": "35M",
+          "tiempo_investigacion": "1 Años"
+        }
+      ],
+      "cruceros_pesados": [
+        {
+          "nombre": "Casco crucero pesado básico",
+          "capacidad_modulos": 10,
+          "velocidad": 0,
+          "coste": "30M",
+          "coste_investigacion": "45M",
+          "tiempo_investigacion": "2 Años"
+        },
+        {
+          "nombre": "Casco crucero pesado refinado",
+          "capacidad_modulos": 12,
+          "velocidad": 5,
+          "coste": "40M",
+          "coste_investigacion": "50M",
+          "tiempo_investigacion": "1 Años"
+        }
+      ],
+      "cruceros_de_batalla": [
+        {
+          "nombre": "Casco crucero de batalla básico",
+          "capacidad_modulos": 13,
+          "velocidad": -5,
+          "coste": "40M",
+          "coste_investigacion": "50M",
+          "tiempo_investigacion": "2 Años"
+        },
+        {
+          "nombre": "Casco crucero de batalla refinado",
+          "capacidad_modulos": 15,
+          "velocidad": -10,
+          "coste": "50M",
+          "coste_investigacion": "55M",
+          "tiempo_investigacion": "2 Años"
+        }
+      ],
+      "acorazados_dreadnoughts": [
+        {
+          "nombre": "Casco de Dreadnought básico",
+          "capacidad_modulos": 15,
+          "velocidad": -10,
+          "coste": "80M",
+          "coste_investigacion": "55M",
+          "tiempo_investigacion": "3 Años"
+        },
+        {
+          "nombre": "Casco de Dreadnought refinado",
+          "capacidad_modulos": 20,
+          "velocidad": -20,
+          "coste": "90M",
+          "coste_investigacion": "60M",
+          "tiempo_investigacion": "2 Años"
+        },
+        {
+          "nombre": "Casco Pre-Dreadnought",
+          "capacidad_modulos": 14,
+          "velocidad": -15,
+          "coste": "70M",
+          "coste_investigacion": "TECNOLOGÍA INICIAL",
+          "tiempo_investigacion": null
+        }
+      ]
+    }
+  }
+}
