@@ -1,6 +1,6 @@
-# ✅ Estructura Finalizada
+# Estructura Finalizada
 
-## 📁 Archivos Separados
+##  Archivos Separados
 
 ### 1. **cascos.json** ⚓
 ```
@@ -19,11 +19,11 @@ Cada casco tiene:
 - `velocidad`: Bonus/penalización de velocidad
 - `coste`: Coste en millones
 
-### 2. **modulos.json** 📦
+### 2. **modulos.json** 
 ```
 - Propulsión (Motores): 4 módulos
 - Armamento (Cañones/Torpedos): 10 módulos
-- Blindaje: 3 módulos ✨ NUEVO
+- Blindaje: 3 módulos NUEVO
 ```
 
 #### Propulsión
@@ -38,7 +38,7 @@ Cada casco tiene:
 - Torpedos (básico, II, siglo XIX)
 - Cargas profundidad (iniciales, básica)
 
-#### Blindaje ✨ NUEVO
+#### Blindaje  NUEVO
 1. **Blindaje Remachado**
    - Defensa: 40(P) 20(L)
    - Velocidad: -5
@@ -54,7 +54,7 @@ Cada casco tiene:
    - Velocidad: -40
    - Coste: 2M
 
-## 🔄 Flujo de Funcionamiento
+## Flujo de Funcionamiento
 
 1. **Script.js carga ambos JSONs en paralelo**
    ```
@@ -63,15 +63,15 @@ Cada casco tiene:
    ```
 
 2. **Interfaz se renderiza en orden:**
-   - ⚓ Sección de CASCOS (Radio buttons - solo uno seleccionable)
-   - ⛽ Sección de PROPULSIÓN (Checkboxes - múltiple)
-   - 🎯 Sección de ARMAMENTO (Checkboxes - múltiple)
-   - 🛡️ Sección de BLINDAJE (Checkboxes - múltiple)
+   - Sección de CASCOS (Radio buttons - solo uno seleccionable)
+   - Sección de PROPULSIÓN (Checkboxes - múltiple)
+   -  Sección de ARMAMENTO (Checkboxes - múltiple)
+   - Sección de BLINDAJE (Checkboxes - múltiple)
 
 3. **Capacidad de Módulos:**
    - El casco seleccionado define la capacidad máxima
    - Contador en tiempo real: módulos colocados / capacidad total
-   - ⚠️ Alerta si intentas guardar sin casco
+   - Alerta si intentas guardar sin casco
 
 4. **Cálculos Automáticos:**
    - **Velocidad** = Casco + Propulsión + Armamento + Blindaje
@@ -83,7 +83,7 @@ Cada casco tiene:
    - JSON con toda la información
    - Incluye módulos colocados, capacidad, estadísticas totales
 
-## 🎨 Interfaz Mejorada
+## Interfaz Mejorada
 
 - **Sección Cascos**: Color naranja/rojo (diferenciada)
 - **Pestañas Desplegables**: Propulsión, Armamento, Blindaje
@@ -91,15 +91,15 @@ Cada casco tiene:
 - **Indicadores Visuales**: Muestra qué está seleccionado
 - **Contador Módulos**: Tiempo real de capacidad usada
 
-## 📊 Estadísticas Mostradas
+##  Estadísticas Mostradas
 
 - Módulos Colocados (X / Y)
 - Velocidad Total
 - Ataque Total
-- Defensa Total ✨ NUEVO
+- Defensa Total  NUEVO
 - Coste Total
 
-## ❌ Eliminado
+##  Eliminado
 
 - Costos de investigación (innecesarios)
 - Tiempos de investigación (innecesarios)

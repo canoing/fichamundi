@@ -1,56 +1,90 @@
 /**
  * CREADOR DE FICHAS DE BUQUES - U-Boat World RPG
  * Sistema de construcción de armamentos navales con selección modular.
- *
- * ARQUITECTURA:
- * - cascos.json: datos de cascos (solo 1 seleccionable)
- * - modulos.json: propulsión, armamento y blindaje (múltiples seleccionables)
- * - estado centralizado en el objeto `seleccionados`
- * - cálculos en tiempo real
  */
 
-// ==================== ESTADO GLOBAL ====================
-let datosJSON = null;           // Reservado para futuras extensiones
-let cascos = {};                // Cascos del JSON (por tipo)
-let modulos = {};               // Módulos del JSON (propulsión, armamento, blindaje)
-let seleccionados = {};         // Selecciones del usuario (casco + arrays de módulos)
-let capacidadModulosActual = 0; // Capacidad de módulos del casco actual
+let datosJSON = null;
+let cascos = {};
+let modulos = {};
+let seleccionados = {};
+let capacidadModulosActual = 0;
+let categoriaAbierta = {};
 
-/**
- * Carga los datos desde los JSON.
- * Lee cascos.json y modulos.json para inicializar la aplicación.
- *
- * @returns {boolean} true si se cargó correctamente, false si hubo error
- */
+function obtenerCantidadEnCategoria(estado, categoria, nombreModulo) {
+    if (!estado || !Array.isArray(estado[categoria])) return 0;
+    const modulo = estado[categoria].find(item => item && item.nombre === nombreModulo);
+    return modulo ? Number(modulo.cantidad || 0) : 0;
+}
+
+function getSlotsForItem(categoria, modulo, cantidad) {
+    if (!modulo || !Number.isFinite(cantidad) || cantidad <= 0) return 0;
+    if (categoria === 'propulsion') {
+        return Math.max(0, cantidad - 1);
+    }
+    return cantidad;
+}
+
+function obtenerSlotsCategoria(estado, categoria) {
+    if (!estado || !Array.isArray(estado[categoria])) return 0;
+
+    if (categoria === 'propulsion') {
+        const totalMotores = estado.propulsion.reduce((sum, item) => sum + Number(item?.cantidad || 0), 0);
+        return Math.max(0, totalMotores - 1);
+    }
+
+    return estado[categoria].reduce((sum, item) => sum + Number(item?.cantidad || 0), 0);
+}
+
+function calcularModulosUsados(estado = seleccionados) {
+    if (!estado) return 0;
+    return obtenerSlotsCategoria(estado, 'propulsion') +
+           obtenerSlotsCategoria(estado, 'armamento') +
+           obtenerSlotsCategoria(estado, 'blindaje');
+}
+
+function obtenerMotorBaseSeleccionado(estado = seleccionados) {
+    const motores = Array.isArray(estado.propulsion) ? estado.propulsion.filter(item => item && Number(item.cantidad || 0) > 0) : [];
+    return motores.length > 0 ? motores[0] : null;
+}
+
+function asegurarMotorBase(estado, motoresDisponibles = []) {
+    const siguiente = {
+        casco: estado?.casco || null,
+        propulsion: Array.isArray(estado?.propulsion) ? [...estado.propulsion] : [],
+        armamento: Array.isArray(estado?.armamento) ? [...estado.armamento] : [],
+        blindaje: Array.isArray(estado?.blindaje) ? [...estado.blindaje] : []
+    };
+
+    const tieneMotor = siguiente.propulsion.some(item => Number(item?.cantidad || 0) > 0);
+    if (!tieneMotor) {
+        const motorPredeterminado = motoresDisponibles.find(item => item && item.nombre) || { nombre: 'Motor de vapor avanzado', velocidad: 20, coste: '1M' };
+        siguiente.propulsion = [{ ...motorPredeterminado, cantidad: 1 }];
+    }
+
+    return siguiente;
+}
+
 async function cargarDatos() {
     try {
-        // Cargar cascos
         const resCascos = await fetch('cascos.json');
         const datosCascos = await resCascos.json();
-        cascos = datosCascos.cascos; // Extrae el objeto 'cascos' del JSON
-        console.log('Cascos cargados:', Object.keys(cascos).length, 'tipos');
+        cascos = datosCascos.cascos;
 
-        // Cargar módulos
         const resModulos = await fetch('modulos.json');
         const datosModulos = await resModulos.json();
-        modulos = datosModulos; // Contiene propulsion, armamento y blindaje
-        console.log('Módulos cargados:',
-            'Propulsión:', modulos.propulsion?.length || 0,
-            'Armamento:', modulos.armamento?.length || 0,
-            'Blindaje:', modulos.blindaje?.length || 0
-        );
+        modulos = datosModulos;
 
-        // Inicializar el objeto de selecciones del usuario
-        // - casco: null (un solo casco)
-        // - propulsion, armamento, blindaje: arrays (múltiples módulos)
+        const motorBase = Array.isArray(modulos.propulsion) && modulos.propulsion.length > 0
+            ? [{ ...modulos.propulsion[0], cantidad: 1 }]
+            : [];
+
         seleccionados = {
-            "casco": null,
-            "propulsion": [],
-            "armamento": [],
-            "blindaje": []
+            casco: null,
+            propulsion: motorBase,
+            armamento: [],
+            blindaje: []
         };
 
-        console.log('Datos cargados correctamente');
         return true;
     } catch (error) {
         console.error('Error cargando JSONs:', error);
@@ -58,60 +92,38 @@ async function cargarDatos() {
     }
 }
 
-/**
- * Inicializa la página cuando el DOM está listo.
- * 1. Carga los datos
- * 2. Genera la interfaz
- * 3. Asocia eventos de botones
- * 4. Calcula estadísticas iniciales
- */
-document.addEventListener('DOMContentLoaded', async () => {
-    const cargado = await cargarDatos();
-    if (cargado) {
-        generarModulos();
-        agregarEventListeners();
-        calcularTotales();
-    } else {
-        alert('Error: No se pudo cargar el archivo de configuración');
-    }
-});
+if (typeof document !== 'undefined') {
+    document.addEventListener('DOMContentLoaded', async () => {
+        const cargado = await cargarDatos();
+        if (cargado) {
+            generarModulos();
+            agregarEventListeners();
+            actualizarCapacidadUI();
+            calcularTotales();
+        } else {
+            alert('Error: No se pudo cargar el archivo de configuración');
+        }
+    });
+}
 
-// Genera la interfaz principal a partir de los JSON.
 function generarModulos() {
     const container = document.getElementById('modulos-container');
+    if (!container) return;
     container.innerHTML = '';
 
-    console.log('Regenerando módulos...', { cascos, modulos });
-
-    // Sección de cascos: selector tipo radio, solo un casco puede estar seleccionado
     generarCascos(container);
 
-    // Propulsión
     if (modulos.propulsion && modulos.propulsion.length > 0) {
-        console.log('Generando propulsión:', modulos.propulsion.length, 'items');
         generarCategoriaMultiple('propulsion', 'Propulsión (Motores)', container, modulos.propulsion);
-    } else {
-        console.warn('No hay propulsión disponible');
     }
-
-    // Armamento
     if (modulos.armamento && modulos.armamento.length > 0) {
-        console.log('Generando armamento:', modulos.armamento.length, 'items');
         generarCategoriaMultiple('armamento', 'Armamento', container, modulos.armamento);
-    } else {
-        console.warn('No hay armamento disponible');
     }
-
-    // Blindaje
     if (modulos.blindaje && modulos.blindaje.length > 0) {
-        console.log('Generando blindaje:', modulos.blindaje.length, 'items');
         generarCategoriaMultiple('blindaje', 'Blindaje', container, modulos.blindaje);
-    } else {
-        console.log('Blindaje no disponible (normal)');
     }
 }
 
-// Genera la sección de cascos: un solo radio button activo a la vez.
 function generarCascos(container) {
     const seccionCascos = document.createElement('div');
     seccionCascos.className = 'seccion-cascos';
@@ -120,7 +132,6 @@ function generarCascos(container) {
     const cascoContainer = document.createElement('div');
     cascoContainer.className = 'cascos-container';
 
-    // Recorre todos los tipos de casco del JSON
     Object.entries(cascos || {}).forEach(([tipoKey, items]) => {
         if (!Array.isArray(items)) return;
 
@@ -133,13 +144,7 @@ function generarCascos(container) {
 
             cascoDiv.innerHTML = `
                 <label>
-                    <input 
-                        type="radio" 
-                        name="casco" 
-                        id="${radioId}"
-                        value="${casco.nombre}"
-                        data-capacidad="${casco.capacidad_modulos}"
-                    >
+                    <input type="radio" name="casco" id="${radioId}" value="${casco.nombre}" data-capacidad="${casco.capacidad_modulos}" ${isChecked}>
                     <strong>${casco.nombre}</strong>
                     <span class="capacidad-badge">Cap: ${casco.capacidad_modulos}</span>
                 </label>
@@ -157,10 +162,7 @@ function generarCascos(container) {
 
             cascoContainer.appendChild(cascoDiv);
 
-            // Evento para seleccionar casco y guardar su capacidad
             const radio = cascoDiv.querySelector('input[type="radio"]');
-            if (isChecked) radio.checked = true;
-
             radio.addEventListener('change', () => {
                 seleccionados.casco = {
                     nombre: casco.nombre,
@@ -169,7 +171,6 @@ function generarCascos(container) {
                     capacidad_modulos: casco.capacidad_modulos
                 };
                 capacidadModulosActual = casco.capacidad_modulos;
-                console.log('Casco seleccionado:', seleccionados.casco);
                 actualizarCapacidadUI();
                 calcularTotales();
             });
@@ -180,25 +181,68 @@ function generarCascos(container) {
     container.appendChild(seccionCascos);
 }
 
-// Genera una categoría con opciones de selección múltiple mediante checkbox.
+function manejarCambioCantidad(categoria, item, accion) {
+    const cantidadActual = obtenerCantidadEnCategoria(seleccionados, categoria, item.nombre);
+    const cantidadObjetivo = accion === 'increment' ? cantidadActual + 1 : cantidadActual - 1;
+
+    if (cantidadObjetivo < 0) return;
+
+    const proximoEstado = {
+        casco: seleccionados.casco ? { ...seleccionados.casco } : null,
+        propulsion: Array.isArray(seleccionados.propulsion) ? [...seleccionados.propulsion] : [],
+        armamento: Array.isArray(seleccionados.armamento) ? [...seleccionados.armamento] : [],
+        blindaje: Array.isArray(seleccionados.blindaje) ? [...seleccionados.blindaje] : []
+    };
+
+    const categoriaActual = proximoEstado[categoria] || [];
+    const existente = categoriaActual.find(modulo => modulo && modulo.nombre === item.nombre);
+
+    if (cantidadObjetivo === 0) {
+        proximoEstado[categoria] = categoriaActual.filter(modulo => modulo.nombre !== item.nombre);
+    } else if (existente) {
+        existente.cantidad = cantidadObjetivo;
+        proximoEstado[categoria] = categoriaActual.map(modulo => modulo.nombre === item.nombre ? existente : modulo);
+    } else {
+        proximoEstado[categoria] = [...categoriaActual, { ...item, cantidad: cantidadObjetivo }];
+    }
+
+    if (categoria === 'propulsion' && !proximoEstado.propulsion.some(modulo => Number(modulo.cantidad || 0) > 0)) {
+        proximoEstado.propulsion = [{ ...modulos.propulsion[0], cantidad: 1 }];
+    }
+
+    if (capacidadModulosActual > 0 && calcularModulosUsados(proximoEstado) > capacidadModulosActual) {
+        alert(`No puedes exceder la capacidad del casco. Máximo ${capacidadModulosActual} módulos ocupados.`);
+        return;
+    }
+
+    const estadoCategoriaAbierta = { ...categoriaAbierta };
+    seleccionados = proximoEstado;
+    generarModulos();
+    categoriaAbierta = estadoCategoriaAbierta;
+    actualizarCapacidadUI();
+    calcularTotales();
+}
+
 function generarCategoriaMultiple(categoria, titulo, container, items = []) {
     if (!items || items.length === 0) return;
+
+    const debeEstarAbierta = categoriaAbierta[categoria] ?? true;
+    categoriaAbierta[categoria] = debeEstarAbierta;
 
     const categoriaDiv = document.createElement('div');
     categoriaDiv.className = 'modulo-categoria';
     categoriaDiv.dataset.categoria = categoria;
 
-    // Encabezado desplegable
     const header = document.createElement('div');
     header.className = 'modulo-header';
-    header.innerHTML = `
-        <span>${titulo}</span>
-        <span class="toggle-icon">▼</span>
-    `;
+    header.innerHTML = `<span>${titulo}</span><span class="toggle-icon">▼</span>`;
 
-    // Contenido con los módulos
     const content = document.createElement('div');
     content.className = 'modulo-content';
+    if (debeEstarAbierta) {
+        content.classList.add('active');
+        header.classList.add('active');
+    }
 
     const opciones = document.createElement('div');
     opciones.className = 'opciones-modulo';
@@ -207,65 +251,73 @@ function generarCategoriaMultiple(categoria, titulo, container, items = []) {
         const opcion = document.createElement('div');
         opcion.className = 'opcion-modulo';
 
-        const checkboxId = `${categoria}-${index}`;
-        const isChecked = (Array.isArray(seleccionados[categoria]) && seleccionados[categoria].some(m => m.nombre === item.nombre)) ? 'checked' : '';
+        const cantidadActual = obtenerCantidadEnCategoria(seleccionados, categoria, item.nombre);
+        const estadoSimulado = JSON.parse(JSON.stringify(seleccionados));
+        const categoriaActual = Array.isArray(estadoSimulado[categoria]) ? estadoSimulado[categoria] : [];
+        const moduloExistente = categoriaActual.find(modulo => modulo && modulo.nombre === item.nombre);
+
+        if (moduloExistente) {
+            moduloExistente.cantidad = cantidadActual + 1;
+        } else {
+            categoriaActual.push({ ...item, cantidad: 1 });
+            estadoSimulado[categoria] = categoriaActual;
+        }
+
+        const puedeSumar = capacidadModulosActual === 0 || calcularModulosUsados(estadoSimulado) <= capacidadModulosActual;
 
         let htmlInfo = '';
         if (item.velocidad !== undefined) {
             htmlInfo += `<div class="info-item"><span class="info-label">Velocidad:</span><span class="info-value">${item.velocidad > 0 ? '+' : ''}${item.velocidad}</span></div>`;
         }
-        if (item.ataque !== undefined) {
-            htmlInfo += `<div class="info-item"><span class="info-label">Ataque:</span><span class="info-value">${item.ataque}</span></div>`;
+        if (item.ataque_p_l !== undefined || item.ataque !== undefined) {
+            const valorAtaque = obtenerAtaqueVisible(item);
+            const esDañoCompuesto = typeof valorAtaque === 'string' && esValorCompuesto(valorAtaque);
+            const etiquetaAtaque = esDañoCompuesto ? 'Daño (P/L)' : 'Ataque';
+            htmlInfo += `<div class="info-item"><span class="info-label">${etiquetaAtaque}:</span><span class="info-value">${valorAtaque}</span></div>`;
         }
-        if (item.defensa !== undefined) {
-            htmlInfo += `<div class="info-item"><span class="info-label">Defensa:</span><span class="info-value">${item.defensa}</span></div>`;
+        if (item.defensa_p_l !== undefined || item.defensa !== undefined) {
+            const valorDefensa = obtenerDefensaVisible(item);
+            const esDefensaCompuesta = typeof valorDefensa === 'string' && esValorCompuesto(valorDefensa);
+            const etiquetaDefensa = esDefensaCompuesta ? 'Defensa (P/L)' : 'Defensa';
+            htmlInfo += `<div class="info-item"><span class="info-label">${etiquetaDefensa}:</span><span class="info-value">${valorDefensa}</span></div>`;
         }
         if (item.coste) {
             htmlInfo += `<div class="info-item"><span class="info-label">Coste:</span><span class="info-value">${item.coste}</span></div>`;
         }
 
+        const infoMotor = categoria === 'propulsion' && cantidadActual > 0
+            ? '<span class="motor-base-label">Motor base inclusivo sin slot</span>'
+            : '<span class="motor-base-label">Sin motor asignado</span>';
+
         opcion.innerHTML = `
-            <label>
-                <input 
-                    type="checkbox" 
-                    id="${checkboxId}"
-                    value="${item.nombre}"
-                    data-categoria="${categoria}"
-                    ${isChecked}
-                >
+            <div class="modulo-topline">
                 <strong>${item.nombre}</strong>
-            </label>
-            <div class="modulo-info">
-                ${htmlInfo}
+                ${infoMotor}
+            </div>
+            <div class="modulo-info">${htmlInfo}</div>
+            <div class="modulo-controls">
+                <button type="button" class="qty-btn" data-action="decrement" data-categoria="${categoria}" data-item="${item.nombre}" ${cantidadActual <= 0 ? 'disabled' : ''}>-</button>
+                <span class="qty-value" id="cantidad-${categoria}-${index}">${cantidadActual}</span>
+                <button type="button" class="qty-btn" data-action="increment" data-categoria="${categoria}" data-item="${item.nombre}" ${!puedeSumar ? 'disabled' : ''}>+</button>
             </div>
         `;
 
         opciones.appendChild(opcion);
 
-        // Evento para agregar o quitar el módulo de la selección
-        const checkbox = opcion.querySelector('input[type="checkbox"]');
-        checkbox.addEventListener('change', (e) => {
-            if (e.target.checked) {
-                if (!Array.isArray(seleccionados[categoria])) {
-                    seleccionados[categoria] = [];
-                }
-                seleccionados[categoria].push(item);
-                console.log('Módulo agregado:', categoria, item.nombre);
-            } else {
-                seleccionados[categoria] = seleccionados[categoria].filter(m => m.nombre !== item.nombre);
-                console.log('Módulo removido:', categoria, item.nombre);
-            }
-            actualizarCapacidadUI();
-            calcularTotales();
-        });
+        const btnMenos = opcion.querySelector('[data-action="decrement"]');
+        const btnMas = opcion.querySelector('[data-action="increment"]');
+
+        btnMenos.addEventListener('click', () => manejarCambioCantidad(categoria, item, 'decrement'));
+        btnMas.addEventListener('click', () => manejarCambioCantidad(categoria, item, 'increment'));
     });
 
     content.appendChild(opciones);
 
-    // Permite expandir o contraer la categoría
     header.addEventListener('click', () => {
-        header.classList.toggle('active');
-        content.classList.toggle('active');
+        const abrir = !content.classList.contains('active');
+        header.classList.toggle('active', abrir);
+        content.classList.toggle('active', abrir);
+        categoriaAbierta[categoria] = abrir;
     });
 
     categoriaDiv.appendChild(header);
@@ -273,65 +325,61 @@ function generarCategoriaMultiple(categoria, titulo, container, items = []) {
     container.appendChild(categoriaDiv);
 }
 
-// Calcula estadísticas y coste totales a partir de las selecciones.
 function calcularTotales() {
     let velocidadTotal = 0;
     let ataqueTotal = 0;
     let defensaTotal = 0;
     let costeTotal = 0;
 
-    // Procesar casco
     if (seleccionados.casco) {
         velocidadTotal += seleccionados.casco.velocidad || 0;
         costeTotal += parsearCoste(seleccionados.casco.coste);
     }
 
-    // Procesar propulsión, armamento, blindaje (arrays)
+    // Los valores compuestos tipo "60(P) 15(L)" son un detalle de daño/defensa,
+    // no un valor total que deba sumarse a las estadísticas del buque.
+    // Se separan explícitamente para que el ataque y la defensa no compartan el mismo parser.
     ['propulsion', 'armamento', 'blindaje'].forEach(cat => {
         if (Array.isArray(seleccionados[cat])) {
             seleccionados[cat].forEach(modulo => {
-                if (modulo) {
-                    velocidadTotal += modulo.velocidad || 0;
-                    
-                    if (typeof modulo.ataque === 'number') {
-                        ataqueTotal += modulo.ataque;
-                    } else if (typeof modulo.ataque === 'string') {
-                        const numeros = modulo.ataque.match(/\d+/g);
-                        if (numeros) {
-                            ataqueTotal += numeros.reduce((sum, num) => sum + parseInt(num), 0);
-                        }
-                    }
+                if (!modulo || !modulo.nombre) return;
 
-                    if (typeof modulo.defensa === 'string') {
-                        const numeros = modulo.defensa.match(/\d+/g);
-                        if (numeros) {
-                            defensaTotal += numeros.reduce((sum, num) => sum + parseInt(num), 0);
-                        }
-                    }
-                    
-                    costeTotal += parsearCoste(modulo.coste);
-                }
+                const cantidad = Number(modulo.cantidad || 1);
+                velocidadTotal += (modulo.velocidad || 0) * cantidad;
+
+                ataqueTotal += obtenerAtaqueTotal(modulo) * cantidad;
+                defensaTotal += obtenerDefensaTotal(modulo) * cantidad;
+                costeTotal += parsearCoste(modulo.coste) * cantidad;
             });
         }
     });
 
-    // Actualizar UI
-    document.getElementById('velocidad-total').textContent = velocidadTotal;
-    document.getElementById('ataque-total').textContent = ataqueTotal;
-    document.getElementById('defensa-total').textContent = defensaTotal;
-    document.getElementById('coste-total').textContent = `${costeTotal}M`;
+    const velocidadEl = document.getElementById('velocidad-total');
+    const ataqueEl = document.getElementById('ataque-total');
+    const defensaEl = document.getElementById('defensa-total');
+    const costeEl = document.getElementById('coste-total');
+    const ataquePLEl = document.getElementById('ataque-pl-total');
+    const defensaPLEl = document.getElementById('defensa-pl-total');
+
+    if (velocidadEl) velocidadEl.textContent = velocidadTotal;
+    if (ataqueEl) ataqueEl.textContent = ataqueTotal;
+    if (defensaEl) defensaEl.textContent = defensaTotal;
+    if (costeEl) costeEl.textContent = `${costeTotal}M`;
+
+    // Calcula y muestra los totales de daño y defensa compuesto (P/L)
+    const ataquePLTotal = calcularAtaquePLTotal();
+    const defensaPLTotal = calcularDefensaPLTotal();
+
+    if (ataquePLEl) ataquePLEl.textContent = ataquePLTotal || '-';
+    if (defensaPLEl) defensaPLEl.textContent = defensaPLTotal || '-';
 }
 
-// Actualiza la capacidad visual de módulos del casco seleccionado.
 function actualizarCapacidadUI() {
-    const modulosColocados = (seleccionados.propulsion?.length || 0) +
-                             (seleccionados.armamento?.length || 0) +
-                             (seleccionados.blindaje?.length || 0);
-
+    const modulosColocados = calcularModulosUsados(seleccionados);
     const capacidadTotal = capacidadModulosActual;
     const modulosRestantes = Math.max(0, capacidadTotal - modulosColocados);
-
     const capacidadEl = document.getElementById('capacidad-modulos');
+
     if (capacidadEl) {
         capacidadEl.innerHTML = `
             <span class="capacidad-usado">${modulosColocados}</span> /
@@ -339,33 +387,134 @@ function actualizarCapacidadUI() {
             <span class="capacidad-restante">(${modulosRestantes} disponibles)</span>
         `;
     }
+
+    const comprobante = document.getElementById('comprobante-modulos');
+    const motorBase = obtenerMotorBaseSeleccionado(seleccionados);
+
+    if (comprobante) {
+        comprobante.innerHTML = `
+            <strong>Comprobante de módulos:</strong>
+            <span>${modulosColocados}/${capacidadTotal || 0} slots usados</span>
+            <small>${motorBase ? `Motor base: ${motorBase.nombre}` : 'Sin motor base'}</small>
+        `;
+    }
 }
 
-// Convierte un coste como "2M" en un número útil para sumar.
+function esValorCompuesto(valor) {
+    if (typeof valor !== 'string') return false;
+    return /\d+\s*\(?[PpLl]\)?|\(?[PpLl]\)?\s*\d+/i.test(valor);
+}
+
+function sumarValorNumerico(valor) {
+    if (typeof valor === 'number') return valor;
+    if (typeof valor !== 'string') return 0;
+    if (esValorCompuesto(valor)) return 0;
+    const numeros = valor.match(/\d+/g);
+    return numeros ? numeros.reduce((sum, num) => sum + parseInt(num, 10), 0) : 0;
+}
+
+function obtenerAtaqueVisible(modulo) {
+    if (modulo && modulo.ataque_p_l !== undefined) return modulo.ataque_p_l;
+    if (modulo && modulo.ataque !== undefined) return modulo.ataque;
+    return null;
+}
+
+function obtenerDefensaVisible(modulo) {
+    if (modulo && modulo.defensa_p_l !== undefined) return modulo.defensa_p_l;
+    if (modulo && modulo.defensa !== undefined) return modulo.defensa;
+    return null;
+}
+
+function obtenerAtaqueTotal(modulo) {
+    if (modulo && typeof modulo.ataque === 'number') return modulo.ataque;
+    if (modulo && typeof modulo.ataque === 'string' && !esValorCompuesto(modulo.ataque)) return sumarValorNumerico(modulo.ataque);
+    return 0;
+}
+
+function obtenerDefensaTotal(modulo) {
+    if (modulo && typeof modulo.defensa === 'number') return modulo.defensa;
+    if (modulo && typeof modulo.defensa === 'string' && !esValorCompuesto(modulo.defensa)) return sumarValorNumerico(modulo.defensa);
+    return 0;
+}
+
+// Extrae los valores P y L de un valor compuesto como "30(P) 10(L)" o "30 P / 10 L"
+function extraerValorPL(valor) {
+    if (typeof valor !== 'string') return { p: 0, l: 0 };
+
+    const coincidenciaP = valor.match(/(\d+)\s*\(?P\)?/i);
+    const coincidenciaL = valor.match(/(\d+)\s*\(?L\)?/i);
+
+    return {
+        p: coincidenciaP ? parseInt(coincidenciaP[1], 10) : 0,
+        l: coincidenciaL ? parseInt(coincidenciaL[1], 10) : 0
+    };
+}
+
+// Calcula el total de ataque compuesto (P/L) de todos los módulos seleccionados
+function calcularAtaquePLTotal(estado = seleccionados) {
+    let ataqueP = 0;
+    let ataqueL = 0;
+
+    ['propulsion', 'armamento', 'blindaje'].forEach(cat => {
+        if (Array.isArray(estado[cat])) {
+            estado[cat].forEach(modulo => {
+                if (!modulo || !modulo.nombre || !modulo.ataque_p_l) return;
+                const cantidad = Number(modulo.cantidad || 1);
+                const { p, l } = extraerValorPL(modulo.ataque_p_l);
+                ataqueP += p * cantidad;
+                ataqueL += l * cantidad;
+            });
+        }
+    });
+
+    return ataqueP === 0 && ataqueL === 0 ? null : `${ataqueP}(P) ${ataqueL}(L)`;
+}
+
+// Calcula el total de defensa compuesta (P/L) de todos los módulos seleccionados
+function calcularDefensaPLTotal(estado = seleccionados) {
+    let defensaP = 0;
+    let defensaL = 0;
+
+    ['propulsion', 'armamento', 'blindaje'].forEach(cat => {
+        if (Array.isArray(estado[cat])) {
+            estado[cat].forEach(modulo => {
+                if (!modulo || !modulo.nombre || !modulo.defensa_p_l) return;
+                const cantidad = Number(modulo.cantidad || 1);
+                const { p, l } = extraerValorPL(modulo.defensa_p_l);
+                defensaP += p * cantidad;
+                defensaL += l * cantidad;
+            });
+        }
+    });
+
+    return defensaP === 0 && defensaL === 0 ? null : `${defensaP}(P) ${defensaL}(L)`;
+}
+
 function parsearCoste(coste) {
     if (!coste) return 0;
     return parseInt(coste.toString().replace(/[^0-9]/g, '')) || 0;
 }
 
-// Asocia eventos a los botones principales del formulario.
 function agregarEventListeners() {
-    // Botón Guardar
-    document.getElementById('btn-guardar').addEventListener('click', () => {
-        guardarFicha();
-    });
+    const guardarBtn = document.getElementById('btn-guardar');
+    const limpiarBtn = document.getElementById('btn-limpiar');
 
-    // Botón Limpiar
-    document.getElementById('btn-limpiar').addEventListener('click', () => {
-        if (confirm('¿Estás seguro de que deseas limpiar todos los datos?')) {
-            limpiarFormulario();
-        }
-    });
+    if (guardarBtn) {
+        guardarBtn.addEventListener('click', () => guardarFicha());
+    }
+
+    if (limpiarBtn) {
+        limpiarBtn.addEventListener('click', () => {
+            if (confirm('¿Estás seguro de que deseas limpiar todos los datos?')) {
+                limpiarFormulario();
+            }
+        });
+    }
 }
 
-// Guarda la ficha actual como archivo JSON.
 function guardarFicha() {
     if (!seleccionados.casco) {
-alert('Debes seleccionar un casco primero');
+        alert('Debes seleccionar un casco primero');
         return;
     }
 
@@ -373,6 +522,12 @@ alert('Debes seleccionar un casco primero');
     const tipo = document.getElementById('tipo').value || 'No especificado';
     const pais = document.getElementById('pais').value || 'No especificado';
     const descripcion = document.getElementById('descripcion').value || '';
+    const modulosTotales = calcularModulosUsados(seleccionados);
+
+    if (capacidadModulosActual > 0 && modulosTotales > capacidadModulosActual) {
+        alert(`El casco no puede llevar más de ${capacidadModulosActual} módulos.`);
+        return;
+    }
 
     const ficha = {
         titulo: nombre,
@@ -388,20 +543,23 @@ alert('Debes seleccionar un casco primero');
             armamento: seleccionados.armamento,
             blindaje: seleccionados.blindaje
         },
+        comprobante_modulos: {
+            usados: modulosTotales,
+            capacidad_total: capacidadModulosActual,
+            disponibles: Math.max(0, capacidadModulosActual - modulosTotales),
+            motor_base: obtenerMotorBaseSeleccionado(seleccionados)
+        },
         estadisticas: {
             velocidad: parseInt(document.getElementById('velocidad-total').textContent),
             ataque: parseInt(document.getElementById('ataque-total').textContent),
             defensa: parseInt(document.getElementById('defensa-total').textContent),
             coste: document.getElementById('coste-total').textContent,
-            modulos_colocados: (seleccionados.propulsion?.length || 0) + 
-                             (seleccionados.armamento?.length || 0) + 
-                             (seleccionados.blindaje?.length || 0),
+            modulos_colocados: modulosTotales,
             capacidad_total: capacidadModulosActual
         },
         descripcion
     };
 
-    // Crear descarga JSON
     const dataStr = JSON.stringify(ficha, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(dataBlob);
@@ -416,22 +574,33 @@ alert('Debes seleccionar un casco primero');
     alert('Ficha guardada como JSON');
 }
 
-// Reinicia el formulario y borra todas las selecciones.
 function limpiarFormulario() {
     document.getElementById('nombre').value = '';
     document.getElementById('tipo').value = '';
     document.getElementById('pais').value = '';
     document.getElementById('descripcion').value = '';
 
+    const motorBase = Array.isArray(modulos.propulsion) && modulos.propulsion.length > 0
+        ? [{ ...modulos.propulsion[0], cantidad: 1 }]
+        : [];
+
     seleccionados = {
-        "casco": null,
-        "propulsion": [],
-        "armamento": [],
-        "blindaje": []
+        casco: null,
+        propulsion: motorBase,
+        armamento: [],
+        blindaje: []
     };
 
     capacidadModulosActual = 0;
     generarModulos();
     actualizarCapacidadUI();
     calcularTotales();
+}
+
+if (typeof module !== 'undefined') {
+    module.exports = {
+        calcularModulosUsados,
+        asegurarMotorBase,
+        obtenerCantidadEnCategoria
+    };
 }

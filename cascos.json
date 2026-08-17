@@ -89,6 +89,26 @@
         "velocidad": -15,
         "coste": "70M"
       }
-    ]
-  }
+
+      
+    ],
+    
+  "submarinos": [
+    {
+      "nombre": "Casco submarino inicial",
+      "capacidad_modulos": 2,
+      "velocidad": -5,
+      "coste": "4M"
+      
+    },
+    {
+      "nombre": "Casco submarino básico",
+      "capacidad_modulos": 5,
+      "velocidad": -15,
+      "coste": "5M"
+    }
+  ]
 }
+
+}
+

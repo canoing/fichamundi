@@ -20,7 +20,7 @@
                 <div class="formulario">
                     <div class="campo">
                         <label for="nombre">Nombre de clase o buque:</label>
-                        <input type="text" id="nombre" placeholder="Ej: SMS Bayern">
+                        <input type="text" id="nombre" placeholder="Ej: ARS ZT-15">
                     </div>
                     <div class="campo">
                         <label for="tipo">Tipo:</label>
@@ -30,19 +30,18 @@
                             <option value="Crucero">Crucero</option>
                             <option value="Destructor">Destructor</option>
                             <option value="Submarino">Submarino</option>
-                            <option value="Transporte">Transporte</option>
                         </select>
                     </div>
                     <div class="campo">
                         <label for="pais">País de origen:</label>
-                        <input type="text" id="pais" placeholder="Ej: Imperio Alemán">
+                        <input type="text" id="pais" placeholder="Ej: BOREOSTIA">
                     </div>
                 </div>
             </section>
 
             <!-- SECCIÓN 2: ESTADÍSTICAS Y MÓDULOS -->
             <section class="seccion" id="seccion2">
-                <h2>⚙️ Sección 2: Módulos y Estadísticas</h2>
+                <h2> Sección 2: Módulos y Estadísticas</h2>
                 
                 <div id="modulos-container" class="modulos-container">
                     <!-- Los módulos se generarán dinámicamente aquí -->
@@ -51,6 +50,9 @@
                 <!-- RESUMEN DE ESTADÍSTICAS -->
                 <div class="resumen-stats">
                     <h3> Estadísticas Totales</h3>
+                    <div 
+                         <small>Motor base: no asignado</small>
+                    </div>
                     <div class="stats-grid">
                         <div class="stat-box">
                             <label>Módulos Colocados:</label>
@@ -64,16 +66,35 @@
                             <label>Ataque:</label>
                             <span id="ataque-total" class="stat-value">0</span>
                         </div>
-                        <div class="stat-box">
-                            <label>Defensa:</label>
-                            <span id="defensa-total" class="stat-value">0</span>
+                        
+                       
+                    </div>
+
+                    <!-- ESTADÍSTICAS DE DAÑO COMPUESTO (P/L) -->
+                    <div class="stats-grid-pl">
+                        <h4>Daño y Defensa Compuesto (P/L)</h4>
+                        <div class="stat-box-pl">
+                            <label>Daño Total (P/L):</label>
+                            <span id="ataque-pl-total" class="stat-value-pl">-</span>
                         </div>
-                        <div class="stat-box">
+                        <div class="stat-box-pl">
+                            <label>Defensa Total (P/L):</label>
+                            <span id="defensa-pl-total" class="stat-value-pl">-</span>
+                        </div>
+                    </div>
+                    
+                    <div>
+
+                    </div>
+
+                   
+                     
+                </div>
+                 <div class="stat-box">
                             <label>Coste Total:</label>
                             <span id="coste-total" class="stat-value">0M</span>
                         </div>
-                    </div>
-                </div>
+
             </section>
 
             <!-- SECCIÓN 3: DESCRIPCIÓN -->
@@ -89,8 +110,8 @@
 
             <!-- BOTONES DE ACCIÓN -->
             <div class="acciones">
-                <button id="btn-guardar" class="btn btn-primary">💾 Guardar Ficha</button>
-                <button id="btn-limpiar" class="btn btn-secondary">🗑️ Limpiar Todo</button>
+                <button id="btn-guardar" class="btn btn-primary">Guardar Ficha</button>
+                <button id="btn-limpiar" class="btn btn-secondary"> Limpiar Todo</button>
             </div>
         </main>
     </div>

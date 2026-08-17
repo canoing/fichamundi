@@ -54,13 +54,13 @@
     },
     {
       "nombre": "Torpedo básico",
-      "ataque": "30(P) 10(L)",
+      "ataque_p_l": "30(P) 10(L)",
       "velocidad": -5,
       "coste": "2M"
     },
     {
       "nombre": "Torpedo II",
-      "ataque": "60(P) 15(L)",
+      "ataque_p_l": "60(P) 15(L)",
       "velocidad": -5,
       "coste": "4M"
     },
@@ -78,7 +78,7 @@
     },
     {
       "nombre": "Torpedo siglo XIX",
-      "ataque": "10 P / 5 L",
+      "ataque_p_l": "10 P / 5 L",
       "velocidad": -5,
       "coste": "2M"
     }
@@ -86,19 +86,19 @@
   "blindaje": [
     {
       "nombre": "Blindaje Remachado",
-      "defensa": "40(P) 20(L)",
+      "defensa_p_l": "40(P) 20(L)",
       "velocidad": -5,
       "coste": "1M"
     },
     {
       "nombre": "Blindaje remachado avanzado",
-      "defensa": "80(P) 30(L)",
+      "defensa_p_l": "80(P) 30(L)",
       "velocidad": -25,
       "coste": "1M"
     },
     {
       "nombre": "Casco soldado",
-      "defensa": "120(P) 60(L)",
+      "defensa_p_l": "120(P) 60(L)",
       "velocidad": -40,
       "coste": "2M"
     }

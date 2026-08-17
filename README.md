@@ -1,51 +1,50 @@
-# 🚢 Creador de Fichas de Buques - U-Boat World
 
-Una aplicación web interactiva para crear fichas de armamento de buques para Discord/U-Boat World con cálculo automático de estadísticas y costes.
+activa para crear fichas de armamento de buques para Discord/U-Boat World con cálculo automático de estadísticas y costes.
 
-## 📋 Características
+## Características
 
-✅ **Secciones organizadas:**
-- Información General (nombre, tipo, país)
-- Módulos con pestañas desplegables (Propulsión, Armamento)
-- Estadísticas automáticas
-- Descripción del lore
+- Secciones organizadas:
+  - Información General (nombre, tipo, país)
+  - Módulos con pestañas desplegables (Propulsión, Armamento)
+  - Estadísticas automáticas
+  - Descripción del lore
 
-✅ **Cálculo automático:**
-- Velocidad total
-- Ataque total
-- Coste total en recursos
+- Cálculo automático:
+  - Velocidad total
+  - Ataque total
+  - Coste total en recursos
 
-✅ **Interfaz intuitiva:**
-- Pestañas desplegables para cada categoría de módulos
-- Selección por radio buttons (una opción por categoría)
-- Visualización inmediata de estadísticas
+- Interfaz intuitiva:
+  - Pestañas desplegables para cada categoría de módulos
+  - Selección por suma de cantidades por módulo
+  - Visualización inmediata de estadísticas
 
-✅ **Exportación:**
-- Guarda la ficha completa como JSON
+- Exportación:
+  - Guarda la ficha completa como JSON
 
-## 🚀 Cómo usar
+## Cómo usar
 
-1. **Abre `index.html`** en tu navegador
-2. **Completa la información general:**
+1. Abre `index.html` en tu navegador
+2. Completa la información general:
    - Nombre del buque o clase
    - Tipo de buque
    - País de origen
-3. **Selecciona módulos:**
-   - Haz clic en cada categoría (Propulsión, Armamento) para desplegar
-   - Selecciona una opción de cada categoría
-   - Las estadísticas se actualizarán automáticamente
-4. **Agrega descripción del lore** (opcional)
-5. **Guarda la ficha** con el botón "Guardar Ficha"
+3. Selecciona módulos:
+   - Usa los botones de suma y resta para cada módulo
+   - El casco valida la capacidad máxima disponible
+   - El motor base se incluye por defecto sin ocupar slot
+4. Agrega descripción del lore (opcional)
+5. Guarda la ficha con el botón "Guardar Ficha"
    - Se descargará un archivo JSON con toda la información
 
-## 📁 Archivos
+## Archivos
 
 - `index.html` - Estructura HTML de la página
 - `styles.css` - Estilos y diseño responsivo
 - `script.js` - Lógica de módulos, cálculos e interactividad
 - `modulos.json` - Base de datos de módulos (referencia)
 
-## 🔧 Módulos disponibles
+## Módulos disponibles
 
 ### Propulsión (Motores)
 - Motor de vapor avanzado (20 vel)
@@ -59,14 +58,14 @@ Una aplicación web interactiva para crear fichas de armamento de buques para Di
 - Torpedos (básico, II)
 - Cargas de profundidad
 
-## 📊 Cálculos
+## Cálculos
 
 La aplicación calcula automáticamente:
-- **Velocidad:** suma de velocidades de módulos seleccionados
-- **Ataque:** suma de ataques de módulos seleccionados
-- **Coste:** suma en millones de recursos
+- Velocidad: suma de velocidades de módulos seleccionados
+- Ataque: suma de ataques de módulos seleccionados
+- Coste: suma en millones de recursos
 
-## 💾 Formato de exportación JSON
+## Formato de exportación JSON
 
 ```json
 {
@@ -90,13 +89,13 @@ La aplicación calcula automáticamente:
 }
 ```
 
-## 🎨 Diseño
+## Diseño
 
 - Tema oscuro con colores azul marino (U-boat themed)
 - Interfaz responsiva (funciona en móvil y desktop)
 - Animaciones suaves y transiciones
 
-## ➕ Próximas mejoras posibles
+## Próximas mejoras posibles
 
 - Cargar/editar fichas guardadas
 - Más categorías de módulos (Blindaje, Defensa)
