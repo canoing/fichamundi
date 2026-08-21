@@ -514,9 +514,11 @@ function agregarEventListeners() {
 
 function guardarFicha() {
     if (!seleccionados.casco) {
+          console.error('Error: No se puede guardar la ficha sin un casco selecciondo');
         alert('Debes seleccionar un casco primero');
-        return;
+      
     }
+    if (seleccionados.casco) {
 
     const nombre = document.getElementById('nombre').value || 'Ficha Sin Nombre';
     const tipo = document.getElementById('tipo').value || 'No especificado';
@@ -572,6 +574,8 @@ function guardarFicha() {
     URL.revokeObjectURL(url);
 
     alert('Ficha guardada como JSON');
+    
+    }
 }
 
 function limpiarFormulario() {

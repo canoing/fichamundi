@@ -50,7 +50,8 @@
                 <!-- RESUMEN DE ESTADÍSTICAS -->
                 <div class="resumen-stats">
                     <h3> Estadísticas Totales</h3>
-                    <div 
+
+                    <div id="comprobante-modulos" class="comprobante-modulos">
                          <small>Motor base: no asignado</small>
                     </div>
                     <div class="stats-grid">
@@ -66,8 +67,12 @@
                             <label>Ataque:</label>
                             <span id="ataque-total" class="stat-value">0</span>
                         </div>
-                        
-                       
+
+
+                        <div class="stat-box">
+                            <label>Defensa:</label>
+                            <span id="defensa-total" class="stat-value">0</span>
+                        </div>
                     </div>
 
                     <!-- ESTADÍSTICAS DE DAÑO COMPUESTO (P/L) -->
@@ -112,7 +117,11 @@
             <div class="acciones">
                 <button id="btn-guardar" class="btn btn-primary">Guardar Ficha</button>
                 <button id="btn-limpiar" class="btn btn-secondary"> Limpiar Todo</button>
+               
             </div>
+             <nav class="nav-principal">
+                <a href="visor.html" class="nav-link active">Visor</a>
+            </nav>
         </main>
     </div>
 
