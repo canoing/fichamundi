@@ -101,6 +101,19 @@
       "defensa_p_l": "120(P) 60(L)",
       "velocidad": -40,
       "coste": "2M"
+    },
+    {
+      "nombre": "defensa submarino inicial",
+      "defensa_p_l": "5(P) 5(L)",
+      "velocidad": 0,
+      "coste": 0
+    },
+    {
+      "nombre": "defensa submarino básico",
+      "defensa_p_l": "10(P) 10(L)",
+      "velocidad": 0,
+      "coste": 0
     }
+
   ]
 }

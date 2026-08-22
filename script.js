@@ -521,6 +521,7 @@ function guardarFicha() {
     if (seleccionados.casco) {
 
     const nombre = document.getElementById('nombre').value || 'Ficha Sin Nombre';
+    const fecha = document.getElementById("fecha").value || "Fecha no especificada";
     const tipo = document.getElementById('tipo').value || 'No especificado';
     const pais = document.getElementById('pais').value || 'No especificado';
     const descripcion = document.getElementById('descripcion').value || '';
@@ -533,10 +534,11 @@ function guardarFicha() {
 
     const ficha = {
         titulo: nombre,
-        fecha: new Date().toLocaleDateString('es-ES'),
+        fecha: fecha,
         informacion_general: {
             nombre,
             tipo,
+            fecha,
             pais
         },
         modulos_seleccionados: {
@@ -554,7 +556,6 @@ function guardarFicha() {
         estadisticas: {
             velocidad: parseInt(document.getElementById('velocidad-total').textContent),
             ataque: parseInt(document.getElementById('ataque-total').textContent),
-            defensa: parseInt(document.getElementById('defensa-total').textContent),
             coste: document.getElementById('coste-total').textContent,
             modulos_colocados: modulosTotales,
             capacidad_total: capacidadModulosActual

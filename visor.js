@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Estadísticas
         document.getElementById('v-velocidad').textContent = ficha.estadisticas.velocidad;
         document.getElementById('v-ataque').textContent = ficha.estadisticas.ataque;
-        document.getElementById('v-defensa').textContent = ficha.estadisticas.defensa;
+        
         document.getElementById('v-coste').textContent = ficha.estadisticas.coste;
 
         // Daño P/L (Buscando en la estructura del JSON)
