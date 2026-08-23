@@ -25,24 +25,88 @@ body {
 /* ==========================================
    HEADER Y NAVEGACIÓN
    ========================================== */
-header {
+header,
+.plegable-header {
     background: linear-gradient(135deg, #0d1f2d 0%, #1a3a52 100%);
     color: white;
     padding: 15px;
     border-radius: 8px;
     margin-bottom: 12px;
-    text-align: center;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 
-header h1 {
+header h1,
+.plegable-header h1 {
     font-size: 1.5em;
     margin-bottom: 4px;
 }
 
-header p {
+header p,
+.plegable-header p {
     font-size: 0.85em;
     opacity: 0.9;
+}
+
+/* Menú plegable */
+.plegable-header .header-barra {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.plegable-header .header-titulo {
+    text-align: left;
+}
+
+/* Botón hamburguesa */
+.menu-toggle {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 6px;
+}
+
+.menu-toggle .barra {
+    display: block;
+    width: 26px;
+    height: 3px;
+    background: white;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+/* Animación del hamburguesa a X cuando está abierto */
+.menu-toggle.open .barra:nth-child(1) {
+    transform: translateY(8px) rotate(45deg);
+}
+
+.menu-toggle.open .barra:nth-child(2) {
+    opacity: 0;
+}
+
+.menu-toggle.open .barra:nth-child(3) {
+    transform: translateY(-8px) rotate(-45deg);
+}
+
+.plegable-header .nav-principal {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    flex-direction: column;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    margin-top: 0;
+}
+
+.plegable-header .nav-principal.abierto {
+    max-height: 250px;
+    opacity: 1;
+    margin-top: 12px;
 }
 
 .nav-principal {
@@ -50,6 +114,7 @@ header p {
     justify-content: center;
     gap: 10px;
     margin-top: 10px;
+    flex-wrap: wrap;
 }
 
 .nav-link {
@@ -66,6 +131,73 @@ header p {
 .nav-link:hover, .nav-link.active {
     background: #ff6b6b;
     color: white;
+}
+
+/* ==========================================
+   PÁGINA DE INICIO: TARJETAS DE SECCIÓN
+   ========================================== */
+.inicio-descripcion {
+    font-size: 0.95em;
+    color: #555;
+    line-height: 1.5;
+}
+
+.inicio-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.inicio-tarjeta {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: linear-gradient(135deg, #f8fbff 0%, #eef5fb 100%);
+    border: 2px solid #2d5a7b;
+    border-radius: 8px;
+    padding: 14px;
+    text-decoration: none;
+    color: #333;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.inicio-tarjeta-header h3 {
+    color: #1a3a52;
+    font-size: 1.1em;
+    margin-bottom: 2px;
+}
+
+.inicio-tarjeta p {
+    font-size: 0.9em;
+    color: #555;
+    line-height: 1.4;
+}
+
+.inicio-estado {
+    align-self: flex-start;
+    background: #2d5a7b;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.75em;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.inicio-tarjeta-bloqueada {
+    background: #f2f2f2;
+    border: 2px dashed #aaa;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.inicio-tarjeta-bloqueada h3 {
+    color: #999;
+}
+
+.inicio-tarjeta-bloqueada .inicio-estado {
+    background: #aaa;
 }
 
 /* ==========================================
@@ -531,6 +663,57 @@ main {
 }
 
 /* ==========================================
+   OBJETIVO DEL PROYECTO
+   ========================================== */
+.seccion-objetivo {
+    background: linear-gradient(135deg, #f7fbfd 0%, #eaf2f8 100%);
+    padding: 16px;
+    border-radius: 8px;
+    border-left: 5px solid #ff6b6b;
+    margin-top: 5px;
+}
+
+.objetivo-tarjeta {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    font-size: 0.95em;
+    color: #444;
+    line-height: 1.6;
+}
+
+.objetivo-tarjeta strong {
+    color: #2d5a7b;
+}
+
+.objetivo-destacado {
+    background: #fff8f0;
+    border: 1.5px solid #d0a574;
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-style: italic;
+    color: #8a6d3b;
+}
+
+/* ==========================================
+   FOOTER
+   ========================================== */
+.footer {
+    margin-top: 15px;
+    padding: 15px;
+    text-align: center;
+    background: linear-gradient(135deg, #0d1f2d 0%, #1a3a52 100%);
+    color: #ccc;
+    border-radius: 8px;
+    font-size: 0.85em;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.footer p {
+    opacity: 0.85;
+}
+
+/* ==========================================
    MANDOS Y ADAPTACIÓN PARA PC (Diferenciación)
    ========================================== */
 @media (min-width: 768px) {
@@ -554,6 +737,23 @@ main {
         font-size: 1em;
     }
 
+    /* En PC el menú siempre visible en horizontal */
+    .nav-principal {
+        flex-direction: row;
+        justify-content: center;
+    }
+
+    .menu-toggle {
+        display: none;
+    }
+
+    .plegable-header .nav-principal {
+        max-height: none;
+        opacity: 1;
+        overflow: visible;
+        margin-top: 12px;
+    }
+
     .seccion h2 {
         font-size: 1.4em;
     }
@@ -572,6 +772,16 @@ main {
     .cascos-container {
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
         gap: 12px;
+    }
+
+    /* En PC las tarjetas de inicio en parrilla */
+    .inicio-grid {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .inicio-tarjeta:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
     }
 
     .stats-grid {

@@ -4,7 +4,7 @@ const {
   calcularModulosUsados,
   asegurarMotorBase,
   obtenerCantidadEnCategoria
-} = require('./script.js');
+} = require('../naval/constructor.js');
 
 const seleccionados = {
   casco: { capacidad_modulos: 4 },

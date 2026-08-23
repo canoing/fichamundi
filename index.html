@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>betaWorld - Inicio</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER PLEGABLE -->
+        <header class="plegable-header">
+            <div class="header-barra">
+                <div class="header-titulo">
+                    <h1>betaWorld</h1>
+                    <p>Versión de 1910</p>
+                </div>
+                <button class="menu-toggle" id="menu-toggle" aria-label="Abrir menú">
+                    <span class="barra"></span>
+                    <span class="barra"></span>
+                    <span class="barra"></span>
+                </button>
+            </div>
+            <nav class="nav-principal" id="nav-menu">
+                <a href="index.html" class="nav-link active">Inicio</a>
+                <a href="pages/buques.html" class="nav-link">Buques</a>
+                <a href="pages/visor.html" class="nav-link">Visor</a>
+            </nav>
+        </header>
+
+        <main>
+            <!-- DESCRIPCIÓN GENERAL -->
+            <section class="seccion">
+                <h2>Centro de Creación de Fichas</h2>
+                <p class="inicio-descripcion">
+                    Selecciona una sección para crear y calcular las fichas técnicas de
+                    cada tipo de vehículo.
+                </p>
+            </section>
+
+            <!-- ACCESO A SECCIONES -->
+            <section class="seccion">
+                <h2>Secciones Disponibles</h2>
+                <div class="inicio-grid">
+                    <!-- NAVAL / BUQUES -->
+                    <a href="pages/buques.html" class="inicio-tarjeta">
+                        <div class="inicio-tarjeta-header">
+                            <h3>Buques y Submarinos</h3>
+                        </div>
+                        <p>
+                            Constructor y visor de fichas navales: cascos, propulsión,
+                            armamento y blindaje.
+                        </p>
+                        <span class="inicio-estado">Disponible</span>
+                    </a>
+
+                    <!-- SECCIONES FUTURAS (deshabilitadas) -->
+                    <div class="inicio-tarjeta inicio-tarjeta-bloqueada">
+                        <div class="inicio-tarjeta-header">
+                            <h3>Aviación</h3>
+                        </div>
+                        <p>Próximamente: fichas de aviones y aeronaves.</p>
+                        <span class="inicio-estado">Próximamente</span>
+                    </div>
+
+                    <div class="inicio-tarjeta inicio-tarjeta-bloqueada">
+                        <div class="inicio-tarjeta-header">
+                            <h3>Terrestre</h3>
+                        </div>
+                        <p>Próximamente: fichas de vehículos terrestres.</p>
+                        <span class="inicio-estado">Próximamente</span>
+                    </div>
+
+                    <div class="inicio-tarjeta inicio-tarjeta-bloqueada">
+                        <div class="inicio-tarjeta-header">
+                            <h3>Más secciones</h3>
+                        </div>
+                        <p>Nuevas plantillas de vehículos se agregarán aquí.</p>
+                        <span class="inicio-estado">Próximamente</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- OBJETIVO DE LA PÁGINA -->
+            <section class="seccion seccion-objetivo">
+                <h2> Objetivo del Proyecto</h2>
+                <div class="objetivo-tarjeta">
+                    <p>
+                        betaWorld nace con un propósito claro: <strong>automatizar lo más tedioso del rol</strong>.
+                    </p>
+                    <p>
+                        Calculadoras de fichas, gestión de estadísticas, costes y módulos...
+                        todo ese trabajo mecánico y repetitivo que consume tiempo de la comunidad,
+                        ahora se resuelve en segundos.
+                    </p>
+                    <p class="objetivo-destacado">
+                        Así, los usuarios pueden dedicar su tiempo a <strong>rolear</strong>, crear historias
+                        y vivir la experiencia — en lugar de pelearse con tablas y números.
+                    </p>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p>betaWorld · Herramienta automática para el rol — 1910</p>
+        </footer>
+    </div>
+
+    <script>
+        // Menú plegable: togglear visibilidad al hacer clic en el botón
+        const menuToggle = document.getElementById('menu-toggle');
+        const navMenu = document.getElementById('nav-menu');
+
+        menuToggle.addEventListener('click', function () {
+            navMenu.classList.toggle('abierto');
+            menuToggle.classList.toggle('open');
+        });
+
+        // Cerrar el menú al hacer clic en un enlace
+        navMenu.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                navMenu.classList.remove('abierto');
+                menuToggle.classList.remove('open');
+            });
+        });
+    </script>
+</body>
+</html>

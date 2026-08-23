@@ -1,5 +1,5 @@
 // Test que el JSON se carga correctamente
-fetch('creacion_de_buques_1910.json')
+fetch('data/referencias/buques_1910.json')
     .then(r => r.json())
     .then(data => {
         console.log(' JSON cargado');
