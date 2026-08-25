@@ -8,12 +8,26 @@
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>betaWorld</h1>
-            <p>Versión de 1910</p>
-            
+       <header class="plegable-header">
+            <div class="header-barra">
+                <div class="header-titulo">
+                    <h1>betaWorld</h1>
+                    <p>Constructor de Aviación</p>
+                </div>
+                <button class="menu-toggle" id="menu-toggle" aria-label="Abrir menú">
+                    <span class="barra"></span>
+                    <span class="barra"></span>
+                    <span class="barra"></span>
+                </button>
+            </div>
+            <nav class="nav-principal" id="nav-menu">
+                <a href="../index.html" class="nav-link">Inicio</a>
+                <a href="buques.html" class="nav-link active">Buques</a>
+                <a href="avion.html" class="nav-link">Aviones</a>
+                <a href="visor.html" class="nav-link">Visor Buques</a>
+            </nav>
         </header>
-<a href="../index.html" class="nav-link active">Volver al Inicio</a>
+            <a href="../index.html" class="nav-link active">Volver al Inicio</a>
         <main>
             <!-- SECCIÓN 1: INFORMACIÓN GENERAL -->
             <section class="seccion" id="seccion1">
