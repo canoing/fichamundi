@@ -1,0 +1,174 @@
+{
+  "armamento": [
+    {
+      "id": "ametralladora_basica",
+      "nombre": "Ametralladora Básica",
+      "tipo": "Ametralladora",
+      "nivel": "Básico",
+      "ataque": 10,
+      "peso": 1,
+      "espacios_piezas": 1,
+      "coste": 0.01
+    },
+    {
+      "id": "ametralladora_refinada",
+      "nombre": "Ametralladora Refinada",
+      "tipo": "Ametralladora",
+      "nivel": "Refinado",
+      "ataque": 13,
+      "peso": 2,
+      "espacios_piezas": 1,
+      "coste": 0.01
+    },
+    {
+      "id": "ametralladora_avanzada",
+      "nombre": "Ametralladora Avanzada",
+      "tipo": "Ametralladora",
+      "nivel": "Avanzado",
+      "ataque": 15,
+      "peso": 2,
+      "espacios_piezas": 1,
+      "coste": 0.02
+    },
+    {
+      "id": "canon_basico",
+      "nombre": "Cañón Básico",
+      "tipo": "Cañón",
+      "nivel": "Básico",
+      "ataque": 15,
+      "peso": 3,
+      "espacios_piezas": 2,
+      "coste": 0.03
+    },
+    {
+      "id": "canon_refinado",
+      "nombre": "Cañón Refinado",
+      "tipo": "Cañón",
+      "nivel": "Refinado",
+      "ataque": 18,
+      "peso": 4,
+      "espacios_piezas": 2,
+      "coste": 0.04
+    },
+    {
+      "id": "canon_avanzado",
+      "nombre": "Cañón Avanzado",
+      "tipo": "Cañón",
+      "nivel": "Avanzado",
+      "ataque": 21,
+      "peso": 7,
+      "espacios_piezas": 2,
+      "coste": 0.06
+    }
+  ],
+  "motores": [
+    {
+      "id": "motor_basico",
+      "nombre": "Motor Básico",
+      "nivel": "Básico",
+      "velocidad": 15,
+      "espacios_piezas": 1,
+      "coste": 0.01
+    },
+    {
+      "id": "motor_refinado",
+      "nombre": "Motor Refinado",
+      "nivel": "Refinado",
+      "velocidad": 20,
+      "espacios_piezas": 1,
+      "coste": 0.01
+    },
+    {
+      "id": "motor_avanzado",
+      "nombre": "Motor Avanzado",
+      "nivel": "Avanzado",
+      "velocidad": 25,
+      "espacios_piezas": 1,
+      "coste": 0.01
+    }
+  ],
+  "bombas": [
+    {
+      "id": "bombas_basicas",
+      "nombre": "Bombas Básicas",
+      "nivel": "Básico",
+      "ataque_tierra": 7,
+      "peso": 6,
+      "espacios_piezas": 2,
+      "coste": 0.03
+    },
+    {
+      "id": "bombas_refinadas",
+      "nombre": "Bombas Refinadas",
+      "nivel": "Refinado",
+      "ataque_tierra": 10,
+      "peso": 8,
+      "espacios_piezas": 2,
+      "coste": 0.03
+    },
+    {
+      "id": "bombas_avanzadas",
+      "nombre": "Bombas Avanzadas",
+      "nivel": "Avanzado",
+      "ataque_tierra": 14,
+      "peso": 10,
+      "espacios_piezas": 3,
+      "coste": 0.05
+    }
+  ],
+  "torpedos": [
+    {
+      "id": "torpedo_basico",
+      "nombre": "Torpedo Básico",
+      "nivel": "Básico",
+      "ataque_naval": 6,
+      "peso": 5,
+      "espacios_piezas": 2,
+      "coste": 0.04
+    },
+    {
+      "id": "torpedo_refinado",
+      "nombre": "Torpedo Refinado",
+      "nivel": "Refinado",
+      "ataque_naval": 9,
+      "peso": 5,
+      "espacios_piezas": 2,
+      "coste": 0.05
+    },
+    {
+      "id": "torpedo_avanzado",
+      "nombre": "Torpedo Avanzado",
+      "nivel": "Avanzado",
+      "ataque_naval": 13,
+      "peso": 5,
+      "espacios_piezas": 2,
+      "coste": 0.05
+    }
+  ],
+  "alas": [
+    {
+      "id": "monoplano",
+      "nombre": "Monoplano",
+      "maniobrabilidad": 2,
+      "cantidad_alas": 1,
+      "espacios_piezas": 1,
+      "coste": 0.01
+    },
+    {
+      "id": "biplano",
+      "nombre": "Biplano",
+      "maniobrabilidad": 4,
+      "cantidad_alas": 2,
+      "espacios_piezas": 1,
+      "coste": 0.001
+    },
+    {
+      "id": "triplano",
+      "nombre": "Triplano",
+      "maniobrabilidad": 6,
+      "cantidad_alas": 3,
+      "espacios_piezas": 1,
+      "coste": 0.02
+    }
+  ]
+}

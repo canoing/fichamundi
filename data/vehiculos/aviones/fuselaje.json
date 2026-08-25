@@ -1,0 +1,101 @@
+[
+  {
+    "id": "fuselaje_ligero_basico",
+    "nombre": "Fuselaje Ligero - Básico (Tela)",
+    "categoria": "Fuselaje Ligero",
+    "nivel": "Básico",
+    "capacidad_piezas": 4,
+    "vida": 11,
+    "peso": 1,
+    "coste": 0.04,
+    "penalizacion_peso_ala": 0
+  },
+  {
+    "id": "fuselaje_ligero_refinado",
+    "nombre": "Fuselaje Ligero - Refinado (Aluminio)",
+    "categoria": "Fuselaje Ligero",
+    "nivel": "Refinado",
+    "capacidad_piezas": 5,
+    "vida": 13,
+    "peso": 3,
+    "coste": 0.05,
+    "penalizacion_peso_ala": 0
+  },
+  {
+    "id": "fuselaje_ligero_avanzado",
+    "nombre": "Fuselaje Ligero - Avanzado (Aleaciones de aluminio)",
+    "categoria": "Fuselaje Ligero",
+    "nivel": "Avanzado",
+    "capacidad_piezas": 5,
+    "vida": 15,
+    "peso": 2,
+    "coste": 0.05,
+    "penalizacion_peso_ala": 0
+  },
+  {
+    "id": "fuselaje_mediano_basico",
+    "nombre": "Fuselaje Mediano - Básico (Tela)",
+    "categoria": "Fuselaje Mediano",
+    "nivel": "Básico",
+    "capacidad_piezas": 5,
+    "vida": 13,
+    "peso": 4,
+    "coste": 0.06,
+    "penalizacion_peso_ala": 1
+  },
+  {
+    "id": "fuselaje_mediano_refinado",
+    "nombre": "Fuselaje Mediano - Refinado (Aluminio)",
+    "categoria": "Fuselaje Mediano",
+    "nivel": "Refinado",
+    "capacidad_piezas": 6,
+    "vida": 16,
+    "peso": 6,
+    "coste": 0.06,
+    "penalizacion_peso_ala": 1
+  },
+  {
+    "id": "fuselaje_mediano_avanzado",
+    "nombre": "Fuselaje Mediano - Avanzado (Aleaciones de aluminio)",
+    "categoria": "Fuselaje Mediano",
+    "nivel": "Avanzado",
+    "capacidad_piezas": 7,
+    "vida": 18,
+    "peso": 8,
+    "coste": 0.07,
+    "penalizacion_peso_ala": 1
+  },
+  {
+    "id": "fuselaje_pesado_basico",
+    "nombre": "Fuselaje Pesado - Básico (Tela)",
+    "categoria": "Fuselaje Pesado",
+    "nivel": "Básico",
+    "capacidad_piezas": 6,
+    "vida": 16,
+    "peso": 6,
+    "coste": 0.06,
+    "penalizacion_peso_ala": 2
+  },
+  {
+    "id": "fuselaje_pesado_refinado",
+    "nombre": "Fuselaje Pesado - Refinado (Aluminio)",
+    "categoria": "Fuselaje Pesado",
+    "nivel": "Refinado",
+    "capacidad_piezas": 8,
+    "vida": 20,
+    "peso": 8,
+    "coste": 0.07,
+    "penalizacion_peso_ala": 2
+  },
+  {
+    "id": "fuselaje_pesado_avanzado",
+    "nombre": "Fuselaje Pesado - Avanzado (Aleaciones de aluminio)",
+    "categoria": "Fuselaje Pesado",
+    "nivel": "Avanzado",
+    "capacidad_piezas": 9,
+    "vida": 24,
+    "peso": 10,
+    "coste": 0.09,
+    "penalizacion_peso_ala": 2
+  }
+]

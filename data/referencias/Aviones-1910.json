@@ -1,0 +1,102 @@
+{
+  "titulo": "Beta de la pagina, creacion de aviones",
+  "convenciones_UI": {
+    "EU": "Escritura de usuario",
+    "MD": "Modulo con pagina desplegable",
+    "CA": "Calculo automatico",
+    "nn": "Nada"
+  },
+  "ficha_de_aviones": {
+    "version": "1910",
+    "secciones": [
+      {
+        "seccion": "Sección 1: Información general",
+        "campos": [
+          {
+            "nombre": "Nombre del avión",
+            "tipo_input": "EU"
+          },
+          {
+            "nombre": "País de origen",
+            "tipo_input": "EU"
+          },
+          {
+            "nombre": "Año de producción",
+            "tipo_input": "EU"
+          }
+        ]
+      },
+      {
+        "seccion": "Sección 2: Información primaria",
+        "campos": [
+          {
+            "nombre": "Fuselaje",
+            "tipo_input": "MD"
+          },
+          {
+            "nombre": "Motor",
+            "tipo_input": "MD"
+          },
+          {
+            "nombre": "Armamento Primario",
+            "tipo_input": "MD"
+          },
+          {
+            "nombre": "Armamento Secundario",
+            "tipo_input": "MD"
+          },
+          {
+            "nombre": "Alas",
+            "tipo_input": "MD"
+          },
+          {
+            "nombre": "Costo",
+            "tipo_input": "CA"
+          }
+        ]
+      },
+      {
+        "seccion": "Sección 3: Estadísticas",
+        "campos": [
+          {
+            "nombre": "Peso total",
+            "tipo_input": "CA"
+          },
+          {
+            "nombre": "Velocidad",
+            "tipo_input": "CA"
+          },
+          {
+            "nombre": "Ataque",
+            "tipo_input": "CA"
+          },
+          {
+            "nombre": "Vida",
+            "tipo_input": "CA"
+          },
+          {
+            "nombre": "Maniobrabilidad",
+            "tipo_input": "CA"
+          },
+          {
+            "nombre": "Altitud",
+            "tipo_input": "CA"
+          },
+          {
+            "nombre": "Rango",
+            "tipo_input": "CA"
+          }
+        ]
+      },
+      {
+        "seccion": "Sección 4: Lore",
+        "campos": [
+          {
+            "nombre": "Descripción",
+            "tipo_input": "EU"
+          }
+        ]
+      }
+    ]
+  }
+}
