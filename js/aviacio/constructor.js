@@ -447,7 +447,7 @@ function calcularTotales() {
     if (manioEl) manioEl.textContent = manio;
     if (ataqueEl) ataqueEl.textContent = ataque;
     if (vidaEl) vidaEl.textContent = vida;
-    if (costeEl) costeEl.textContent = `${coste}M`;
+    if (costeEl) costeEl.textContent = `${coste.toFixed(3)}M`;
 }
 
 function actualizarCapacidadUI() {
