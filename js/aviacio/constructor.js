@@ -140,7 +140,7 @@ function calcularCosteTotal(estado = seleccionados) {
 async function cargarDatos() {
     try {
         const rutaFuselajes = '../../data/vehiculos/aviones/fuselaje.json';
-        const rutaModulos = '../../data/vehiculos/aviones/modulos_aviones.json';
+        const rutaModulos = '../../data/vehiculos/aviones/modulosaviones.json';
 
         const resFuselajes = await fetch(rutaFuselajes);
         fuselajes = await resFuselajes.json();
