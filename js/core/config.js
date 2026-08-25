@@ -23,18 +23,17 @@
     naval: {
       nombre: 'Naval',
       datos: {
-        cascos: 'data/vehiculos/naval/modulos.json',
+        cascos: 'data/vehiculos/naval/cascos.json',
         modulos: 'data/vehiculos/naval/modulos.json'
       }
+    },
+    aviacion: {
+      nombre: 'Aviación',
+      datos: {
+        fuselajes: 'data/vehiculos/aviones/fuselaje.json',
+        modulos: 'data/vehiculos/aviones/modulos_aviones.json'
+      }
     }
-    // Ejemplo futuro (aviación):
-    // aviacion: {
-    //   nombre: 'Aviación',
-    //   datos: {
-    //     fuselajes: 'data/vehiculos/aviacion/fuselajes.json',
-    //     modulos: 'data/vehiculos/aviacion/modulos.json'
-    //   }
-    // }
   };
 
   /**

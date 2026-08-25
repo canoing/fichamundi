@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>betaWorld - Visor de Aviación</title>
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <div class="container visor-container">
+        <!-- HEADER PLEGABLE -->
+        <header class="plegable-header">
+            <div class="header-barra">
+                <div class="header-titulo">
+                    <h1>betaWorld</h1>
+                    <p>Visor de Aviación</p>
+                </div>
+                <button class="menu-toggle" id="menu-toggle" aria-label="Abrir menú">
+                    <span class="barra"></span>
+                    <span class="barra"></span>
+                    <span class="barra"></span>
+                </button>
+            </div>
+            <nav class="nav-principal" id="nav-menu">
+                <a href="../index.html" class="nav-link">Inicio</a>
+                <a href="buques.html" class="nav-link">Buques</a>
+                <a href="avion.html" class="nav-link">Constructor Aviones</a>
+                <a href="visor-avion.html" class="nav-link active">Visor Aviones</a>
+            </nav>
+        </header>
+
+        <main>
+            <!-- ÁREA DE CARGA -->
+            <div id="drop-zone" class="drop-zone">
+                <p>Haz clic o arrastra aquí tu archivo JSON de la ficha de avión</p>
+                <input type="file" id="file-input" accept=".json" style="display: none;">
+            </div>
+
+            <!-- CONTENEDOR DE LA FICHA (OCULTO POR DEFECTO) -->
+            <div id="ficha-display" class="ficha-compacta">
+                <div class="header-ficha">
+                    <span id="v-tipo-badge" class="badge-tipo">Avión</span>
+                    <h2 id="v-nombre">-</h2>
+                    <div class="meta-info">
+                        <span id="v-pais">-</span> | <span id="v-fecha">-</span>
+                    </div>
+                </div>
+
+                <!-- ESTADÍSTICAS -->
+                <div class="resumen-stats">
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <label>Peso</label>
+                            <span id="v-peso" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-box">
+                            <label>Velocidad</label>
+                            <span id="v-velocidad" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-box">
+                            <label>Altitud</label>
+                            <span id="v-altitud" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-box">
+                            <label>Maniobrabilidad</label>
+                            <span id="v-manio" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-box">
+                            <label>Ataque</label>
+                            <span id="v-ataque" class="stat-value">-</span>
+                        </div>
+                        <div class="stat-box">
+                            <label>Vida</label>
+                            <span id="v-vida" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-box">
+                            <label>Coste</label>
+                            <span id="v-coste" class="stat-value">0M</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COMPONENTES INSTALADOS -->
+                <div class="seccion-visor">
+                    <h3>Componentes Instalados</h3>
+                    <ul id="v-lista-componentes" class="lista-modulos-compacta">
+                        <!-- Se genera dinámicamente -->
+                    </ul>
+                </div>
+
+                <!-- DESCRIPCIÓN -->
+                <div id="v-descripcion" class="descripcion-visor">
+                    <!-- Lore aquí -->
+                </div>
+
+                <div class="acciones">
+                    <button onclick="location.reload()" class="btn btn-secondary">Cargar otra ficha</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Menú plegable
+        const menuToggle = document.getElementById('menu-toggle');
+        const navMenu = document.getElementById('nav-menu');
+
+        menuToggle.addEventListener('click', function () {
+            navMenu.classList.toggle('abierto');
+            menuToggle.classList.toggle('open');
+        });
+
+        navMenu.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                navMenu.classList.remove('abierto');
+                menuToggle.classList.remove('open');
+            });
+        });
+    </script>
+    <script src="../js/aviacio/visor.js"></script>
+</body>
+</html>
+

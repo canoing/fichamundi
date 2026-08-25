@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>betaWorld - Constructor de Aviación</title>
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER PLEGABLE -->
+        <header class="plegable-header">
+            <div class="header-barra">
+                <div class="header-titulo">
+                    <h1>betaWorld</h1>
+                    <p>Constructor de Aviación</p>
+                </div>
+                <button class="menu-toggle" id="menu-toggle" aria-label="Abrir menú">
+                    <span class="barra"></span>
+                    <span class="barra"></span>
+                    <span class="barra"></span>
+                </button>
+            </div>
+            <nav class="nav-principal" id="nav-menu">
+                <a href="../index.html" class="nav-link">Inicio</a>
+                <a href="buques.html" class="nav-link">Buques</a>
+                <a href="avion.html" class="nav-link active">Aviones</a>
+                <a href="visor-avion.html" class="nav-link">Visor Aviones</a>
+            </nav>
+        </header>
+
+        <main>
+            <!-- SECCIÓN 1: INFORMACIÓN GENERAL -->
+            <section class="seccion" id="seccion1">
+                <h2>Sección 1: Información General</h2>
+                <div class="formulario">
+                    <div class="campo">
+                        <label for="nombre">Nombre del avión:</label>
+                        <input type="text" id="nombre" placeholder="Ej: fokker I">
+                    </div>
+                    <div class="campo">
+                        <label for="pais">País de origen:</label>
+                        <input type="text" id="pais" placeholder="Ej: BOREOSTIA">
+                    </div>
+                    <div class="campo">
+                        <label for="anio">Año de producción:</label>
+                        <input type="text" id="anio" placeholder="Ej: 1910">
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN 2: ESTADÍSTICAS Y COMPONENTES -->
+            <section class="seccion" id="seccion2">
+                <h2>Sección 2: Componentes y Estadísticas</h2>
+
+                <div id="modulos-container" class="modulos-container">
+                    <!-- Los componentes se generan dinámicamente aquí -->
+                </div>
+
+                <!-- RESUMEN DE ESTADÍSTICAS -->
+                <div class="resumen-stats">
+                    <h3>Estadísticas Totales</h3>
+
+                    <div id="comprobante-modulos" class="comprobante-modulos">
+                        <small>Motor base: no asignado</small>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <label>Piezas Colocadas:</label>
+                            <span id="capacidad-piezas" class="stat-value">0 / 0</span>
+                        </div>
+                        <div class="stat-box">
+                            <label>Peso Total:</label>
+                            <span id="peso-total" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-box">
+                            <label>Velocidad Final:</label>
+                            <span id="velocidad-total" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-box">
+                            <label>Altitud:</label>
+                            <span id="altitud-total" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-box">
+                            <label>Maniobrabilidad:</label>
+                            <span id="manio-total" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-box">
+                            <label>Ataque Total:</label>
+                            <span id="ataque-total" class="stat-value">-</span>
+                        </div>
+                        <div class="stat-box">
+                            <label>Vida:</label>
+                            <span id="vida-total" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-box">
+                            <label>Coste Total:</label>
+                            <span id="coste-total" class="stat-value">0M</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN 3: DESCRIPCIÓN -->
+            <section class="seccion" id="seccion3">
+                <h2>Sección 3: Descripción</h2>
+                <div class="formulario">
+                    <div class="campo">
+                        <label for="descripcion">Descripción del Lore:</label>
+                        <textarea id="descripcion" rows="5" placeholder="Describe la historia y características del avión..."></textarea>
+                    </div>
+                </div>
+            </section>
+
+            <!-- BOTONES DE ACCIÓN -->
+            <div class="acciones">
+                <button id="btn-guardar" class="btn btn-primary">Guardar Ficha</button>
+                <button id="btn-limpiar" class="btn btn-secondary">Limpiar Todo</button>
+            </div>
+            <h4>Al guardar la ficha se descarga un documento JSON que puedes abrir en el visor de aviones.</h4>
+             <nav class="nav-principal">
+                <a href="visor-avion.html" class="nav-link active">Visor</a>
+            </nav>
+        </main>
+    </div>
+
+    <script>
+        // Menú plegable
+        const menuToggle = document.getElementById('menu-toggle');
+        const navMenu = document.getElementById('nav-menu');
+
+        menuToggle.addEventListener('click', function () {
+            navMenu.classList.toggle('abierto');
+            menuToggle.classList.toggle('open');
+        });
+
+        navMenu.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                navMenu.classList.remove('abierto');
+                menuToggle.classList.remove('open');
+            });
+        });
+    </script>
+    <script src="../js/aviacio/constructor.js"></script>
+</body>
+</html>
+

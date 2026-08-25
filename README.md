@@ -73,3 +73,4 @@ Para agregar una nueva plantilla (ej. aviación) sin tocar la lógica existente:
 
 La lógica central de cálculo vive en `js/core/config.js` y los módulos por vehículo,
 manteniendo consistencia en las claves de datos (`nombre`, `velocidad`, `coste`, `cantidad`).
+
