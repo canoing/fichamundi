@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('v-ataque').textContent = est.ataque || '-';
         document.getElementById('v-vida').textContent = est.vida ?? 0;
         document.getElementById('v-coste').textContent =
-            (est.coste !== undefined && est.coste !== null) ? `${est.coste}M` : '-';
+            (est.coste !== undefined && est.coste !== null) ? `${est.coste.toFixed(3)}M` : '-';
 
         // Lista de componentes
         const listaUl = document.getElementById('v-lista-componentes');
