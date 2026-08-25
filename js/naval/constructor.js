@@ -65,8 +65,8 @@ function asegurarMotorBase(estado, motoresDisponibles = []) {
 }
 
 async function cargarDatos() {
-    try {
-        const resCascos = await fetch('../data/vehiculos/naval/cascos.json');
+    try {await fetch
+        const resCascos = ('../data/vehiculos/naval/cascos.json');
         const datosCascos = await resCascos.json();
         cascos = datosCascos.cascos;
 
