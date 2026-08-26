@@ -128,16 +128,16 @@ function calcularAtaqueTotal(estado = seleccionados) {
     return partes.length > 0 ? partes.join('/') : '-';
 }
 
-// La "defensa" del avión está representada por la Vida del fuselaje.
-// En un bombardero la Maniobrabilidad se convierte en defensa y por tanto
-// se suma a la Vida en lugar de sumarse al ataque aéreo.
+// Vida del avión (no incluye defensa; la Maniobrabilidad se maneja aparte).
 function calcularVidaTotal(estado = seleccionados) {
     if (!estado || !estado.fuselaje) return 0;
-    let vida = Number(estado.fuselaje.vida || 0);
-    if (tipoAvion === 'bombardero') {
-        vida += calcularManiobrabilidad(estado);
-    }
-    return vida;
+    return Number(estado.fuselaje.vida || 0);
+}
+
+// Defensa del avión: es exclusivamente la Maniobrabilidad, sin sumarse a la vida.
+// La Maniobrabilidad se "convierte" en defensa (en lugar de sumarse al ataque aéreo).
+function calcularDefensaTotal(estado = seleccionados) {
+    return calcularManiobrabilidad(estado);
 }
 
 function calcularCosteTotal(estado = seleccionados) {
@@ -495,6 +495,7 @@ function calcularTotales() {
     const altitudEl = document.getElementById('altitud-total');
     const manioEl = document.getElementById('manio-total');
     const ataqueEl = document.getElementById('ataque-total');
+    const defensaEl = document.getElementById('defensa-total');
     const vidaEl = document.getElementById('vida-total');
     const costeEl = document.getElementById('coste-total');
 
@@ -503,6 +504,7 @@ function calcularTotales() {
     const altitud = calcularAltitud();
     const manio = calcularManiobrabilidad();
     const ataque = calcularAtaqueTotal();
+    const defensa = calcularDefensaTotal();
     const vida = calcularVidaTotal();
     const coste = calcularCosteTotal();
 
@@ -511,8 +513,9 @@ function calcularTotales() {
     if (altitudEl) altitudEl.textContent = altitud;
     if (manioEl) manioEl.textContent = manio;
     if (ataqueEl) ataqueEl.textContent = ataque;
+    if (defensaEl) defensaEl.textContent = defensa;
     if (vidaEl) vidaEl.textContent = vida;
-    if (costeEl) costeEl.textContent = `${coste.toFixed(3)}M`;
+    if (costeEl) costeEl.textContent = `${coste.toFixed(2)}M`;
 }
 
 function actualizarCapacidadUI() {
@@ -612,6 +615,7 @@ function guardarFicha() {
             altitud: calcularAltitud(),
             maniobrabilidad: calcularManiobrabilidad(),
             ataque: calcularAtaqueTotal(),
+            defensa: calcularDefensaTotal(),
             vida: calcularVidaTotal(),
             coste: calcularCosteTotal(),
             piezas_colocados: calcularPiezasUsadas(seleccionados),
@@ -673,6 +677,7 @@ if (typeof module !== 'undefined') {
         calcularAltitud,
         calcularManiobrabilidad,
         calcularAtaqueTotal,
+        calcularDefensaTotal,
         calcularVidaTotal,
         calcularCosteTotal,
         obtenerMotorSeleccionado

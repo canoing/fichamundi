@@ -64,9 +64,10 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('v-altitud').textContent = est.altitud ?? 0;
         document.getElementById('v-manio').textContent = est.maniobrabilidad ?? 0;
         document.getElementById('v-ataque').textContent = est.ataque || '-';
+        document.getElementById('v-defensa').textContent = est.defensa ?? 0;
         document.getElementById('v-vida').textContent = est.vida ?? 0;
         document.getElementById('v-coste').textContent =
-            (est.coste !== undefined && est.coste !== null) ? `${est.coste.toFixed(3)}M` : '-';
+            (est.coste !== undefined && est.coste !== null) ? `${est.coste.toFixed(2)}M` : '-';
 
         // Lista de componentes
         const listaUl = document.getElementById('v-lista-componentes');
@@ -114,5 +115,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Descripción
         document.getElementById('v-descripcion').textContent =
             ficha.descripcion || 'Sin descripción de lore.';
+
+        // Imagen del avión
+       
     }
+
+
+    
 });
