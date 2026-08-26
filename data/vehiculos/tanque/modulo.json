@@ -1,0 +1,130 @@
+{
+  "motores": [
+    {
+      "id": "mot_tanque_proto",
+      "nombre": "Motores tanque prototipos",
+      "tipo": "tanque",
+      "velocidad": 7,
+      "capacidad_peso": 5,
+      "coste": 0.10,
+      "inicial": true
+    },
+    {
+      "id": "mot_tanque_inic",
+      "nombre": "Motores tanque iniciales",
+      "tipo": "tanque",
+      "velocidad": 10,
+      "capacidad_peso": 7,
+      "coste": 0.15,
+      "investigacion": {
+        "tiempo_años": 2,
+        "costo_por_año": 2.0
+      }
+    },
+    {
+      "id": "mot_tanque_mej",
+      "nombre": "Motores tanque mejorados",
+      "tipo": "tanque",
+      "velocidad": 12,
+      "capacidad_peso": 9,
+      "coste": 0.20,
+      "investigacion": {
+        "tiempo_años": 3,
+        "costo_por_año": 2.0
+      }
+    },
+    {
+      "id": "mot_carro_inic",
+      "nombre": "Motores carros iniciales",
+      "tipo": "carro",
+      "velocidad": 5,
+      "capacidad_peso": 4,
+      "coste": 0.03,
+      "inicial": true
+    },
+    {
+      "id": "mot_carro_mej",
+      "nombre": "Motores carros mejorados",
+      "tipo": "carro",
+      "velocidad": 7,
+      "capacidad_peso": 5,
+      "coste": 0.05,
+      "investigacion": {
+        "tiempo_años": 2,
+        "costo_por_año": 1.0
+      }
+    },
+    {
+      "id": "mot_carro_ref",
+      "nombre": "Motores carros refinados",
+      "tipo": "carro",
+      "velocidad": 8,
+      "capacidad_peso": 6,
+      "coste": 0.10,
+      "investigacion": {
+        "tiempo_años": 2,
+        "costo_por_año": 1.0
+      }
+    }
+  ],
+  "blindajes": [
+    {
+      "id": "blind_remachado_bas",
+      "nombre": "Blindaje remachado basico",
+      "blindaje_P": 5,
+      "blindaje_L": 5,
+      "peso_P": 3,
+      "peso_L": 2,
+      "coste": 0.30,
+      "inicial": true
+    },
+    {
+      "id": "blind_remachado_mej",
+      "nombre": "Blindaje remachado mejorado",
+      "blindaje_P": 15,
+      "blindaje_L": 10,
+      "peso_P": 4,
+      "peso_L": 2,
+      "coste": 0.40,
+      "investigacion": {
+        "tiempo_años": 2,
+        "costo_por_año": 2.0
+      }
+    },
+    {
+      "id": "blind_remachado_ref",
+      "nombre": "Blindaje remachado refinado",
+      "blindaje_P": 20,
+      "blindaje_L": 15,
+      "peso_P": 5,
+      "peso_L": 3,
+      "coste": 0.70,
+      "investigacion": {
+        "tiempo_años": 2,
+        "costo_por_año": 3.0
+      }
+    }
+  ],
+  "comunicacion": [
+    {
+      "id": "com_banderas",
+      "nombre": "Sistema de banderas",
+      "velocidad": 1,
+      "ataque": 0,
+      "coste": 0.01,
+      "inicial": true
+    },
+    {
+      "id": "com_radio_inic",
+      "nombre": "Sistema de radio inicial",
+      "velocidad": 4,
+      "ataque": 3,
+      "coste": 0.03,
+      "investigacion": {
+        "tiempo_años": 3,
+        "costo_por_año": 3.0
+      }
+    }
+  ]
+  
+}

@@ -1,0 +1,10 @@
+[
+  {
+    "Nombre": "Nombre de tu chasis personalizado",
+    "Tipo de blindaje": "P",
+    "Capacidad de piezas": 6,
+    "Peso": 2,
+    "HP": 20,
+    "Costo de producción": 9.0
+  }
+]

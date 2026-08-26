@@ -38,12 +38,13 @@
 
             <!-- CONTENEDOR DE LA FICHA (OCULTO POR DEFECTO) -->
             <div id="ficha-display" class="ficha-compacta">
-                <div class="header-ficha">
-                    <span id="v-tipo-badge" class="badge-tipo">Avión</span>
+                <div class="seccion">
                     <h2 id="v-nombre">-</h2>
-                    <div class="meta-info">
-                        <span id="v-pais">-</span> | <span id="v-fecha">-</span>
-                    </div>
+                    <p class="inicio-descripcion">
+                        <span id="v-tipo-badge">Avión</span> |
+                        País: <span id="v-pais">-</span> |
+                        Fecha: <span id="v-fecha">-</span>
+                    </p>
                 </div>
 
                 <!-- ESTADÍSTICAS -->
@@ -85,9 +86,9 @@
                 </div>
 
                 <!-- COMPONENTES INSTALADOS -->
-                <div class="seccion-visor">
-                    <h3>Componentes Instalados</h3>
-                    <ul id="v-lista-componentes" class="lista-modulos-compacta">
+                <div class="seccion">
+                    <h2>Componentes Instalados</h2>
+                    <ul id="v-lista-componentes">
                         <!-- Se genera dinámicamente -->
                     </ul>
                 </div>

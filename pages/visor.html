@@ -37,12 +37,13 @@
 
             <!-- CONTENEDOR DE LA FICHA (OCULTO POR DEFECTO) -->
             <div id="ficha-display" class="ficha-compacta">
-                <div class="header-ficha">
-                    <span id="v-tipo-badge" class="badge-tipo">-</span>
+                <div class="seccion">
                     <h2 id="v-nombre">-</h2>
-                    <div class="meta-info">
-                        <span id="v-pais">-</span> | <span id="v-fecha">-</span>
-                    </div>
+                    <p class="inicio-descripcion">
+                        <span id="v-tipo-badge">-</span> |
+                        País: <span id="v-pais">-</span> |
+                        Fecha: <span id="v-fecha">-</span>
+                    </p>
                 </div>
 
                 <!-- ESTADÍSTICAS (IGUAL QUE EN INDEX) -->
@@ -76,9 +77,9 @@
                 </div>
 
                 <!-- MÓDULOS SELECCIONADOS -->
-                <div class="seccion-visor">
-                    <h3>Módulos Instalados</h3>
-                    <ul id="v-lista-modulos" class="lista-modulos-compacta">
+                <div class="seccion">
+                    <h2>Módulos Instalados</h2>
+                    <ul id="v-lista-modulos">
                         <!-- Se genera dinámicamente -->
                     </ul>
                 </div>

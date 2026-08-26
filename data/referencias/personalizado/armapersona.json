@@ -1,0 +1,19 @@
+{
+  "titulo": "Ficha de armamento tanque",
+  "secciones": [
+    {
+      "seccion": "Sección 1: Información general",
+      "campos": [
+        "Nombre"
+      ]
+    },
+    {
+      "seccion": "Sección 2: Información primaria",
+      "campos": [
+        "Ataque",
+        "Peso",
+        "Coste de producción"
+      ]
+    }
+  ]
+}

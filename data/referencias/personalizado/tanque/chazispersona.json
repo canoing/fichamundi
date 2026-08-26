@@ -1,0 +1,20 @@
+{
+  "titulo": "Plantilla de chasis de blindados",
+  "secciones": [
+    {
+      "seccion": "Sección 1: Información general",
+      "campos": [
+        "Nombre"
+      ]
+    },
+    {
+      "seccion": "Sección 2: Información primaria",
+      "campos": [
+        "Capacidad de piezas",
+        "Peso",
+        "HP",
+        "Costo de producción"
+      ]
+    }
+  ]
+}

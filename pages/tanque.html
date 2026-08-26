@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>betaWorld - Constructor de Tanques</title>
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <div class="container">
+       <header class="plegable-header">
+            <div class="header-barra">
+                <div class="header-titulo">
+                    <h1>betaWorld</h1>
+                    <p>Constructor de Tanques y Blindados</p>
+                </div>
+                <button class="menu-toggle" id="menu-toggle" aria-label="Abrir menú">
+                    <span class="barra"></span>
+                    <span class="barra"></span>
+                    <span class="barra"></span>
+                </button>
+            </div>
+            <nav class="nav-principal" id="nav-menu">
+                <a href="../index.html" class="nav-link">Inicio</a>
+                <a href="buques.html" class="nav-link">Buques</a>
+                <a href="avion.html" class="nav-link">Aviones</a>
+                <a href="tanque.html" class="nav-link active">Tanques</a>
+                <a href="visor.html" class="nav-link">Visor Buques</a>
+                <a href="visor-avion.html" class="nav-link">Visor Aviones</a>
+            </nav>
+        </header>
+
+        <main>
+            <!-- SECCIÓN 1: INFORMACIÓN GENERAL -->
+            <section class="seccion" id="seccion1">
+                <h2>Sección 1: Información General</h2>
+                <div class="formulario">
+                    <div class="campo">
+                        <label for="nombre">Nombre de clase o vehículo:</label>
+                        <input type="text" id="nombre" placeholder="Ej: Panzerkampfwagen IV Ausführung H "Pantera"">
+                    </div>
+                    <div class="campo">
+                        <label for="fecha">Fecha de creación:</label>
+                        <input type="text" id="fecha" placeholder="Ej: 1910">
+                    </div>
+                    <div class="campo">
+                        <label for="tipo">Tipo:</label>
+                        <input type="text" id="tipo" placeholder="Ej: Tanque pesado, Tanque ligero, Carro blindado...">
+                    </div>
+                    <div class="campo">
+                        <label for="pais">País de origen:</label>
+                        <input type="text" id="pais" placeholder="Ej: BOREOSTIA">
+                    </div>
+                </div>
+            </section>
+
+            <!-- IMPORTADOR DE MÓDULOS PERSONALIZADOS -->
+            <section class="seccion" id="seccion-importador">
+                <h2>Importador de Módulos Personalizados</h2>
+                <p class="inicio-descripcion">
+                    El <strong>chasis</strong> y el <strong>armamento</strong> pueden ser creados
+                    por el usuario. Sube aquí tus archivos JSON (según las plantillas
+                    <code>chazispersona.json</code> y <code>armapersona.json</code>) para
+                    que se inyecten como módulos seleccionables en el constructor.
+                </p>
+
+                <div id="aviso-importacion" class="comprobante-modulos" style="display:none;"></div>
+
+                <div class="formulario">
+                    <div class="campo">
+                        <label>Importar Chasis personalizado:</label>
+                        <div class="acciones">
+                            <label for="import-chasis" class="drop-zone" style="text-align:center; cursor:pointer;">Examinar Chasis</label>
+                            <input type="file" id="import-chasis" accept=".json" style="display:none;">
+                        </div>
+                        <p class="inicio-descripcion" style="margin-bottom:0;">Carga un JSON con la plantilla de chazispersona.json (chasis propios).</p>
+                    </div>
+                    <div class="campo">
+                        <label>Importar Armamento personalizado:</label>
+                        <div class="acciones">
+                            <label for="import-armamento" class="drop-zone" style="text-align:center; cursor:pointer;">Examinar Armamento</label>
+                            <input type="file" id="import-armamento" accept=".json" style="display:none;">
+                        </div>
+                        <p class="inicio-descripcion" style="margin-bottom:0;">Carga un JSON con la plantilla de armapersona.json (armas propias).</p>
+                    </div>
+                </div>
+
+                <div class="seccion" style="border:none; padding:0; margin-top:10px;">
+                    <h4 style="color:#1a3a52; margin-bottom:6px;">Plantillas disponibles:</h4>
+                    <p class="inicio-descripcion" style="margin-bottom:10px;">
+                        Descarga y rellena estas plantillas JSON para crear tus propios módulos:
+                    </p>
+                    <div class="acciones" style="flex-wrap:wrap;">
+                        <a href="../data/vehiculos/tanque/plantilla_chazispersona.json" download class="btn btn-primary">Descargar plantilla de Chasis</a>
+                        <a href="../data/vehiculos/tanque/plantilla_armapersona.json" download class="btn btn-primary">Descargar plantilla de Armamento</a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN 2: MÓDULOS Y ESTADÍSTICAS -->
+            <section class="seccion" id="seccion2">
+                <h2>Sección 2: Módulos y Estadísticas</h2>
+
+                <div id="modulos-container" class="modulos-container">
+                    <!-- Los módulos se generarán dinámicamente aquí -->
+                </div>
+
+                <!-- RESUMEN DE ESTADÍSTICAS -->
+                <div class="resumen-stats">
+                    <h3>Estadísticas Totales</h3>
+
+                    <div id="peso-advertencia" style="display:none;"></div>
+
+                    <div id="comprobante-modulos" class="comprobante-modulos">
+                        <small>Motor base: no asignado</small>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <label>Peso Total:</label>
+                            <span id="peso-total" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-box">
+                            <label>Capacidad de Peso:</label>
+                            <span id="cap-peso-total" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-box">
+                            <label>HP:</label>
+                            <span id="hp-total" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-box">
+                            <label>Velocidad:</label>
+                            <span id="velocidad-total" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-box">
+                            <label>Ataque:</label>
+                            <span id="ataque-total" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-box">
+                            <label>Defensa:</label>
+                            <span id="defensa-total" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-box">
+                            <label>Coste Total:</label>
+                            <span id="coste-total" class="stat-value">0M</span>
+                        </div>
+                        <div class="stat-box">
+                            <label>Estado:</label>
+                            <span id="estado-validez" class="stat-value" style="font-weight:bold;">Selecciona un chasis</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN 3: DESCRIPCIÓN -->
+            <section class="seccion" id="seccion3">
+                <h2>Sección 3: Descripción</h2>
+                <div class="formulario">
+                    <div class="campo">
+                        <label for="descripcion">Descripción del Lore:</label>
+                        <textarea id="descripcion" rows="5" placeholder="Describe la historia y características del vehículo..."></textarea>
+                    </div>
+                </div>
+            </section>
+
+            <!-- BOTONES DE ACCIÓN -->
+            <div class="acciones">
+                <button id="btn-guardar" class="btn btn-primary">Guardar Ficha</button>
+                <button id="btn-limpiar" class="btn btn-secondary">Limpiar Todo</button>
+            </div>
+            <div class="comprobante-modulos">
+                Guardar la ficha significa que se descargará un documento JSON
+                el cual debes colocar dentro del visor de tanques.
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Menú plegable
+        const menuToggle = document.getElementById('menu-toggle');
+        const navMenu = document.getElementById('nav-menu');
+
+        menuToggle.addEventListener('click', function () {
+            navMenu.classList.toggle('abierto');
+            menuToggle.classList.toggle('open');
+        });
+
+        navMenu.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                navMenu.classList.remove('abierto');
+                menuToggle.classList.remove('open');
+            });
+        });
+    </script>
+
+    <script src="../js/tanque/constructor.js"></script>
+</body>
+</html>

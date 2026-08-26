@@ -1,0 +1,56 @@
+{
+  "chasis": [
+    {
+      "id": "chas_grande_inic",
+      "nombre": "Chasis grande inicial",
+      "tipo_blindaje": "P",
+      "capacidad_piezas": 7,
+      "peso": 2,
+      "hp": 20,
+      "coste": 8.0,
+      "inicial": true
+    },
+    {
+      "id": "chas_chico_inic",
+      "nombre": "Chasis chico inicial",
+      "tipo_blindaje": "L",
+      "capacidad_piezas": 5,
+      "peso": 1,
+      "hp": 15,
+      "coste": 6.0,
+      "inicial": true
+    }
+  ],
+  "sistemas_traccion": [
+    {
+      "id": "trac_llantas",
+      "nombre": "Llantas",
+      "regla_capacidad": "1 de peso por cada 4 llantas",
+      "peso_extra_por_grupo": 1,
+      "unidades_por_grupo": 4,
+      "coste": 0.15,
+      "inicial": true
+    },
+    {
+      "id": "trac_orugas_placa",
+      "nombre": "Orugas de placas",
+      "regla_capacidad": "2 de peso por cada 2 orugas",
+      "peso_extra_por_grupo": 2,
+      "unidades_por_grupo": 2,
+      "coste": 0.20,
+      "inicial": true
+    },
+    {
+      "id": "trac_orugas_placa_mej",
+      "nombre": "Orugas de placas mejoradas",
+      "regla_capacidad": "2 de peso por cada 1 oruga",
+      "peso_extra_por_grupo": 2,
+      "unidades_por_grupo": 1,
+      "coste": 0.25,
+      "investigacion": {
+        "tiempo_años": 2,
+        "costo_por_año": 2.0
+      }
+    }
+  ]
+}

@@ -1,0 +1,102 @@
+{
+  "titulo": "Beta de la pagina, creacion de tanques y blindados",
+  "convenciones_UI": {
+    "EU": "Escritura de usuario",
+    "MD": "Modulo con pagina desplegable",
+    "CA": "Calculo automatico",
+    "nn": "Nada"
+  },
+  "ficha_de_tanques": {
+    "version": "1914",
+    "secciones": [
+      {
+        "seccion": "Sección 1: Información general",
+        "campos": [
+          {
+            "nombre": "Nombre del vehículo",
+            "tipo_input": "EU"
+          },
+          {
+            "nombre": "País de origen",
+            "tipo_input": "EU"
+          },
+          {
+            "nombre": "Año de producción",
+            "tipo_input": "EU"
+          }
+        ]
+      },
+      {
+        "seccion": "Sección 2: Información primaria",
+        "campos": [
+          {
+            "nombre": "Chasis",
+            "tipo_input": "MD"
+          },
+          {
+            "nombre": "Armamento",
+            "tipo_input": "MD"
+          },
+          {
+            "nombre": "Blindaje",
+            "tipo_input": "MD"
+          },
+          {
+            "nombre": "Orugas/ruedas",
+            "tipo_input": "MD"
+          },
+          {
+            "nombre": "Motor",
+            "tipo_input": "MD"
+          },
+          {
+            "nombre": "Sistema de comunicación",
+            "tipo_input": "MD"
+          },
+          {
+            "nombre": "Coste",
+            "tipo_input": "CA"
+          }
+        ]
+      },
+      {
+        "seccion": "Sección 3: Estadísticas",
+        "campos": [
+          {
+            "nombre": "HP",
+            "tipo_input": "CA"
+          },
+          {
+            "nombre": "Peso",
+            "tipo_input": "CA"
+          },
+          {
+            "nombre": "Cap Peso",
+            "tipo_input": "CA"
+          },
+          {
+            "nombre": "Velocidad",
+            "tipo_input": "CA"
+          },
+          {
+            "nombre": "Defensa",
+            "tipo_input": "CA"
+          },
+          {
+            "nombre": "Ataque",
+            "tipo_input": "CA"
+          }
+        ]
+      },
+      {
+        "seccion": "Sección 4: Lore",
+        "campos": [
+          {
+            "nombre": "Descripción",
+            "tipo_input": "EU"
+          }
+        ]
+      }
+    ]
+  }
+}
