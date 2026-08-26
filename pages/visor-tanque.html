@@ -3,16 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>betaWorld - Visor de Fichas</title>
+    <title>betaWorld - Visor de Tanques</title>
     <link rel="stylesheet" href="../css/styles.css">
 </head>
 <body>
     <div class="container visor-container">
+        <!-- HEADER PLEGABLE -->
         <header class="plegable-header">
             <div class="header-barra">
                 <div class="header-titulo">
                     <h1>betaWorld</h1>
-                    <p>Visor de Buques</p>
+                    <p>Visor de Tanques</p>
                 </div>
                 <button class="menu-toggle" id="menu-toggle" aria-label="Abrir menú">
                     <span class="barra"></span>
@@ -24,14 +25,15 @@
                 <a href="../index.html" class="nav-link">Inicio</a>
                 <a href="buques.html" class="nav-link">Buques</a>
                 <a href="avion.html" class="nav-link">Aviones</a>
-                <a href="visor.html" class="nav-link active">Visor Buques</a>
+                <a href="tanque.html" class="nav-link">Tanques</a>
+                <a href="visor-tanque.html" class="nav-link active">Visor Tanques</a>
             </nav>
         </header>
 
         <main>
             <!-- ÁREA DE CARGA -->
             <div id="drop-zone" class="drop-zone">
-                <p>Haz clic o arrastra aquí tu archivo JSON de la ficha</p>
+                <p>Haz clic o arrastra aquí tu archivo JSON de la ficha de tanque</p>
                 <input type="file" id="file-input" accept=".json" style="display: none;">
             </div>
 
@@ -40,15 +42,23 @@
                 <div class="seccion">
                     <h2 id="v-nombre">-</h2>
                     <p class="inicio-descripcion">
-                        <span id="v-tipo-badge">-</span> |
+                        <span id="v-tipo-badge">Tanque</span> |
                         País: <span id="v-pais">-</span> |
                         Fecha: <span id="v-fecha">-</span>
                     </p>
                 </div>
 
-                <!-- ESTADÍSTICAS (IGUAL QUE EN INDEX) -->
+                <!-- ESTADÍSTICAS -->
                 <div class="resumen-stats">
                     <div class="stats-grid">
+                        <div class="stat-box">
+                            <label>Piezas</label>
+                            <span id="v-piezas" class="stat-value">0 / 0</span>
+                        </div>
+                        <div class="stat-box">
+                            <label>HP</label>
+                            <span id="v-hp" class="stat-value">0</span>
+                        </div>
                         <div class="stat-box">
                             <label>Velocidad</label>
                             <span id="v-velocidad" class="stat-value">0</span>
@@ -57,16 +67,31 @@
                             <label>Ataque</label>
                             <span id="v-ataque" class="stat-value">0</span>
                         </div>
-                      
+                        <div class="stat-box">
+                            <label>Defensa</label>
+                            <span id="v-defensa" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-box">
+                            <label>Peso Total</label>
+                            <span id="v-peso-total" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-box">
+                            <label>Cap. de Peso</label>
+                            <span id="v-cap-peso-total" class="stat-value">0</span>
+                        </div>
                         <div class="stat-box">
                             <label>Coste</label>
                             <span id="v-coste" class="stat-value">0M</span>
+                        </div>
+                        <div class="stat-box">
+                            <label>Validez</label>
+                            <span id="v-validez" class="stat-value" style="font-weight:bold;">-</span>
                         </div>
                     </div>
 
                     <div class="stats-grid-pl">
                         <div class="stat-box-pl">
-                            <label>Daño (P/L):</label>
+                            <label>Ataque (P/L):</label>
                             <span id="v-ataque-pl" class="stat-value-pl">-</span>
                         </div>
                         <div class="stat-box-pl">
@@ -76,7 +101,7 @@
                     </div>
                 </div>
 
-                <!-- MÓDULOS SELECCIONADOS -->
+                <!-- MÓDULOS INSTALADOS -->
                 <div class="seccion">
                     <h2>Módulos Instalados</h2>
                     <ul id="v-lista-modulos">
@@ -96,25 +121,23 @@
         </main>
     </div>
 
-    <script src="../js/naval/visor.js"></script>
-</body>
- <script>
+    <script>
         // Menú plegable
         const menuToggle = document.getElementById('menu-toggle');
         const navMenu = document.getElementById('nav-menu');
 
         menuToggle.addEventListener('click', function () {
-                navMenu.classList.toggle('abierto');
-                menuToggle.classList.toggle('open');
-            });
+            navMenu.classList.toggle('abierto');
+            menuToggle.classList.toggle('open');
+        });
 
-            navMenu.querySelectorAll('.nav-link').forEach(link => {
-                link.addEventListener('click', () => {
-                    navMenu.classList.remove('abierto');
-                    menuToggle.classList.remove('open');
-                });
+        navMenu.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                navMenu.classList.remove('abierto');
+                menuToggle.classList.remove('open');
             });
-        </script>
-
-        <script src="../js/naval/constructor.js"></script>
+        });
+    </script>
+    <script src="../js/tanque/visor.js"></script>
+</body>
 </html>
