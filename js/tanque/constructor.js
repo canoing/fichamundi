@@ -13,6 +13,7 @@ let armamentosPersonalizados = [];   // armamento importado por el usuario (plan
 let seleccionados = {};
 let estiloBlindajeActual = 'P';      // 'P' (Grande) o 'L' (Chico), según el chasis
 let categoriaAbierta = {};
+let capacidadPiezasActual = 0;       // Capacidad de piezas del chasis seleccionado
 
 /* ============================================================
    HELPERS DE CATEGORÍAS Y CANTIDADES
@@ -22,6 +23,30 @@ function obtenerCantidadEnCategoria(estado, categoria, nombreModulo) {
     if (!estado || !Array.isArray(estado[categoria])) return 0;
     const modulo = estado[categoria].find(item => item && item.nombre === nombreModulo);
     return modulo ? Number(modulo.cantidad || 0) : 0;
+}
+
+// Cuenta las piezas ocupadas en una categoría.
+// Cada unidad usa `espacios_piezas` si el módulo lo define; si no, ocupa 1 pieza.
+function contarPiezasCategoria(estado, categoria) {
+    if (!estado || !Array.isArray(estado[categoria])) return 0;
+    return estado[categoria].reduce(
+        (sum, item) => sum + (Number(item?.espacios_piezas || 1)) * (Number(item?.cantidad || 0)),
+        0
+    );
+}
+
+// Piezas totales usadas en todas las categorías de módulos.
+function calcularPiezasUsadas(estado = seleccionados) {
+    if (!estado) return 0;
+    return ['traccion', 'motor', 'comunicacion', 'blindaje', 'armamento'].reduce(
+        (sum, cat) => sum + contarPiezasCategoria(estado, cat),
+        0
+    );
+}
+
+// Determina si el vehículo no supera el límite de piezas del chasis.
+function esValidoPorPiezas(estado = seleccionados) {
+    return capacidadPiezasActual === 0 || calcularPiezasUsadas(estado) <= capacidadPiezasActual;
 }
 
 function obtenerEstadoCopia() {
@@ -204,6 +229,8 @@ async function cargarDatos() {
             armamento: []
         };
 
+        capacidadPiezasActual = 0;
+
         return true;
     } catch (error) {
         console.error('Error cargando JSONs de tanques:', error);
@@ -220,6 +247,7 @@ if (typeof document !== 'undefined') {
             agregarImportador();
             actualizarUI();
             calcularTotales();
+            actualizarCapacidadUI();
         } else {
             alert('Error: No se pudo cargar el archivo de configuración');
         }
@@ -298,11 +326,13 @@ function generarChasis(container) {
         radio.addEventListener('change', () => {
             seleccionados.chasis = { ...chasis };
             estiloBlindajeActual = estilo;
+            capacidadPiezasActual = Number(chasis.capacidad_piezas || 0);
             // Limpiar blindaje para que se actualice el estilo P/L
             seleccionados.blindaje = [];
             generarModulos();
             actualizarUI();
             calcularTotales();
+            actualizarCapacidadUI();
         });
     });
 
@@ -343,6 +373,17 @@ function generarCategoriaMultiple(categoria, titulo, container, items = []) {
 
         const cantidadActual = obtenerCantidadEnCategoria(seleccionados, categoria, item.nombre);
 
+        // Simula añadir una unidad más para saber si aún cabe dentro del límite de piezas.
+        const estadoSimulado = JSON.parse(JSON.stringify(seleccionados));
+        const categoriaSimulada = Array.isArray(estadoSimulado[categoria]) ? estadoSimulado[categoria] : [];
+        const modSimulado = categoriaSimulada.find(m => m && m.nombre === item.nombre);
+        if (modSimulado) {
+            modSimulado.cantidad = (Number(modSimulado.cantidad || 0) + 1);
+        } else {
+            estadoSimulado[categoria] = [...categoriaSimulada, { ...item, cantidad: 1 }];
+        }
+        const puedeSumar = esValidoPorPiezas(estadoSimulado);
+
         let htmlInfo = '';
         // Motor: muestra velocidad y capacidad de peso
         if (categoria === 'motor') {
@@ -382,7 +423,7 @@ function generarCategoriaMultiple(categoria, titulo, container, items = []) {
             <div class="modulo-controls">
                 <button type="button" class="qty-btn" data-action="decrement" data-categoria="${categoria}" data-item="${item.nombre}" ${cantidadActual <= 0 ? 'disabled' : ''}>-</button>
                 <span class="qty-value" id="cantidad-${categoria}-${index}">${cantidadActual}</span>
-                <button type="button" class="qty-btn" data-action="increment" data-categoria="${categoria}" data-item="${item.nombre}">+</button>
+                <button type="button" class="qty-btn" data-action="increment" data-categoria="${categoria}" data-item="${item.nombre}" ${!puedeSumar ? 'disabled' : ''}>+</button>
             </div>
         `;
 
@@ -428,10 +469,17 @@ function manejarCambioCantidad(categoria, item, accion) {
         proximoEstado[categoria] = [...categoriaActual, { ...item, cantidad: cantidadObjetivo }];
     }
 
+    // Verificador de piezas: no permitir superar la capacidad del chasis.
+    if (capacidadPiezasActual > 0 && calcularPiezasUsadas(proximoEstado) > capacidadPiezasActual) {
+        alert(`No puedes exceder la capacidad de piezas del chasis. Máximo ${capacidadPiezasActual} piezas.`);
+        return;
+    }
+
     seleccionados = proximoEstado;
     generarModulos();
     actualizarUI();
     calcularTotales();
+    actualizarCapacidadUI();
 }
 
 /* ============================================================
@@ -515,9 +563,9 @@ function extraerChasisPlantilla(data) {
         const numero = (v) => parseFloat(String(v ?? '').replace(',', '.')) || 0;
 
         resultados.push({
-            id: 'pers_chasis_' + Date.now() + '_' + resultados.length,
+            id: 'pers_chasis_' + Date.now() + "_" + resultados.length,
             nombre: limpiar(obj.Nombre),
-            tipo_blindaje: limpiar(obj["Tipo de blindaje"] || obj.tipo_blindaje || 'P').toUpperCase() === 'L' ? 'L' : 'P',
+            tipo_blindaje: limpiar(obj["Tipo de blindaje"] || obj.tipo_blindaje || "P").toUpperCase() === "L" ? "L" : "P",
             capacidad_piezas: numero(obj["Capacidad de piezas"] ?? obj.capacidad_piezas),
             peso: numero(obj["Peso"] ?? obj.peso),
             hp: numero(obj["HP"] ?? obj.hp),
@@ -585,6 +633,27 @@ function mostrarMensajeImportacion(mensaje) {
 function actualizarUI() {
     actualizarComprobante();
     actualizarAdvertenciaPeso();
+    actualizarCapacidadUI();
+}
+
+// Muestra el contador de piezas usadas / capacidad del chasis.
+function actualizarCapacidadUI() {
+    const capacidadEl = document.getElementById('capacidad-piezas');
+    if (!capacidadEl) return;
+
+    const piezasColocadas = calcularPiezasUsadas(seleccionados);
+    const capacidadTotal = capacidadPiezasActual;
+    const piezasRestantes = Math.max(0, capacidadTotal - piezasColocadas);
+
+    if (capacidadTotal > 0) {
+        capacidadEl.innerHTML = `
+            <span class="capacidad-usado">${piezasColocadas}</span> /
+            <span class="capacidad-total">${capacidadTotal}</span>
+            <span class="capacidad-restante">(${piezasRestantes} disponibles)</span>
+        `;
+    } else {
+        capacidadEl.textContent = '0 / 0';
+    }
 }
 
 function actualizarComprobante() {
@@ -700,6 +769,11 @@ function guardarFicha() {
         return;
     }
 
+    if (!esValidoPorPiezas()) {
+        alert(`No puedes guardar una ficha que supera la capacidad de piezas. Máximo ${capacidadPiezasActual} piezas.`);
+        return;
+    }
+
     const nombre = document.getElementById('nombre').value || 'Ficha Sin Nombre';
     const ano = document.getElementById('fecha').value || 'Año no especificado';
     const tipo = document.getElementById('tipo').value || 'No especificado';
@@ -726,6 +800,9 @@ function guardarFicha() {
         comprobante_modulos: {
             peso_total: pesoTotal(),
             capacidad_peso_total: capacidadPesoTotal(),
+            piezas_usadas: calcularPiezasUsadas(),
+            capacidad_piezas_total: capacidadPiezasActual,
+            valido_por_piezas: esValidoPorPiezas(),
             valido: esValidoPorPeso(),
             estilo_blindaje: obtenerEstiloBlindaje()
         },
@@ -736,6 +813,8 @@ function guardarFicha() {
             defensa: defensaTotal(),
             peso_total: pesoTotal(),
             capacidad_peso_total: capacidadPesoTotal(),
+            piezas_colocadas: calcularPiezasUsadas(),
+            capacidad_piezas_total: capacidadPiezasActual,
             coste: costeTotal(),
             valido: esValidoPorPeso()
         },
@@ -778,9 +857,11 @@ function limpiarFormulario() {
 
     estiloBlindajeActual = 'P';
     categoriaAbierta = {};
+    capacidadPiezasActual = 0;
     generarModulos();
     actualizarUI();
     calcularTotales();
+    actualizarCapacidadUI();
 }
 
 if (typeof module !== 'undefined') {
@@ -788,6 +869,8 @@ if (typeof module !== 'undefined') {
         capacidadPesoTotal,
         pesoTotal,
         velocidadTotal,
-        esValidoPorPeso
+        esValidoPorPeso,
+        calcularPiezasUsadas,
+        esValidoPorPiezas
     };
 }
