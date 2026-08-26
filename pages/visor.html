@@ -97,4 +97,23 @@
 
     <script src="../js/naval/visor.js"></script>
 </body>
+ <script>
+        // Menú plegable
+        const menuToggle = document.getElementById('menu-toggle');
+        const navMenu = document.getElementById('nav-menu');
+
+        menuToggle.addEventListener('click', function () {
+                navMenu.classList.toggle('abierto');
+                menuToggle.classList.toggle('open');
+            });
+
+            navMenu.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', () => {
+                    navMenu.classList.remove('abierto');
+                    menuToggle.classList.remove('open');
+                });
+            });
+        </script>
+
+        <script src="../js/naval/constructor.js"></script>
 </html>

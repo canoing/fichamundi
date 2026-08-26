@@ -16,6 +16,11 @@ let seleccionados = {
 let capacidadPiezasActual = 0;
 let categoriaAbierta = {};
 
+// Rol del avión: 'caza', 'bombardero' o 'polivalente'.
+// Según este valor se decide si la Maniobrabilidad suma al ataque aéreo
+// o se convierte en defensa (caso bombardero).
+let tipoAvion = 'polivalente';
+
 // --------------------------------------------------------------------------
 // Utilidades de acceso a estado
 // --------------------------------------------------------------------------
@@ -77,9 +82,10 @@ function calcularPesoTotal(estado = seleccionados) {
 }
 
 function calcularVelocidadFinal(estado = seleccionados) {
-    const motor = obtenerMotorSeleccionado(estado);
-    if (!motor) return 0;
-    return Number(motor.velocidad || 0) - calcularPesoTotal(estado);
+    // Se suman las velocidades de TODOS los motores equipados (incluida su cantidad).
+    const velocidadMotores = sumarPorCategoria(estado, 'motores', 'velocidad');
+    if (velocidadMotores === 0) return 0;
+    return velocidadMotores - calcularPesoTotal(estado);
 }
 
 function calcularAltitud(estado = seleccionados) {
@@ -104,10 +110,14 @@ function calcularAtaqueNaval(estado = seleccionados) {
     return sumarPorCategoria(estado, 'torpedos', 'ataque_naval');
 }
 
-// Ataque Total: (Ataque aéreo base + Maniobrabilidad) para 'A'
-// más bombas ('AT') y torpedos ('AN'). Formato: "10A/14AT"
+// Ataque Total: (Ataque aéreo base + Maniobrabilidad) para los tipos
+// 'caza' y 'polivalente'. En el caso 'bombardero' la Maniobrabilidad NO se
+// suma al ataque aéreo (pasa a ser defensa). Más bombas ('AT') y torpedos ('AN').
+// Formato: "10A/14AT"
 function calcularAtaqueTotal(estado = seleccionados) {
-    const ataqueA = calcularAtaqueAereoBase(estado) + calcularManiobrabilidad(estado);
+    const esBombardero = tipoAvion === 'bombardero';
+    const manoAtaque = esBombardero ? 0 : calcularManiobrabilidad(estado);
+    const ataqueA = calcularAtaqueAereoBase(estado) + manoAtaque;
     const ataqueT = calcularAtaqueTierra(estado);
     const ataqueN = calcularAtaqueNaval(estado);
 
@@ -118,9 +128,16 @@ function calcularAtaqueTotal(estado = seleccionados) {
     return partes.length > 0 ? partes.join('/') : '-';
 }
 
+// La "defensa" del avión está representada por la Vida del fuselaje.
+// En un bombardero la Maniobrabilidad se convierte en defensa y por tanto
+// se suma a la Vida en lugar de sumarse al ataque aéreo.
 function calcularVidaTotal(estado = seleccionados) {
     if (!estado || !estado.fuselaje) return 0;
-    return Number(estado.fuselaje.vida || 0);
+    let vida = Number(estado.fuselaje.vida || 0);
+    if (tipoAvion === 'bombardero') {
+        vida += calcularManiobrabilidad(estado);
+    }
+    return vida;
 }
 
 function calcularCosteTotal(estado = seleccionados) {
@@ -189,6 +206,7 @@ function generarModulos() {
     if (!container) return;
     container.innerHTML = '';
 
+    generarSelectorTipo(container);
     generarFuselajes(container);
 
     if (modulosAviacion.motores && modulosAviacion.motores.length > 0) {
@@ -206,6 +224,53 @@ function generarModulos() {
     if (modulosAviacion.alas && modulosAviacion.alas.length > 0) {
         generarCategoriaMultiple('alas', 'Alas', container, modulosAviacion.alas);
     }
+}
+
+function generarSelectorTipo(container) {
+    const seccionTipo = document.createElement('div');
+    seccionTipo.className = 'seccion-cascos';
+    seccionTipo.innerHTML = '<h3>Tipo de Avión</h3>';
+
+    const tipoContainer = document.createElement('div');
+    tipoContainer.className = 'cascos-container tipos-avion';
+
+    const opciones = [
+        { valor: 'caza', nombre: 'Caza', desc: 'Ataque aéreo con Maniobrabilidad como ataque.' },
+        { valor: 'bombardero', nombre: 'Bombardero', desc: 'La Maniobrabilidad se convierte en defensa.' },
+      
+    ];
+
+    opciones.forEach((opcion, index) => {
+        const div = document.createElement('div');
+        div.className = 'opcion-casco';
+
+        const radioId = `tipo-avion-${index}`;
+        const isChecked = tipoAvion === opcion.valor ? 'checked' : '';
+
+        div.innerHTML = `
+            <label>
+                <input type="radio" name="tipo-avion" id="${radioId}" value="${opcion.valor}" ${isChecked}>
+                <strong>${opcion.nombre}</strong>
+            </label>
+            <div class="casco-info">
+                <div class="info-item">
+                    <span class="info-value">${opcion.desc}</span>
+                </div>
+            </div>
+        `;
+
+        tipoContainer.appendChild(div);
+
+        const radio = div.querySelector('input[type="radio"]');
+        radio.addEventListener('change', () => {
+            tipoAvion = opcion.valor;
+            actualizarCapacidadUI();
+            calcularTotales();
+        });
+    });
+
+    seccionTipo.appendChild(tipoContainer);
+    container.appendChild(seccionTipo);
 }
 
 function generarFuselajes(container) {
@@ -466,12 +531,13 @@ function actualizarCapacidadUI() {
 
     const comprobante = document.getElementById('comprobante-modulos');
     const motor = obtenerMotorSeleccionado(seleccionados);
+    const nombreTipo = tipoAvion.charAt(0).toUpperCase() + tipoAvion.slice(1);
 
     if (comprobante) {
         comprobante.innerHTML = `
             <strong>Comprobante de módulos:</strong>
             <span>${piezasColocadas}/${capacidadTotal || 0} piezas usadas</span>
-            <small>${motor ? `Motor base: ${motor.nombre}` : 'Sin motor asignado'}</small>
+            <small>${motor ? `Motor base: ${motor.nombre}` : 'Sin motor asignado'} · Tipo: ${nombreTipo}</small>
         `;
     }
 }
@@ -507,6 +573,10 @@ function guardarFicha() {
     const pais = document.getElementById('pais').value || 'No especificado';
     const anio = document.getElementById('anio').value || 'Año no especificado';
     const descripcion = document.getElementById('descripcion').value || '';
+    const tipoSeleccionado = document.querySelector('input[name="tipo-avion"]:checked')?.value || 'tipo no especificado';
+    // Sincronizar la variable global del sistema con la opción seleccionada,
+    // para que los cálculos usen siempre el tipo visible en la ficha.
+    tipoAvion = tipoSeleccionado;
 
     if (capacidadPiezasActual > 0 && calcularPiezasUsadas(seleccionados) > capacidadPiezasActual) {
         alert(`El fuselaje no puede llevar más de ${capacidadPiezasActual} piezas.`);
@@ -515,10 +585,10 @@ function guardarFicha() {
 
     const ficha = {
         titulo: nombre,
-        tipo: 'Avion',
+        tipo: tipoAvion,
         informacion_general: {
             nombre,
-            tipo: 'Avion',
+            tipo: tipoAvion,
             pais,
             anio
         },
@@ -589,6 +659,7 @@ function limpiarFormulario() {
     };
 
     capacidadPiezasActual = 0;
+    tipoAvion = 'polivalente';
     generarModulos();
     actualizarCapacidadUI();
     calcularTotales();

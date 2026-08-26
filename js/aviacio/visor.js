@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ficha.informacion_general.pais || '-';
         document.getElementById('v-fecha').textContent =
             ficha.informacion_general.anio || ficha.fecha || '-';
-        document.getElementById('v-tipo-badge').textContent = 'Avión';
+        document.getElementById('v-tipo-badge').textContent = ficha.tipo || '-';
 
         // Estadísticas
         const est = ficha.estadisticas || {};
