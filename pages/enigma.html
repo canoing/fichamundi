@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>betaWorld - Enigma</title>
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <div class="container visor-container">
+        <header class="plegable-header">
+            <div class="header-barra">
+                <div class="header-titulo">
+                    <h1>betaWorld</h1>
+                    <p>Visor de Tanques</p>
+                </div>
+                <button class="menu-toggle" id="menu-toggle" aria-label="Abrir menú">
+                    <span class="barra"></span>
+                    <span class="barra"></span>
+                    <span class="barra"></span>
+                </button>
+            </div>
+            <nav class="nav-principal" id="nav-menu">
+                <a href="../index.html" class="nav-link">Inicio</a>
+                <a href="buques.html" class="nav-link">Buques</a>
+                <a href="avion.html" class="nav-link">Aviones</a>
+                <a href="tanque.html" class="nav-link">Tanques</a>
+                <a href="visor-tanque.html" class="nav-link">Visor Tanques</a>
+            </nav>
+        </header>
+
+        <main>
+            <section class="seccion">
+                <h2>Enigma</h2>
+                <div class="formulario">
+                    <div class="campo">
+                        <label for="msg">Mensaje a encriptar o descifrar:</label>
+                        <textarea id="msg" placeholder="Escribe un mensaje"></textarea>
+                    </div>
+                </div>
+                <div class="acciones">
+                    <button id="encrypt-btn" type="button" class="btn btn-primary">Encriptar</button>
+                    <button id="decrypt-btn" type="button" class="btn btn-secondary">Descifrar</button>
+                </div>
+                <div id="result" class="comprobante-modulos"></div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../js/incritacion/enigma.js"></script>
+</body>
+</html>

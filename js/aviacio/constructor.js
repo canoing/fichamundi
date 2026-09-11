@@ -134,9 +134,11 @@ function calcularVidaTotal(estado = seleccionados) {
     return Number(estado.fuselaje.vida || 0);
 }
 
-// Defensa del avión: es exclusivamente la Maniobrabilidad, sin sumarse a la vida.
-// La Maniobrabilidad se "convierte" en defensa (en lugar de sumarse al ataque aéreo).
+// Defensa del avión: en un caza la defensa siempre es 0,
+// porque la Maniobrabilidad se usa como ataque aéreo.
+// En bombardero la Maniobrabilidad se convierte en defensa.
 function calcularDefensaTotal(estado = seleccionados) {
+    if (tipoAvion === 'caza') return 0;
     return calcularManiobrabilidad(estado);
 }
 
