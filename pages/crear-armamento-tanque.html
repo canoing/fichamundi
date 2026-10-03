@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear plantilla de armamento - betaWorld</title>
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>betaWorld</h1>
+            <p>Creador de plantilla de armamento</p>
+            <nav class="nav-principal">
+                <a href="tanque.html" class="nav-link">Volver al constructor de tanques</a>
+            </nav>
+        </header>
+
+        <main>
+            <section class="seccion">
+                <h2>Datos del armamento</h2>
+                <p class="inicio-descripcion">Completa los datos y descarga el archivo listo para importar en el constructor.</p>
+                <form id="creador-plantilla" data-tipo="armamento">
+                    <div class="formulario">
+                        <div class="campo">
+                            <label for="nombre">Nombre del armamento:</label>
+                            <input id="nombre" name="nombre" type="text" required maxlength="100" placeholder="Ej.: Cañón automático">
+                        </div>
+                        <div class="campo">
+                            <label for="ataque">Ataque:</label>
+                            <input id="ataque" name="ataque" type="number" min="0" step="any" required value="6">
+                        </div>
+                        <div class="campo">
+                            <label for="peso">Peso:</label>
+                            <input id="peso" name="peso" type="number" min="0" step="any" required value="2">
+                        </div>
+                        <div class="campo">
+                            <label for="coste">Coste de producción:</label>
+                            <input id="coste" name="coste" type="number" min="0" step="any" required value="1.5">
+                        </div>
+                    </div>
+                    <div id="aviso-creador" class="comprobante-modulos" role="status" aria-live="polite" style="display:none;"></div>
+                    <div class="acciones">
+                        <button type="submit" class="btn btn-primary">Descargar JSON del armamento</button>
+                        <button type="reset" class="btn btn-secondary">Restablecer</button>
+                    </div>
+                </form>
+            </section>
+        </main>
+    </div>
+    <script src="../js/tanque/creador-plantillas.js"></script>
+</body>
+</html>
