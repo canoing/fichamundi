@@ -1,0 +1,103 @@
+[
+  {
+    "Nombre oficial y común": {
+      "Nombre oficial": "Drugie Volksreich Polilenia",
+      "Nombre común": "Polilenia"
+    },
+    "Descripción": "Estado euralis centralizado que, tras la crisis política de 1917 y la transformación de abril de 1918, quedó bajo el régimen totalista dirigido por Joseph Goebbels. En 1920 impulsa la industrialización, la expansión militar, la investigación tecnológica y la integración cultural de los territorios incorporados. Su administración mantiene un control directo sobre la economía y las instituciones nacionales.",
+    "Sistema Político": "Estado totalitario de partido único, dirigido por el Volksführer Joseph Goebbels. La administración está centralizada y los organismos estatales supervisan la economía, la seguridad, la sociedad y la investigación.",
+    "Símbolos": "Bandera nacional polilenia, emblemas del Estado Totalista y símbolos del Volksreich. El lema oficial representa la unidad nacional, la disciplina y el destino colectivo.",
+    "Hitos Históricos": [
+      "1910: Fundación de la República Libre de Polilenia.",
+      "1917: Crisis parlamentaria y fragmentación política.",
+      "1918: Ascenso totalista y disolución de las instituciones republicanas.",
+      "1918: Anexión del Sacro Imperio del Fénix.",
+      "1919: Consolidación del Volksreich y proclamación de la Neue Ordnung.",
+      "1920: Expansión industrial, reformas laborales y desarrollo de nuevos proyectos militares y científicos."
+    ]
+  },
+  {
+    "Nombre oficial y común": {
+      "Nombre oficial": "Bundesrepublik Boreostia",
+      "Nombre común": "BoreischeWäld · Boreostia"
+    },
+    "Descripción": "República Federal ubicable en Tanzara de economía basada en Capitalismo de Estado, con capital en Sophiensruh y capital histórica en Greifenau (desde 1223). Metrópolis principal: Hyperopolis. Idioma oficial: Boreostino (Prusiano antiguo). Gentilicio: Boreosteano/a. Moneda: Corona Boreostina (CB) · Boreal (BOB).",
+    "Sistema Político": {
+      "Forma de gobierno": "República Federal",
+      "Jefe de Estado": "Adolf Hitler (Canciller-Presidente)",
+      "Partido gobernante": "Bloque Nacional de Arbeit (BNA)",
+      "Coalición": "BNA · PSB · PCB",
+      "Órgano legislativo": "Parlamento Boreosteano",
+      "Órgano judicial": "Volksgerichtshof (Tribunal Especial)",
+      "Seguridad del Estado": "RSHA (Oficina Central de Seguridad del Estado)",
+      "Población": "93 millones (1920, post-integración territorial)",
+      "Alfabetización": "65% (1918) → 85% (meta 1927)"
+    },
+    "Símbolos": {
+      "Naturales": {
+        "Árbol nacional": "Saman (Samanae Saman)",
+        "Flor nacional": "Lirio",
+        "Animal nacional": "Águila Borea-Antártica"
+      },
+      "Patrios": {
+        "Bandera": "Verde y negro con esvástica",
+        "Escudo": "Águila Borea-Antártica con corona de roble",
+        "Himno": "Boreostia, ewig und frei",
+        "Esvástica": "Símbolo del movimiento nacional"
+      }
+    },
+    "Hitos Históricos": [
+      "5500AC-6500AC: Llegada de los primeros humanos provenientes del Norte.",
+      "4300AC-2120AC: Encuentros con los Nicht-Menschen y creaciones de las primeras tribus establecidas.",
+      "1790AC-2033AC: Era del Silencio Inquietante.",
+      "1517AC-1680AC: Reinos y tribus 'organizativas'.",
+      "378AC-1237AC: Era Oscura.",
+      "650-370AC: Era Mística.",
+      "650-870: Parcial Evangelización del Boreo oeste.",
+      "870: Acuerdo del Weiser Baum.",
+      "880-950: Guerras tribales.",
+      "970-1030: Fundación del Ruso/imperio Sarov tras la etapa final de las guerras tribales.",
+      "1010-1040: Máxima expansión del imperio Sarov.",
+      "1045: Muerte de Olga Sarov y recesión del imperio Sarov.",
+      "1223: Fundación de Greifenau, capital histórica.",
+      "1225: Die grüne Nacht, la desaparición de los últimos (Nicht-Menschen).",
+      "1250-1410: Presencia de los 16 reinos Boreales.",
+      "1517-1600: Era de la prosperidad.",
+      "1610-1645: Plaga del Hutmacher.",
+      "1718-1755: Gran Guerra Borea.",
+      "1755-1810: Expansión y fin de la guerra, se forma la Federación de Ostlanderria y el Reino Hiperboreo.",
+      "1812-1840: Era de la reconstrucción y estabilización.",
+      "1840-1870: Unificación de ambos estados y formación del Zweites Südliches Imperium (segundo Reich).",
+      "1870: Separación y fin del Segundo Reich.",
+      "1870: Creación de Hiperborea y Ostland.",
+      "1916: Reunificación · Fundación de la República Federal.",
+      "1917: Rebelión separatista · Campaña de Zaloniana.",
+      "1917–1918: Guerra contra Zalonia.",
+      "1919: Incendio del Reichstag · Operación Excisión · Creación del RSHA.",
+      "1919: Adquisición de Wonnenmark (ex-Australasia Occidental).",
+      "1919: Adquisición de Bernsteininsel (ex-Lurraldenia).",
+      "1920: Operación Winternacht · Pacificación de Bernsteininsel.",
+      "1920: Tratado Ribbentrop-Bajá con Zalonia.",
+      "1920: Programa Schmelzherz · Quellwerk · Ymir IV y V.",
+      "1920: Visita de Joseph Goebbels."
+    ]
+  },
+  {
+    "Nombre oficial y común": {
+      "Nombre oficial": "Republica Bethuniana",
+      "Nombre común": "Bethum"
+    },
+    "Descripción": "Bethum, oficialmente Republica Bethuniana (en francés, République Bethunienne) es un estado soberano ubicado en el norte de Aurealis con territorios transoceánicos en el sur de Tanzara y en océano Corealys. Se constituye como una república parlamentarista unitaria con capital en la ciudad de Corelia, la ciudad más importante y desarrollada del país. La Bethum continental se extiende por parte de la costa norte del Mar de Harris Oriental, desde el río Sauge en el sur hasta los altos de Féidnar al este, limitando en tierra con el Estado Federal de Askavia y el Reino Unido de Rottysburg-Landania.",
+    "Sistema Político": "República Parlamentarista Unitaria gobernada por el poder ejecutivo (presidente de la república) y el poder legislativo (Asamblea Nacional).",
+    "Símbolos": "Bandera nacional tricolor con el emblema del León de Argonne en un fondo color verde, 'Hymn a la liberté' (himno nacional), lema nacional 'Liberté pour la patrie'.",
+    "Hitos Históricos": [
+      "1652: Fundación de Corelia.",
+      "1688: Fundación del Condado de Bethum-Argonne.",
+      "1777: Secesión del Reino de la Gran Aurelia.",
+      "1780: Establecimiento del Principado de Bethum.",
+      "1899: Derrocamiento de la familia Corelia e instauración de la Primer República.",
+      "1902: Reforma constitucional e instauración de la Segunda República.",
+      "1917-1920: Guerra askavo-bethuniana."
+    ]
+  }
+]

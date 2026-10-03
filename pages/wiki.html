@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wiki de países - betaWorld</title>
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="plegable-header">
+            <div class="header-barra">
+                <div class="header-titulo">
+                    <h1>betaWorld</h1>
+                    <p>Wiki de países</p>
+                </div>
+                <button class="menu-toggle" id="menu-toggle" aria-label="Abrir menú" aria-expanded="false">
+                    <span class="barra"></span>
+                    <span class="barra"></span>
+                    <span class="barra"></span>
+                </button>
+            </div>
+            <nav class="nav-principal" id="nav-menu">
+                <a href="../index.html" class="nav-link">Inicio</a>
+                <a href="wiki.html" class="nav-link active" aria-current="page">Wiki</a>
+                <a href="buques.html" class="nav-link">Buques</a>
+                <a href="avion.html" class="nav-link">Aviones</a>
+                <a href="tanque.html" class="nav-link">Tanques</a>
+            </nav>
+        </header>
+
+        <main>
+            <section class="seccion">
+                <h2>Países</h2>
+                <div class="formulario">
+                    <div class="campo">
+                        <label for="buscar-pais">Buscar en la wiki</label>
+                        <input id="buscar-pais" type="search" placeholder="Nombre, historia, política...">
+                    </div>
+                </div>
+                <p id="estado-wiki" role="status" aria-live="polite">Cargando países...</p>
+                <nav id="indice-paises" class="inicio-grid" aria-label="Índice de países"></nav>
+            </section>
+            <div id="articulos-paises"></div>
+        </main>
+
+        <footer class="footer">
+            <p>betaWorld · Wiki de países</p>
+        </footer>
+    </div>
+    <script src="../js/wiki.js"></script>
+</body>
+</html>
