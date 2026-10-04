@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>betaWorld - Visor de Divisiones</title>
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <div class="container visor-container">
+        <header class="plegable-header">
+            <div class="header-barra">
+                <div class="header-titulo">
+                    <h1>betaWorld</h1>
+                    <p>Visor de Divisiones</p>
+                </div>
+                <button class="menu-toggle" id="menu-toggle" aria-label="Abrir menú">
+                    <span class="barra"></span>
+                    <span class="barra"></span>
+                    <span class="barra"></span>
+                </button>
+            </div>
+            <nav class="nav-principal" id="nav-menu">
+                <a href="../index.html" class="nav-link">Inicio</a>
+                <a href="divisiones.html" class="nav-link">Constructor de divisiones</a>
+                <a href="visor-divisiones.html" class="nav-link active">Visor de divisiones</a>
+            </nav>
+        </header>
+
+        <main>
+            <div id="drop-zone" class="drop-zone" role="button" tabindex="0" aria-label="Cargar archivo JSON de una división">
+                <p>Haz clic o arrastra aquí el archivo JSON de una división</p>
+                <input type="file" id="file-input" accept=".json,application/json" style="display:none;">
+            </div>
+            <div id="error-carga" class="comprobante-modulos" role="alert" aria-live="polite" style="display:none;" hidden></div>
+
+            <div id="ficha-display" class="ficha-compacta">
+                <section class="seccion">
+                    <h2 id="v-nombre">-</h2>
+                    <p class="inicio-descripcion">
+                        <span id="v-tipo">-</span> |
+                        País: <span id="v-pais">-</span> |
+                        Versión: <span id="v-version">-</span>
+                    </p>
+                </section>
+
+                <section class="resumen-stats">
+                    <h3>Estadísticas acumuladas</h3>
+                    <div class="stats-grid">
+                        <div class="stat-box"><label>Regimientos</label><span id="v-cantidad-regimientos" class="stat-value">0</span></div>
+                        <div class="stat-box"><label>Apoyos</label><span id="v-cantidad-apoyos" class="stat-value">0</span></div>
+                        <div class="stat-box"><label>HP</label><span id="v-hp" class="stat-value">0</span></div>
+                        <div class="stat-box"><label>ATK</label><span id="v-atk" class="stat-value">0</span></div>
+                        <div class="stat-box"><label>DEF</label><span id="v-def" class="stat-value">0</span></div>
+                        <div class="stat-box"><label>MOV</label><span id="v-mov" class="stat-value">0</span></div>
+                        <div class="stat-box"><label>SUP</label><span id="v-sup" class="stat-value">0</span></div>
+                    </div>
+                    <div class="stats-grid-pl">
+                        <h4>Habilidades especiales</h4>
+                        <ul id="v-habilidades"><li>Sin habilidades especiales</li></ul>
+                    </div>
+                </section>
+
+                <section class="seccion">
+                    <h2>Regimientos principales</h2>
+                    <ul id="v-lista-regimientos"></ul>
+                </section>
+
+                <section class="seccion">
+                    <h2>Batallones de apoyo</h2>
+                    <ul id="v-lista-apoyos"></ul>
+                </section>
+
+                <div class="acciones">
+                    <button id="btn-otra-ficha" type="button" class="btn btn-secondary">Cargar otra ficha</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const menuToggle = document.getElementById('menu-toggle');
+        const navMenu = document.getElementById('nav-menu');
+
+        menuToggle.addEventListener('click', () => {
+            navMenu.classList.toggle('abierto');
+            menuToggle.classList.toggle('open');
+        });
+
+        navMenu.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                navMenu.classList.remove('abierto');
+                menuToggle.classList.remove('open');
+            });
+        });
+    </script>
+    <script src="../js/divisiones/visor.js"></script>
+</body>
+</html>

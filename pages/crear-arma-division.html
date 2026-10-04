@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear arma para divisiones - betaWorld</title>
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>betaWorld</h1>
+            <p>Creador de armas para divisiones</p>
+            <nav class="nav-principal">
+                <a href="divisiones.html" class="nav-link">Volver a divisiones</a>
+            </nav>
+        </header>
+
+        <main>
+            <section class="seccion">
+                <h2>Datos del arma</h2>
+                <p class="inicio-descripcion">Completa los atributos y descarga el JSON listo para importarlo en el constructor de divisiones.</p>
+                <form id="formulario-arma">
+                    <div class="formulario">
+                        <div class="campo">
+                            <label for="nombre-arma">Nombre del arma</label>
+                            <input id="nombre-arma" name="nombre_del_arma" type="text" maxlength="120" required>
+                        </div>
+                        <div class="campo">
+                            <label for="hp-regimiento">HP aportado al regimiento</label>
+                            <input id="hp-regimiento" name="hp_a_regimiento" type="number" min="0" step="any" value="0" required>
+                        </div>
+                        <div class="campo">
+                            <label for="ataque-arma">Ataque</label>
+                            <input id="ataque-arma" name="ataque" type="number" min="0" step="any" value="0" required>
+                        </div>
+                        <div class="campo">
+                            <label for="defensa-arma">Defensa</label>
+                            <input id="defensa-arma" name="defensa" type="number" min="0" step="any" value="0" required>
+                        </div>
+                        <div class="campo">
+                            <label for="nivel-tecnologico">Nivel de tecnología</label>
+                            <input id="nivel-tecnologico" name="nivel_tech_tree" type="number" min="0" step="1" value="0" required>
+                        </div>
+                    </div>
+                    <div id="aviso-creador" class="comprobante-modulos" role="status" aria-live="polite" style="display:none;" hidden></div>
+                    <div class="acciones">
+                        <button type="submit" class="btn btn-primary">Descargar JSON del arma</button>
+                        <button type="reset" class="btn btn-secondary">Restablecer</button>
+                    </div>
+                </form>
+            </section>
+        </main>
+    </div>
+    <script src="../js/divisiones/crear-arma.js"></script>
+</body>
+</html>

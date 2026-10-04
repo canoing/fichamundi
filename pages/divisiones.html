@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Constructor de Divisiones - betaWorld</title>
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="plegable-header">
+            <div class="header-barra">
+                <div class="header-titulo">
+                    <h1>betaWorld</h1>
+                    <p>Constructor de divisiones terrestres</p>
+                </div>
+                <a class="nav-link" href="../index.html">Inicio</a>
+                <a class="nav-link" href="visor-divisiones.html">Visor de divisiones</a>
+            </div>
+        </header>
+
+        <main>
+            <p id="version-plantilla" class="inicio-descripcion">Cargando plantilla...</p>
+            <div id="error-carga" class="comprobante-modulos" role="alert" style="display:none;" hidden></div>
+
+            <section class="seccion">
+                <h2>Información de la unidad</h2>
+                <form id="informacion-division" class="formulario">
+                    <div class="campo">
+                        <label for="nombre-unidad">Nombre de la unidad</label>
+                        <input id="nombre-unidad" name="nombre_unidad" type="text" maxlength="120" required>
+                    </div>
+                    <div class="campo">
+                        <label for="pais-operador">País operador</label>
+                        <input id="pais-operador" name="pais_operador" type="text" maxlength="100" required>
+                    </div>
+                    <div class="campo">
+                        <label for="tipo-unidad">Tipo de unidad</label>
+                        <input id="tipo-unidad" name="tipo_unidad" type="text" maxlength="100" required>
+                    </div>
+                </form>
+            </section>
+
+            <section class="seccion">
+                <div class="modulo-topline">
+                    <h2>Regimientos principales</h2>
+                    <strong id="contador-regimientos">0 / 16</strong>
+                </div>
+                <div id="regimientos-container" class="opciones-modulo"></div>
+                <button id="btn-agregar-regimiento" type="button" class="btn btn-secondary">Añadir regimiento</button>
+            </section>
+
+            <section class="seccion">
+                <div class="modulo-topline">
+                    <h2>Batallones de apoyo</h2>
+                    <strong id="contador-apoyos">0 / 2</strong>
+                </div>
+                <div id="apoyos-container" class="opciones-modulo"></div>
+                <button id="btn-agregar-apoyo" type="button" class="btn btn-secondary">Añadir apoyo</button>
+            </section>
+
+            <section class="seccion">
+                <h2>Armas personalizadas</h2>
+                <p class="inicio-descripcion">Importa un arma creada. Luego podrás asignarla a uno o varios regimientos.</p>
+                <div class="campo">
+                    <label for="importar-armas">Archivo JSON de arma</label>
+                    <input id="importar-armas" type="file" accept=".json,application/json">
+                </div>
+                <div class="acciones">
+                    <a href="crear-arma-division.html" class="btn btn-primary">Crear plantilla de arma</a>
+                </div>
+                <div id="aviso-importacion" class="comprobante-modulos" role="status" aria-live="polite" style="display:none;" hidden></div>
+            </section>
+
+            <section class="seccion">
+                <div class="resumen-stats">
+                    <h3>Estadísticas acumuladas</h3>
+                    <div class="stats-grid">
+                        <div class="stat-box"><label>HP</label><span id="hp-total" class="stat-value">0</span></div>
+                        <div class="stat-box"><label>ATK</label><span id="atk-total" class="stat-value">0</span></div>
+                        <div class="stat-box"><label>DEF</label><span id="def-total" class="stat-value">0</span></div>
+                        <div class="stat-box"><label>MOV</label><span id="mov-total" class="stat-value">0</span></div>
+                        <div class="stat-box"><label>SUP</label><span id="sup-total" class="stat-value">0</span></div>
+                    </div>
+                    <div class="stats-grid-pl"><h4>Habilidades especiales</h4><ul id="habilidades-total"><li>Sin habilidades especiales</li></ul></div>
+                </div>
+            </section>
+
+            <div class="acciones">
+                <button id="btn-guardar-division" type="button" class="btn btn-primary">Descargar ficha JSON</button>
+                <button id="btn-limpiar-division" type="button" class="btn btn-secondary">Limpiar</button>
+            </div>
+            <div id="aviso-guardado" class="comprobante-modulos" role="status" aria-live="polite" style="display:none;" hidden></div>
+        </main>
+    </div>
+    <script src="../js/divisiones/constructor.js"></script>
+</body>
+</html>

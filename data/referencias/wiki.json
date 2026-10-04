@@ -99,5 +99,130 @@
       "1902: Reforma constitucional e instauración de la Segunda República.",
       "1917-1920: Guerra askavo-bethuniana."
     ]
+  },
+  {
+    "Nombre oficial y común": {
+      "Nombre oficial": "República de Krasnistriarova",
+      "Nombre común": "Krasnistriarova",
+      "Nombres informales": "Krasni, La Península Olvidada, La Tierra del Guardián",
+      "Gentilicio": "krasnistriarense / krasni",
+      "Capital": "Krasnystad (en la Cordillera, a 2.000 m de altitud)",
+      "Idiomas": "Krasnio (oficial), slaviarko (comercio), dialectos rurales",
+      "Moneda": "Rublo Krasni (₡)"
+    },
+    "Descripción": "Krasnistriarova es una nación joven y problemática, situada en una península boscosa en el centro del continente. Su territorio, otrora parte de un pequeño imperio y luego de un reino decadente, ha sido testigo de siglos de historia. Hoy, bajo el yugo de una dictadura militar disfrazada de república, el país se debate entre el miedo y la esperanza. Su geografía es agreste: inmensos bosques cubren casi todo el territorio, con una única cordillera que alberga la capital, Krasnystad. Los inviernos son duros y aíslan a las regiones montañosas durante meses. La economía es agraria y de subsistencia, dependiente de la exportación de grano, madera y carbón. La industrialización, prometida por el régimen, no termina de arrancar. La sociedad krasnistriarense está fracturada. Una élite militar y burocrática acapara la riqueza, mientras los obreros de Ostravia y los mineros de Valdoro viven en la miseria. Los campesinos de Zelnya y Tarnov trabajan tierras que no les pertenecen. Y en las sombras, el Partido Comunista de Krasnistriarova (PCK) crece, organiza y espera su momento. La sombra de la Dirección de Seguridad del Estado (DSE), conocida como 'La Mano Negra', se cierne sobre todos.",
+    "Sistema Político": {
+      "Tipo de gobierno": "Regencia Militar (dictadura de facto)",
+      "Jefe de Estado": "Chernovori Drovact, 'Guardián de la Nación'",
+      "Estructura de poder": "Consejo de Generales (asesor), Ministerio de la Guerra, DSE",
+      "Parlamento": "Disuelto desde 1919. No hay elecciones.",
+      "Partidos políticos": "PCK (clandestino), monárquicos exiliados, tecnócratas",
+      "Sistema legal": "Ley marcial. Decretos del Guardián.",
+      "Duración del mandato": "Ilimitado (de facto, vitalicio)",
+      "Estructura detallada": {
+        "El Guardián": "Poder absoluto. Gobierna por decreto.",
+        "Consejo de Generales": "12 generales leales. Función ceremonial y asesora.",
+        "Ministerio del Interior": "Control interno, administración territorial.",
+        "Ministerio de la Guerra": "Ejército, defensa, fronteras.",
+        "Ministerio de Economía": "Industrialización, comercio, finanzas.",
+        "DSE": "Policía secreta. Responde solo a Drovact."
+      },
+      "División administrativa (11 estados)": [
+        "Krasnystad: Cordillera - Capital, palacio presidencial, DSE (Lealtad: Alta)",
+        "Valdoro: Sierra Alta - Minas de carbón y hierro (Lealtad: Baja)",
+        "Breznya: Bosque - Madera, aserraderos, escondite del PCK (Lealtad: Baja)",
+        "Tarnov: Bosque - Agricultura de subsistencia (Lealtad: Baja)",
+        "Mirsk: Bosque - Frontera con Zolta, contrabando (Lealtad: Media)",
+        "Ostravia: Costa/Bosque - Puerto principal, Novorat Motors (Lealtad: Alta)",
+        "Zelnya: Planicie/Bosque - Granero del país (Lealtad: Baja)",
+        "Kamen: Cordillera - Paso de montaña, guarnición (Lealtad: Alta)",
+        "Luch: Tundra/Bosque - Campos de trabajo, fortaleza del rey (Lealtad: Nula)",
+        "Marisnya: Isla - Base naval, pesca (Lealtad: Media)",
+        "Koralia: Isla - Antiguo penal, remota (Lealtad: Nula)"
+      ],
+      "Fuerzas Armadas (1920)": {
+        "Infantería": "20.000 efectivos - Veteranos de la guerra civil. Mal pagados.",
+        "Artillería": "5 piezas - Obsoletas. Sin modernizar.",
+        "Caballería": "5.000 efectivos - Patrullas fronterizas.",
+        "Naval": "25 buques - Obsoletos. 3 destructores viejos.",
+        "Aérea": "5 biplanos - 'La joya de Drovact'. Pocos, simbólicos.",
+        "DSE": "2.000 agentes / 10.000 informantes - Presupuesto: 5% del PIB."
+      },
+      "Economía y Gasto (1920)": {
+        "PIB": "12.000 millones ₡",
+        "PIB per cápita": "870 ₡",
+        "Alfabetización": "28%",
+        "Tipo": "Agraria-exportadora, de subsistencia",
+        "Distribución del gasto": "Militar: 15% | Infraestructura: 10% | Educación: 6% | Salud: 5% | Seguridad: 4%"
+      }
+    },
+    "Símbolos": {
+      "Bandera": "Bandera nacional oficial",
+      "Escudo": "Escudo nacional oficial",
+      "Himno": {
+        "Título": "A Servir a Krasni",
+        "Melodía": "Adaptación de 'To Serve Russia'",
+        "Letra": "Desde los bosques de Breznya hasta la costa de Ostravia, / desde la nieve de Kamen hasta el grano de Zelnya, / se alza un pueblo que no se doblega, / que trabaja la tierra y defiende su tierra. / ¡A servir a Krasni, a servir a Krasni! / ¡La patria nos llama, la patria nos llama!"
+      }
+    },
+    "Hitos Históricos": [
+      "1832: Fundación del Imperio de Krasnistriarova. Pequeño pero fuerte.",
+      "1869: Disolución imperial. Nace el Reino de Krasnistriarova. Débil e incompetente.",
+      "1919 (marzo): Golpe de estado de Chernovori Drovact. El rey Alexei III es arrestado.",
+      "1919 (diciembre): Guerra civil. La monarquía resiste en una isla.",
+      "1920 (febrero): Victoria total de Drovact. Fundación de la República de Krasnistriarova.",
+      "1920 (febrero): Krasnistriarova se une a la C.N.A.",
+      "1920 (junio): Huelga general en Ostravia. Reprimida por el ejército.",
+      "1920 (julio): Ivarok Snatori es detenido. Adverid Orcarodar huye a Polilenia.",
+      "1920 (septiembre): Snatori condenado a cadena perpetua en Luch. Hondrek Drovact, líder público del PCK.",
+      "1920 (octubre): Operación Tritón: Polilenia rescata a los líderes del PCK.",
+      "1920 (noviembre): La DSE busca al topo. El invierno llega.",
+      "1921–1926: Exterminio semi-humano. 45.000 desaparecidos."
+    ]
+  },
+  {
+    "Nombre oficial y común": {
+      "Nombre oficial": "Volksarbeiterkommissariat Feniks",
+      "Nombre común": "Feniks / Comisariado de Feniks",
+      "Estado soberano": "No; territorio incorporado al Drugie Volksreich Polilenia",
+      "Capital administrativa": "Feniks-Stadt"
+    },
+    "Descripción": "El Volksarbeiterkommissariat Feniks es una administración territorial establecida tras la anexión total del Sacro Imperio del Fénix el 14 de diciembre de 1918. Se encuentra bajo control directo del Gobierno central polilenio y carece de autonomía política propia. Su función principal es integrar el territorio en la estructura administrativa, económica, cultural y social del Reich. La administración impulsa la reconstrucción de infraestructuras, la reorganización industrial, la ampliación ferroviaria y la incorporación de las empresas locales a los planes nacionales. Paralelamente, se desarrollan programas de enseñanza del idioma polilenio y difusión de la historia, los símbolos y las instituciones del Estado.",
+    "Sistema Político": {
+      "Régimen": "Administración territorial totalista",
+      "Autoridad superior": "Gobierno central del Drugie Volksreich Polilenia",
+      "Administración": "Comisariado territorial subordinado al poder central",
+      "Autonomía": "Ninguna",
+      "Economía": "Economía Nacional Totalista Centralizada",
+      "Seguridad": "Fuerza de Seguridad del Estado (S) y organismos de inteligencia polilenios"
+    },
+    "Símbolos": {
+      "Bandera": "Enseña oficial del Drugie Volksreich Polilenia",
+      "Emblemas": "Insignias estatales y administrativas polilenias",
+      "Lema administrativo": "Un Estado, una administración, un futuro",
+      "Idioma oficial administrativo": "Polilenio"
+    },
+    "Hitos Históricos": [
+      "Diciembre de 1918: Anexión del Sacro Imperio del Fénix y creación del comisariado.",
+      "1919: Reorganización de la administración, las industrias y los servicios públicos.",
+      "1919–1920: Expansión de los programas de integración cultural y lingüística.",
+      "1920: Intensificación de la planificación industrial y de la incorporación económica al sistema nacional."
+    ]
+  },
+  {
+    "Nombre oficial y común": {
+      "Nombre oficial": "Reichsflottenkommissariat",
+      "Nombre común": "Comisariado de la Flota Imperial"
+    },
+    "Descripción": "El Reichsflottenkommissariat es un territorio insular incorporado al Drugie Volksreich Polilenia tras la anexión del Sacro Imperio del Fénix en diciembre de 1918. A diferencia del Volksarbeiterkommissariat Feniks, se encuentra bajo administración directa de la Kriegsmarine y está destinado a funciones navales, científicas, industriales y estratégicas. Su ubicación insular y sus instalaciones portuarias lo convierten en un territorio de acceso restringido. Alberga astilleros, depósitos navales y el Proyecto Lazurowa Lane, un programa secreto impulsado por sectores de la Kriegsmarine y vinculado al ultrahumanismo polilenio.",
+    "Sistema Político": "Administración militar directa, sin autonomía territorial propia. La autoridad corresponde al comisario naval y a los mandos designados por el Gobierno polilenio.",
+    "Símbolos": "Bandera naval polilenia; emblemas de la Kriegsmarine; insignias administrativas del Reichsflottenkommissariat.",
+    "Hitos Históricos": [
+      "Diciembre de 1918: Incorporación de las antiguas islas del Sacro Imperio del Fénix.",
+      "1919: Reorganización de puertos e instalaciones bajo control naval.",
+      "Julio de 1918: Inicio del Proyecto Lazurowa Lane.",
+      "Diciembre de 1918: Traslado de las instalaciones principales del proyecto al territorio insular.",
+      "1920: Expansión de las instalaciones científicas, navales y de formación especializada."
+    ]
   }
 ]

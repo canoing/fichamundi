@@ -1,0 +1,12 @@
+{
+  "tipo_ficha": "Rifle de Infantería / Ametralladora (1910)",
+  "seccion_1_informacion_general": {
+    "nombre_del_arma": ""
+  },
+  "seccion_2_estadisticas_primarias": {
+    "hp_a_regimiento": 0,
+    "ataque": 0,
+    "defensa": 0,
+    "nivel_tech_tree": 0
+  }
+}

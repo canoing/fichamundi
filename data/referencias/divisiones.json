@@ -1,0 +1,37 @@
+{
+  "titulo": "Plantilla de Unidad Terrestre — Contritus Mundi",
+  "version": "1920 (Gran Guerra)",
+  "ficha_unidad": {
+    "informacion_general": {
+      "nombre_unidad": "",
+      "pais_operador": "",
+      "tipo_unidad": "Infantería / Caballería / Blindada / Mixta"
+    },
+    "regimientos_principales": [
+      {
+        "slot": 1,
+        "tipo_regimiento": "Infantería / Caballería / Motorizada / Carros blindados / Carros de combate / Montañistas / Artillería",
+        "arma_equipada": null
+      }
+    ],
+    "batallones_apoyo": [
+      {
+        "slot": 1,
+        "tipo_apoyo": "Antitanque / Ingenieros / Logística / Reconocimiento / Hospital de campaña / Mantenimiento",
+        "arma_o_equipo_asignado": null
+      }
+    ]
+  },
+  "estadisticas_acumuladas": {
+    "HP": 0,
+    "ATK": 0,
+    "DEF": 0,
+    "MOV": 0,
+    "SUP": 0,
+    "habilidades_especiales": [
+      "Ej: Ignora DEF de ametralladoras",
+      "Ej: Ignora debuff MOV en montaña/colina (50%+ Montañistas)",
+      "Ej: +1 MOV en todos los terrenos (Reconocimiento)"
+    ]
+  }
+}

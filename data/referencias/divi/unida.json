@@ -1,0 +1,160 @@
+{
+  "titulo": "Catálogo de Atributos y Buffs — Contritus Mundi",
+  "version": "1920 (Gran Guerra)",
+  "regimientos_principales": {
+    "infanteria": {
+      "nombre": "Infantería",
+      "sup_base": 1,
+      "mov_base": 2,
+      "hp_base": 10,
+      "atk_base": 1,
+      "def_base": 2,
+      "descripcion": "Unidad de línea estándar. Equilibrio entre costo y consumo."
+    },
+    "caballeria": {
+      "nombre": "Caballería",
+      "sup_base": 2,
+      "mov_base": 3,
+      "hp_base": 10,
+      "atk_base": 2,
+      "def_base": 1,
+      "descripcion": "Unidad rápida para maniobras de flanqueo."
+    },
+    "motorizada": {
+      "nombre": "Infantería Motorizada",
+      "sup_base": 3,
+      "mov_base": 4,
+      "hp_base": 12,
+      "atk_base": 2,
+      "def_base": 2,
+      "descripcion": "Alta movilidad con mayor consumo de suministros."
+    },
+    "carros_blindados": {
+      "nombre": "Carros Blindados",
+      "sup_base": 4,
+      "mov_depende_de_arma": true,
+      "hp_base": 15,
+      "buffs": {
+        "atk_bonus": 2,
+        "def_bonus": 2
+      },
+      "descripcion": "Vehículos ligeros. Su MOV lo determina el arma/chasis instalado."
+    },
+    "carros_de_combate": {
+      "nombre": "Carros de Combate (Tanques)",
+      "sup_base": 6,
+      "mov_depende_de_arma": true,
+      "hp_base": 25,
+      "buffs": {
+        "atk_bonus": 4,
+        "def_bonus": 3
+      },
+      "habilidad_pasiva": {
+        "ignora_def_ametralladoras": true
+      },
+      "descripcion": "Fuerza de choque blindada. Ignora la defensa otorgada por ametralladoras enemigas."
+    },
+    "montanistas": {
+      "nombre": "Montañistas",
+      "sup_base": 2,
+      "mov_base": 2,
+      "hp_base": 10,
+      "atk_base": 2,
+      "def_base": 2,
+      "regla_especial": {
+        "umbral_porcentaje": 0.50,
+        "efecto": "Si conforman el 50% o más de los regimientos de la unidad, ignora el debuff de MOV en montañas y colinas."
+      }
+    },
+    "artilleria": {
+      "nombre": "Artillería de Campaña",
+      "sup_depende_de_arma": true,
+      "mov_base": null,
+      "hp_base": 5,
+      "buffs": {
+        "atk_bonus": 5,
+        "def_bonus": 1
+      },
+      "descripcion": "Aporte masivo de ataque. No aporta movilidad propia (N/A MOV)."
+    }
+  },
+  "batallones_apoyo": {
+    "antitanque": {
+      "nombre": "Compañía Antitanque",
+      "sup_costo": 1,
+      "buffs": {
+        "atk_antitanque": "Según el arma AT asignada",
+        "def_bonus": 1
+      },
+      "descripcion": "Especializada en neutralizar blindados enemigos."
+    },
+    "ingenieros": {
+      "nombre": "Compañía de Ingenieros",
+      "sup_costo": 1,
+      "buffs": {
+        "def_bonus": 1
+      },
+      "habilidad_pasiva": {
+        "ignora_debuff_mov_terrenos": ["bosque", "selva", "rio", "pantano"]
+      },
+      "descripcion": "Otorga +1 DEF e ignora los penalizadores de MOV en terrenos difíciles y cruces de ríos."
+    },
+    "logistica": {
+      "nombre": "Compañía de Logística",
+      "sup_costo": -1,
+      "buffs": {
+        "reduccion_sup": 1
+      },
+      "mejora_tecnologica": "Aumenta la reducción de SUP según el nivel técnico investigado.",
+      "descripcion": "Optimiza la cadena de suministros, reduciendo el consumo global de la unidad."
+    },
+    "reconocimiento": {
+      "nombre": "Compañía de Reconocimiento",
+      "sup_costo": 1,
+      "buffs": {
+        "mov_bonus_global": 1
+      },
+      "descripcion": "Suma +1 MOV a toda la unidad en cualquier tipo de terreno."
+    },
+    "hospital_campana": {
+      "nombre": "Hospital de Campaña",
+      "sup_costo": 1,
+      "buffs": {
+        "hp_bonus_base": 20,
+        "hp_bonus_medicina": "Variable según tecnología médica"
+      },
+      "descripcion": "Aumenta significativamente los Puntos de Salud (HP) de la unidad."
+    },
+    "mantenimiento": {
+      "nombre": "Compañía de Mantenimiento",
+      "sup_costo": 1,
+      "buffs": {
+        "hp_bonus_base": 20,
+        "hp_bonus_ingenieria": "Variable según tecnología de ingeniería"
+      },
+      "descripcion": "Incrementa la durabilidad (HP) del equipo y los vehículos de la unidad."
+    }
+  },
+  "ejemplo_armas_equipables": [
+    {
+      "id_arma": "karabin_wz14",
+      "nombre": "Rifle Karabin Polileński wz. 14",
+      "tipo": "Infantería",
+      "buffs": {
+        "atk": 1,
+        "def": 1
+      }
+    },
+    {
+      "id_arma": "canondecampana_75mm",
+      "nombre": "Cañón de Campaña 75mm",
+      "tipo": "Artillería",
+      "sup_costo": 3,
+      "mov_propio": 1,
+      "buffs": {
+        "atk": 4,
+        "def": 0
+      }
+    }
+  ]
+}
