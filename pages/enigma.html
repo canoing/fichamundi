@@ -22,31 +22,100 @@
             </div>
             <nav class="nav-principal" id="nav-menu">
                 <a href="../index.html" class="nav-link">Inicio</a>
-                <a href="buques.html" class="nav-link">Buques</a>
-                <a href="avion.html" class="nav-link">Aviones</a>
-                <a href="tanque.html" class="nav-link">Tanques</a>
-                <a href="visor-tanque.html" class="nav-link">Visor Tanques</a>
+                <a href="enigma.html" class="nav-link active">enigma</a>
+
             </nav>
         </header>
 
         <main>
-            <section class="seccion">
-                <h2>Enigma</h2>
-                <div class="formulario">
+            <section class="seccion enigma-section">
+                <div class="enigma-header">
+                    <div>
+                        <h2>Enigma</h2>
+                        <p class="enigma-subtitle">Bombe de Alan Turing</p>
+                    </div>
+                    <span class="enigma-badge">Rotor III</span>
+                </div>
+
+                <div class="enigma-machine" aria-label="Máquina Enigma">
+                    <div class="rotor-bank" aria-label="Ruedas del rotor">
+                        <div class="rotor">
+                            <span class="rotor-label">Rotor I</span>
+                            <div class="rotor-window" id="rotor-1">A</div>
+                        </div>
+                        <div class="rotor">
+                            <span class="rotor-label">Rotor II</span>
+                            <div class="rotor-window" id="rotor-2">A</div>
+                        </div>
+                        <div class="rotor">
+                            <span class="rotor-label">Rotor III</span>
+                            <div class="rotor-window" id="rotor-3">A</div>
+                        </div>
+                    </div>
+
+                    <div class="lampboard" aria-label="Teclado de lámparas">
+                        <span class="lamp">A</span>
+                        <span class="lamp">B</span>
+                        <span class="lamp">C</span>
+                        <span class="lamp">D</span>
+                        <span class="lamp">E</span>
+                        <span class="lamp">F</span>
+                        <span class="lamp">G</span>
+                        <span class="lamp">H</span>
+                        <span class="lamp">I</span>
+                        <span class="lamp">J</span>
+                        <span class="lamp">K</span>
+                        <span class="lamp">L</span>
+                        <span class="lamp">M</span>
+                        <span class="lamp">N</span>
+                        <span class="lamp">O</span>
+                        <span class="lamp">P</span>
+                        <span class="lamp">Q</span>
+                        <span class="lamp">R</span>
+                        <span class="lamp">S</span>
+                        <span class="lamp">T</span>
+                        <span class="lamp">U</span>
+                        <span class="lamp">V</span>
+                        <span class="lamp">W</span>
+                        <span class="lamp">X</span>
+                        <span class="lamp">Y</span>
+                        <span class="lamp">Z</span>
+                    </div>
+                </div>
+
+                <div class="formulario enigma-formulario">
                     <div class="campo">
                         <label for="msg">Mensaje a encriptar o descifrar:</label>
-                        <textarea id="msg" placeholder="Escribe un mensaje"></textarea>
+                        <textarea id="msg" placeholder="Escribe un mensaje">fur cano</textarea>
                     </div>
                 </div>
                 <div class="acciones">
                     <button id="encrypt-btn" type="button" class="btn btn-primary">Encriptar</button>
                     <button id="decrypt-btn" type="button" class="btn btn-secondary">Descifrar</button>
                 </div>
-                <div id="result" class="comprobante-modulos"></div>
+
+                <div id="result" class="output-panel" aria-live="polite"></div>
+                <button id="copy-btn" type="button" class="btn btn-copy">Copiar texto</button>
             </section>
         </main>
     </div>
+<script>
+        // Menú plegable
+        const menuToggle = document.getElementById('menu-toggle');
+        const navMenu = document.getElementById('nav-menu');
 
+        menuToggle.addEventListener('click', function () {
+                navMenu.classList.toggle('abierto');
+                menuToggle.classList.toggle('open');
+            });
+
+            navMenu.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', () => {
+                    navMenu.classList.remove('abierto');
+                    menuToggle.classList.remove('open');
+                });
+            });
+        </script>
     <script src="../js/incritacion/enigma.js"></script>
 </body>
 </html>
