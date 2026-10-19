@@ -59,10 +59,12 @@ alter table public.template_comments enable row level security;
 
 drop policy if exists "Moderators can read their own role" on public.moderators;
 drop policy if exists "Anyone can read approved templates" on public.templates;
+drop policy if exists "Anyone can read all templates" on public.templates;
 drop policy if exists "Anyone can submit pending templates" on public.templates;
 drop policy if exists "Moderators can update templates" on public.templates;
 drop policy if exists "Moderators can delete templates" on public.templates;
 drop policy if exists "Anyone can read comments on approved templates" on public.template_comments;
+drop policy if exists "Anyone can read all template comments" on public.template_comments;
 drop policy if exists "Moderators can add template comments" on public.template_comments;
 drop policy if exists "Moderators can update template comments" on public.template_comments;
 drop policy if exists "Moderators can delete template comments" on public.template_comments;
@@ -71,9 +73,9 @@ create policy "Moderators can read their own role"
     on public.moderators for select to authenticated
     using (user_id = (select auth.uid()));
 
-create policy "Anyone can read approved templates"
+create policy "Anyone can read all templates"
     on public.templates for select to anon, authenticated
-    using (status = 'approved' or (select public.is_moderator()));
+    using (true);
 
 create policy "Anyone can submit pending templates"
     on public.templates for insert to anon, authenticated
@@ -86,24 +88,17 @@ create policy "Anyone can submit pending templates"
 
 create policy "Moderators can update templates"
     on public.templates for update to authenticated
-    using ((select public.is_moderator()))
-    with check ((select public.is_moderator()));
-
-create policy "Moderators can delete templates"
-    on public.templates for delete to authenticated
-    using ((select public.is_moderator()));
-
-create policy "Anyone can read comments on approved templates"
-    on public.template_comments for select to anon, authenticated
-    using (
+    using ((select public.is_moderator()) and status = 'pending')
+    with check (
         (select public.is_moderator())
-        or exists (
-            select 1
-            from public.templates
-            where templates.id = template_comments.template_id
-                and templates.status = 'approved'
-        )
+        and status in ('approved', 'rejected')
+        and reviewed_at is not null
+        and reviewed_by = (select auth.uid())
     );
+
+create policy "Anyone can read all template comments"
+    on public.template_comments for select to anon, authenticated
+    using (true);
 
 create policy "Moderators can add template comments"
     on public.template_comments for insert to authenticated
@@ -112,16 +107,12 @@ create policy "Moderators can add template comments"
         and created_by = (select auth.uid())
     );
 
-create policy "Moderators can update template comments"
-    on public.template_comments for update to authenticated
-    using ((select public.is_moderator()))
-    with check ((select public.is_moderator()));
-
-create policy "Moderators can delete template comments"
-    on public.template_comments for delete to authenticated
-    using ((select public.is_moderator()));
-
-grant select, insert, update, delete on public.templates to anon, authenticated;
-grant select, insert, update, delete on public.template_comments to anon, authenticated;
+revoke all on public.moderators, public.templates, public.template_comments from public, anon, authenticated;
+revoke update (country, file_name, content, status, reviewed_at, reviewed_by, review_comment)
+    on public.templates from public, anon, authenticated;
 grant select on public.moderators to authenticated;
+grant select, insert on public.templates to anon, authenticated;
+grant update (status, reviewed_at, reviewed_by) on public.templates to authenticated;
+grant select on public.template_comments to anon, authenticated;
+grant insert on public.template_comments to authenticated;
 grant execute on function public.is_moderator() to anon, authenticated;

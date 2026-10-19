@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plantillas comunitarias - betaWorld</title>
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>betaWorld</h1>
+            <p>Plantillas comunitarias</p>
+            <nav class="nav-principal">
+                <a href="../index.html" class="nav-link">Inicio</a>
+            </nav>
+        </header>
+
+        <main>
+            <section class="seccion">
+                <h2>Compartir una plantilla</h2>
+                <p class="inicio-descripcion">Sube un archivo JSON y elige el país correspondiente. No necesitas iniciar sesión. La plantilla aparecerá enseguida como pendiente mientras espera la revisión del moderador.</p>
+                <form id="formulario-envio">
+                    <div class="formulario">
+                        <div class="campo">
+                            <label for="pais-envio">País</label>
+                            <input id="pais-envio" name="country" type="text" maxlength="100" required>
+                        </div>
+                        <div class="campo">
+                            <label for="archivo-json">Archivo JSON (máximo 2 MB)</label>
+                            <input id="archivo-json" name="file" type="file" accept=".json,application/json" required>
+                        </div>
+                    </div>
+                    <div class="acciones">
+                        <button class="btn btn-primary" type="submit">Enviar para revisión</button>
+                    </div>
+                </form>
+                <p id="estado-envio" class="comprobante-modulos" role="status" aria-live="polite" hidden></p>
+            </section>
+
+            <section class="seccion">
+                <h2>Plantillas de la comunidad</h2>
+                <div class="formulario">
+                    <div class="campo">
+                        <label for="filtro-pais">Filtrar por país</label>
+                        <select id="filtro-pais">
+                            <option value="">Todos los países</option>
+                        </select>
+                    </div>
+                    <div class="campo">
+                        <label for="filtro-estado">Filtrar por estado</label>
+                        <select id="filtro-estado">
+                            <option value="">Todos los estados</option>
+                            <option value="pending">Pendientes</option>
+                            <option value="approved">Aprobadas</option>
+                            <option value="rejected">Desaprobadas</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="acciones">
+                    <button id="actualizar-plantillas" class="btn btn-secondary" type="button">Actualizar lista</button>
+                </div>
+                <p id="estado-lista" class="comprobante-modulos" role="status" aria-live="polite" hidden></p>
+                <div id="lista-plantillas" class="opciones-modulo"></div>
+            </section>
+
+            <section class="seccion">
+                <button id="mostrar-acceso" class="btn btn-secondary" type="button" aria-expanded="false" aria-controls="acceso-moderacion">
+                    Acceso para moderadores
+                </button>
+                <div id="acceso-moderacion" hidden>
+                    <h2>Acceso de moderadores</h2>
+                    <p class="inicio-descripcion">Ingresa la clave de moderador para mostrar las acciones de revisión en esta página.</p>
+                    <form id="formulario-acceso">
+                        <div class="campo">
+                            <label for="clave-moderador">Clave de moderador</label>
+                            <input id="clave-moderador" name="moderator_key" type="password" autocomplete="off" required>
+                        </div>
+                        <div class="acciones">
+                            <button class="btn btn-primary" type="submit">Mostrar acciones de moderación</button>
+                        </div>
+                    </form>
+                </div>
+                <p id="estado-moderador" class="comprobante-modulos" role="status" aria-live="polite" hidden></p>
+
+                <div id="panel-moderacion" hidden>
+                    <div class="acciones">
+                        <button id="cerrar-sesion" class="btn btn-secondary" type="button">Ocultar acciones</button>
+                    </div>
+                    <p class="inicio-descripcion">Las acciones para aprobar, desaprobar y comentar aparecen dentro de cada plantilla pendiente.</p>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script type="module" src="../js/plantillas-comunitarias.js"></script>
+</body>
+</html>
