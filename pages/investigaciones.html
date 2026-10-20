@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investigaciones - betaWorld</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/investigaciones.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>betaWorld</h1>
+            <p>Árbol tecnológico e investigaciones compartidas</p>
+            <nav class="nav-principal">
+                <a href="../index.html" class="nav-link">Inicio</a>
+            </nav>
+        </header>
+
+        <main>
+            <section class="seccion">
+                <h2>Árboles de investigación por país</h2>
+                <p class="inicio-descripcion">
+                    Añade una rama para un país. Todas las publicaciones usan el árbol tecnológico
+                    del proyecto y comparten sus estados con todos los visitantes.
+                </p>
+                <form id="formulario-rama">
+                    <div class="formulario">
+                        <div class="campo">
+                            <label for="nombre-pais">Nombre del país</label>
+                            <input id="nombre-pais" name="country" type="text" maxlength="100" required>
+                        </div>
+                    </div>
+                    <div class="acciones">
+                        <button id="anadir-rama" class="btn btn-primary" type="submit">Añadir rama</button>
+                    </div>
+                </form>
+                <p id="estado-rama" class="research-status" role="status" aria-live="polite" hidden></p>
+            </section>
+
+            <section class="seccion">
+                <h2>Ramas publicadas</h2>
+                <p class="inicio-descripcion">
+                    Cada país aparece como una pastilla plegable. En cada categoría hay un máximo
+                    de dos investigaciones simultáneas en proceso.
+                </p>
+                <div class="acciones">
+                    <button id="actualizar-investigaciones" class="btn btn-secondary" type="button">
+                        Actualizar ramas
+                    </button>
+                </div>
+                <p id="estado-investigaciones" class="research-status" role="status" aria-live="polite" hidden></p>
+                <div id="lista-ramas" class="research-publications"></div>
+            </section>
+        </main>
+    </div>
+    <script type="module" src="../js/investigaciones.js"></script>
+</body>
+</html>

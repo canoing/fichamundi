@@ -1,0 +1,805 @@
+{
+  "arboles_tecnologicos_CM": {
+    "arbol_civil_1910_1919": {
+      "medicina_moderna": [
+        {
+          "nivel": 1,
+          "nombre": "Medicina moderna (1)",
+          "coste_investigacion_manuales": 10,
+          "tiempo_investigacion_anos": 1,
+          "efectos": ["+20 HP a batallón hospital de campo", "+Tasa de crecimiento poblacional"]
+        },
+        {
+          "nivel": 2,
+          "nombre": "Medicina moderna (2)",
+          "coste_investigacion_manuales": 15,
+          "tiempo_investigacion_anos": 1,
+          "efectos": ["+20 HP a batallón hospital de campo", "+Tasa de crecimiento poblacional"]
+        },
+        {
+          "nivel": 3,
+          "nombre": "Medicina moderna (3)",
+          "coste_investigacion_manuales": 20,
+          "tiempo_investigacion_anos": 1,
+          "efectos": ["+40 HP a batallón hospital de campo", "+Tasa de crecimiento poblacional"]
+        }
+      ],
+      "ingenieria": [
+        {
+          "nivel": 1,
+          "nombre": "Ingeniería (1)",
+          "coste_investigacion_manuales": 15,
+          "tiempo_investigacion_anos": 1,
+          "efectos": ["+20 HP a batallón mantenimiento"]
+        },
+        {
+          "nivel": 2,
+          "nombre": "Ingeniería (2)",
+          "coste_investigacion_manuales": 15,
+          "tiempo_investigacion_anos": 1,
+          "efectos": ["+20 HP a batallón mantenimiento"]
+        },
+        {
+          "nivel": 3,
+          "nombre": "Ingeniería (3)",
+          "coste_investigacion_manuales": 20,
+          "tiempo_investigacion_anos": 2,
+          "efectos": ["+40 HP a batallón mantenimiento"]
+        }
+      ],
+      "construccion": [
+        {
+          "nivel": 1,
+          "nombre": "Construcción (1)",
+          "coste_investigacion_manuales": 15,
+          "tiempo_investigacion_anos": 1,
+          "efectos": ["+Velocidad de construcción"]
+        },
+        {
+          "nivel": 2,
+          "nombre": "Construcción (2)",
+          "coste_investigacion_manuales": 20,
+          "tiempo_investigacion_anos": 1,
+          "efectos": ["+Velocidad de construcción"]
+        },
+        {
+          "nivel": 3,
+          "nombre": "Construcción (3)",
+          "coste_investigacion_manuales": 25,
+          "tiempo_investigacion_anos": 2,
+          "efectos": ["+Velocidad de construcción"]
+        }
+      ],
+      "extraccion": [
+        {
+          "nivel": 1,
+          "nombre": "Extracción (1)",
+          "coste_investigacion_manuales": 10,
+          "tiempo_investigacion_anos": 2,
+          "efectos": ["+Extracción de recursos", "Extracción de petróleo nivel 2"]
+        },
+        {
+          "nivel": 2,
+          "nombre": "Extracción (2)",
+          "coste_investigacion_manuales": 20,
+          "tiempo_investigacion_anos": 4,
+          "efectos": ["+Extracción de recursos", "Extracción de petróleo nivel 3"]
+        }
+      ]
+    },
+    "linea_maritima_1910_1920": {
+      "motores": [
+        {
+          "nombre": "Motor de vapor avanzado",
+          "tecnologia_inicial": true,
+          "velocidad": 20,
+          "coste": "1M",
+          "coste_investigacion": "0M",
+          "tiempo_investigacion_anos": 0
+        },
+        {
+          "nombre": "Motor de diésel I",
+          "velocidad": 40,
+          "coste": "2M",
+          "coste_investigacion": "10M",
+          "tiempo_investigacion_anos": 2
+        },
+        {
+          "nombre": "Motor de diésel II",
+          "velocidad": 60,
+          "coste": "2M",
+          "coste_investigacion": "10M",
+          "tiempo_investigacion_anos": 1
+        },
+        {
+          "nombre": "Motor de diésel avanzado",
+          "velocidad": 80,
+          "coste": "2M",
+          "coste_investigacion": "15M",
+          "tiempo_investigacion_anos": 2
+        }
+      ],
+      "canones_pesados": [
+        {
+          "nombre": "Cañones pesados básicos",
+          "tecnologia_inicial": true,
+          "ataque": 45,
+          "velocidad_penalizacion": -5,
+          "coste": "2M",
+          "coste_investigacion": "0M",
+          "tiempo_investigacion_anos": 0
+        },
+        {
+          "nombre": "Cañones pesados refinados",
+          "ataque": 60,
+          "velocidad_penalizacion": -10,
+          "coste": "4M",
+          "coste_investigacion": "10M",
+          "tiempo_investigacion_anos": 2
+        },
+        {
+          "nombre": "Cañones pesados avanzados",
+          "ataque": 90,
+          "velocidad_penalizacion": -15,
+          "coste": "6M",
+          "coste_investigacion": "15M",
+          "tiempo_investigacion_anos": 3
+        }
+      ],
+      "blindaje_y_cascos_pesados": [
+        {
+          "nombre": "Blindaje Remachado",
+          "tecnologia_inicial": true,
+          "blindaje_defensa": { "pesado_P": 40, "ligero_L": 20 },
+          "velocidad_penalizacion": -5,
+          "coste": "1M",
+          "coste_investigacion": "0M",
+          "tiempo_investigacion_anos": 0
+        },
+        {
+          "nombre": "Blindaje remachado avanzado",
+          "blindaje_defensa": { "pesado_P": 80, "ligero_L": 30 },
+          "velocidad_penalizacion": { "pesado_P": -25, "ligero_L": -10 },
+          "coste": "1M",
+          "coste_investigacion": "20M",
+          "tiempo_investigacion_anos": 3
+        },
+        {
+          "nombre": "Casco soldado",
+          "blindaje_defensa": { "pesado_P": 120, "ligero_L": 60 },
+          "velocidad_penalizacion": { "pesado_P": -40, "ligero_L": -20 },
+          "coste": "2M",
+          "coste_investigacion": "40M",
+          "tiempo_investigacion_anos": 3
+        }
+      ],
+      "canones_ligeros_y_torpedos": {
+        "canones_ligeros": [
+          {
+            "nombre": "Cañón ligero básico",
+            "tecnologia_inicial": true,
+            "ataque": 10,
+            "velocidad_penalizacion": -5,
+            "coste": "1M",
+            "coste_investigacion": "0M",
+            "tiempo_investigacion_anos": 0
+          },
+          {
+            "nombre": "Cañón ligero refinado",
+            "ataque": 25,
+            "velocidad_penalizacion": -5,
+            "coste": "2M",
+            "coste_investigacion": "3M",
+            "tiempo_investigacion_anos": 1
+          }
+        ],
+        "torpedos": [
+          {
+            "nombre": "Torpedo básico",
+            "ataque": { "pesado_P": 30, "ligero_L": 10 },
+            "velocidad_penalizacion": -5,
+            "coste": "2M",
+            "coste_investigacion": "4M",
+            "tiempo_investigacion_anos": 2
+          },
+          {
+            "nombre": "Torpedo II",
+            "ataque": { "pesado_P": 60, "ligero_L": 15 },
+            "velocidad_penalizacion": -5,
+            "coste": "4M",
+            "coste_investigacion": "8M",
+            "tiempo_investigacion_anos": 2
+          }
+        ]
+      },
+      "submarinos_y_cargas_profundidad": {
+        "cascos_submarino": [
+          {
+            "nombre": "Casco submarino inicial",
+            "velocidad_penalizacion": -5,
+            "defensa": 5,
+            "capacidad_modulos": 2,
+            "coste": "4M",
+            "coste_investigacion": "20M",
+            "tiempo_investigacion_anos": 3
+          },
+          {
+            "nombre": "Casco submarino básico",
+            "velocidad_penalizacion": -15,
+            "defensa": 10,
+            "capacidad_modulos": 5,
+            "coste": "5M",
+            "coste_investigacion": "30M",
+            "tiempo_investigacion_anos": 2
+          }
+        ],
+        "cargas_profundidad": [
+          {
+            "nombre": "Cargas profundidad iniciales",
+            "ataque": 20,
+            "velocidad_penalizacion": -5,
+            "coste": "1M",
+            "coste_investigacion": "5M",
+            "tiempo_investigacion_anos": 2
+          },
+          {
+            "nombre": "Carga de profundidad básica",
+            "ataque": 40,
+            "velocidad_penalizacion": -10,
+            "coste": "2M",
+            "coste_investigacion": "6M",
+            "tiempo_investigacion_anos": 1
+          }
+        ]
+      },
+      "buques_superficie": {
+        "destructores": [
+          {
+            "nombre": "Casco destructor básico",
+            "tecnologia_inicial": true,
+            "capacidad_modulos": 3,
+            "velocidad": 5,
+            "coste": "5M",
+            "coste_investigacion": "0M",
+            "tiempo_investigacion_anos": 0
+          },
+          {
+            "nombre": "Casco destructor refinado",
+            "capacidad_modulos": 5,
+            "velocidad": 15,
+            "coste": "6M",
+            "coste_investigacion": "30M",
+            "tiempo_investigacion_anos": 1
+          }
+        ],
+        "fragatas": [
+          {
+            "nombre": "Casco fragata básico",
+            "tecnologia_inicial": true,
+            "capacidad_modulos": 2,
+            "velocidad": 15,
+            "coste": "2M",
+            "coste_investigacion": "0M",
+            "tiempo_investigacion_anos": 0
+          },
+          {
+            "nombre": "Casco fragata refinado",
+            "capacidad_modulos": 3,
+            "velocidad": 20,
+            "coste": "3M",
+            "coste_investigacion": "5M",
+            "tiempo_investigacion_anos": 1
+          }
+        ],
+        "cruceros_ligeros": [
+          {
+            "nombre": "Casco crucero ligero básico",
+            "tecnologia_inicial": true,
+            "capacidad_modulos": 8,
+            "velocidad": 10,
+            "coste": "10M",
+            "coste_investigacion": "0M",
+            "tiempo_investigacion_anos": 0
+          },
+          {
+            "nombre": "Casco crucero ligero refinado",
+            "capacidad_modulos": 10,
+            "velocidad": 15,
+            "coste": "12M",
+            "coste_investigacion": "35M",
+            "tiempo_investigacion_anos": 1
+          }
+        ],
+        "cruceros_pesados": [
+          {
+            "nombre": "Casco crucero pesado básico",
+            "capacidad_modulos": 10,
+            "velocidad": 0,
+            "coste": "30M",
+            "coste_investigacion": "45M",
+            "tiempo_investigacion_anos": 2
+          },
+          {
+            "nombre": "Casco crucero pesado refinado",
+            "capacidad_modulos": 12,
+            "velocidad": 5,
+            "coste": "40M",
+            "coste_investigacion": "50M",
+            "tiempo_investigacion_anos": 1
+          }
+        ],
+        "cruceros_batalla": [
+          {
+            "nombre": "Casco crucero de batalla básico",
+            "capacidad_modulos": 13,
+            "velocidad_penalizacion": -5,
+            "coste": "40M",
+            "coste_investigacion": "50M",
+            "tiempo_investigacion_anos": 2
+          },
+          {
+            "nombre": "Casco crucero de batalla refinado",
+            "capacidad_modulos": 15,
+            "velocidad_penalizacion": -10,
+            "coste": "50M",
+            "coste_investigacion": "55M",
+            "tiempo_investigacion_anos": 2
+          }
+        ],
+        "dreadnoughts": [
+          {
+            "nombre": "Casco de Dreadnought básico",
+            "capacidad_modulos": 15,
+            "velocidad_penalizacion": -10,
+            "coste": "80M",
+            "coste_investigacion": "55M",
+            "tiempo_investigacion_anos": 3
+          },
+          {
+            "nombre": "Casco de Dreadnought refinado",
+            "capacidad_modulos": 20,
+            "velocidad_penalizacion": -20,
+            "coste": "90M",
+            "coste_investigacion": "60M",
+            "tiempo_investigacion_anos": 2
+          }
+        ]
+      }
+    },
+    "aviacion": {
+      "fuselajes": {
+        "ligero": [
+          {
+            "nombre": "Fuselaje ligero básico (Tela)",
+            "tecnologia_inicial": true,
+            "capacidad_piezas": 4,
+            "vida": 11,
+            "peso": 1,
+            "coste_P_millones": 0.04,
+            "coste_investigacion_millones": 0,
+            "tiempo_investigacion_anos": 0
+          },
+          {
+            "nombre": "Fuselaje ligero refinado (Aluminio)",
+            "capacidad_piezas": 5,
+            "vida": 13,
+            "peso": 3,
+            "coste_P_millones": 0.05,
+            "coste_investigacion_millones": 2,
+            "tiempo_investigacion_anos": 1
+          },
+          {
+            "nombre": "Fuselaje ligero avanzado (Aleaciones de aluminio)",
+            "capacidad_piezas": 5,
+            "vida": 15,
+            "peso": 2,
+            "coste_P_millones": 0.05,
+            "coste_investigacion_millones": 2,
+            "tiempo_investigacion_anos": 2
+          }
+        ],
+        "mediano": [
+          {
+            "nombre": "Fuselaje mediano básico",
+            "regla_adicional": "+1 Peso por ala",
+            "capacidad_piezas": 5,
+            "vida": 13,
+            "peso": 4,
+            "coste_P_millones": 0.06,
+            "coste_investigacion_millones": 0,
+            "tiempo_investigacion_anos": 0
+          },
+          {
+            "nombre": "Fuselaje mediano refinado",
+            "regla_adicional": "+1 Peso por ala",
+            "capacidad_piezas": 6,
+            "vida": 16,
+            "peso": 6,
+            "coste_P_millones": 0.06,
+            "coste_investigacion_millones": 4,
+            "tiempo_investigacion_anos": 1
+          },
+          {
+            "nombre": "Fuselaje mediano avanzado",
+            "regla_adicional": "+1 Peso por ala",
+            "capacidad_piezas": 7,
+            "vida": 18,
+            "peso": 8,
+            "coste_P_millones": 0.07,
+            "coste_investigacion_millones": 3,
+            "tiempo_investigacion_anos": 2
+          }
+        ],
+        "pesado": [
+          {
+            "nombre": "Fuselaje pesado básico",
+            "regla_adicional": "+2 Peso por ala",
+            "capacidad_piezas": 6,
+            "vida": 16,
+            "peso": 6,
+            "coste_P_millones": 0.06,
+            "coste_investigacion_millones": 0,
+            "tiempo_investigacion_anos": 0
+          },
+          {
+            "nombre": "Fuselaje pesado refinado",
+            "regla_adicional": "+2 Peso por ala",
+            "capacidad_piezas": 8,
+            "vida": 20,
+            "peso": 8,
+            "coste_P_millones": 0.07,
+            "coste_investigacion_millones": 4,
+            "tiempo_investigacion_anos": 1
+          },
+          {
+            "nombre": "Fuselaje pesado avanzado",
+            "regla_adicional": "+2 Peso por ala",
+            "capacidad_piezas": 9,
+            "vida": 24,
+            "peso": 10,
+            "coste_P_millones": 0.09,
+            "coste_investigacion_millones": 3,
+            "tiempo_investigacion_anos": 2
+          }
+        ]
+      },
+      "armamento_y_motores": {
+        "ametralladoras": [
+          {
+            "nombre": "Ametralladora básica",
+            "tecnologia_inicial": true,
+            "ataque": 10,
+            "peso": 1,
+            "espacios_piezas": 1,
+            "coste_P_millones": 0.01,
+            "coste_investigacion_millones": 0,
+            "tiempo_investigacion_anos": 0
+          },
+          {
+            "nombre": "Ametralladora refinada",
+            "ataque": 13,
+            "peso": 2,
+            "espacios_piezas": 1,
+            "coste_P_millones": 0.01,
+            "coste_investigacion_millones": 1,
+            "tiempo_investigacion_anos": 1
+          },
+          {
+            "nombre": "Ametralladora avanzada",
+            "ataque": 15,
+            "peso": 2,
+            "espacios_piezas": 1,
+            "coste_P_millones": 0.02,
+            "coste_investigacion_millones": 1,
+            "tiempo_investigacion_anos": 2
+          }
+        ],
+        "canones": [
+          {
+            "nombre": "Cañón básico",
+            "nota": "Única tecnología investigable de las iniciales",
+            "ataque": 15,
+            "peso": 3,
+            "espacios_piezas": 2,
+            "coste_P_millones": 0.03,
+            "coste_investigacion_millones": 0,
+            "tiempo_investigacion_anos": 1
+          },
+          {
+            "nombre": "Cañón refinado",
+            "ataque": 18,
+            "peso": 4,
+            "espacios_piezas": 2,
+            "coste_P_millones": 0.04,
+            "coste_investigacion_millones": 1,
+            "tiempo_investigacion_anos": 1
+          },
+          {
+            "nombre": "Cañón avanzado",
+            "ataque": 21,
+            "peso": 7,
+            "espacios_piezas": 2,
+            "coste_P_millones": 0.06,
+            "coste_investigacion_millones": 2,
+            "tiempo_investigacion_anos": 2
+          }
+        ],
+        "motores": [
+          {
+            "nombre": "Motor básico",
+            "tecnologia_inicial": true,
+            "velocidad": 15,
+            "espacios_piezas": 1,
+            "coste_P_millones": 0.01,
+            "coste_investigacion_millones": 0,
+            "tiempo_investigacion_anos": 0
+          },
+          {
+            "nombre": "Motor refinado",
+            "velocidad": 20,
+            "espacios_piezas": 1,
+            "coste_P_millones": 0.01,
+            "coste_investigacion_millones": 1,
+            "tiempo_investigacion_anos": 1
+          },
+          {
+            "nombre": "Motor avanzado",
+            "velocidad": 25,
+            "espacios_piezas": 1,
+            "coste_P_millones": 0.01,
+            "coste_investigacion_millones": 1,
+            "tiempo_investigacion_anos": 2
+          }
+        ]
+      },
+      "bombas_torpedos_y_alas": {
+        "bombas": [
+          {
+            "nombre": "Bombas básicas",
+            "tecnologia_inicial": true,
+            "ataque_tierra": 7,
+            "peso": 6,
+            "espacios_piezas": 2,
+            "coste_P_millones": 0.03,
+            "coste_investigacion_millones": 0,
+            "tiempo_investigacion_anos": 0
+          },
+          {
+            "nombre": "Bombas refinadas",
+            "ataque_tierra": 10,
+            "peso": 8,
+            "espacios_piezas": 2,
+            "coste_P_millones": 0.03,
+            "coste_investigacion_millones": 1,
+            "tiempo_investigacion_anos": 1
+          },
+          {
+            "nombre": "Bombas avanzadas",
+            "ataque_tierra": 14,
+            "peso": 10,
+            "espacios_piezas": 3,
+            "coste_P_millones": 0.05,
+            "coste_investigacion_millones": 0,
+            "tiempo_investigacion_anos": 2
+          }
+        ],
+        "torpedos": [
+          {
+            "nombre": "Torpedo aéreo básico",
+            "nota": "Requiere torpedo de la rama naval investigado primero",
+            "ataque_naval": 6,
+            "peso": 5,
+            "espacios_piezas": 2,
+            "coste_P_millones": 0.04,
+            "coste_investigacion_millones": 0,
+            "tiempo_investigacion_anos": 0
+          },
+          {
+            "nombre": "Torpedo aéreo refinado",
+            "ataque_naval": 9,
+            "peso": 5,
+            "espacios_piezas": 2,
+            "coste_P_millones": 0.05,
+            "coste_investigacion_millones": 2,
+            "tiempo_investigacion_anos": 1
+          },
+          {
+            "nombre": "Torpedo aéreo avanzado",
+            "ataque_naval": 13,
+            "peso": 5,
+            "espacios_piezas": 2,
+            "coste_P_millones": 0.05,
+            "coste_investigacion_millones": 2,
+            "tiempo_investigacion_anos": 2
+          }
+        ],
+        "alas": [
+          {
+            "nombre": "Monoplano",
+            "tecnologia_inicial": true,
+            "maniobrabilidad": 2,
+            "espacios_piezas": 1,
+            "coste_P_millones": 0.01,
+            "coste_investigacion_millones": 0,
+            "tiempo_investigacion_anos": 0
+          },
+          {
+            "nombre": "Biplano",
+            "tecnologia_inicial": true,
+            "maniobrabilidad": 4,
+            "espacios_piezas": 1,
+            "coste_P_millones": 0.001,
+            "coste_investigacion_millones": 0,
+            "tiempo_investigacion_anos": 0
+          },
+          {
+            "nombre": "Triplano",
+            "tecnologia_inicial": true,
+            "maniobrabilidad": 6,
+            "espacios_piezas": 1,
+            "coste_P_millones": 0.02,
+            "coste_investigacion_millones": 0,
+            "tiempo_investigacion_anos": 0
+          }
+        ]
+      }
+    },
+    "arbol_tanques_y_vehiculos_1910_1920": {
+      "motores": {
+        "motores_tanque": [
+          {
+            "nombre": "Motores tanque prototipos",
+            "tecnologia_inicial": true,
+            "velocidad": 7,
+            "capacidad_peso": 5,
+            "coste_p_millones": 0.10,
+            "coste_investigacion_millones": 0,
+            "tiempo_investigacion_anos": 0
+          },
+          {
+            "nombre": "Motores tanque iniciales",
+            "velocidad": 10,
+            "capacidad_peso": 7,
+            "coste_p_millones": 0.15,
+            "coste_investigacion_millones": 2,
+            "tiempo_investigacion_anos": 2
+          },
+          {
+            "nombre": "Motores tanque mejorados",
+            "velocidad": 12,
+            "capacidad_peso": 9,
+            "coste_p_millones": 0.20,
+            "coste_investigacion_millones": 2,
+            "tiempo_investigacion_anos": 3
+          }
+        ],
+        "motores_carros": [
+          {
+            "nombre": "Motores carros iniciales",
+            "tecnologia_inicial": true,
+            "velocidad": 5,
+            "capacidad_peso": 4,
+            "coste_p_millones": 0.03,
+            "coste_investigacion_millones": 0,
+            "tiempo_investigacion_anos": 0
+          },
+          {
+            "nombre": "Motores carros mejorados",
+            "velocidad": 7,
+            "capacidad_peso": 5,
+            "coste_p_millones": 0.05,
+            "coste_investigacion_millones": 1,
+            "tiempo_investigacion_anos": 2
+          },
+          {
+            "nombre": "Motores carros refinados",
+            "velocidad": 8,
+            "capacidad_peso": 6,
+            "coste_p_millones": 0.10,
+            "coste_investigacion_millones": 1,
+            "tiempo_investigacion_anos": 2
+          }
+        ]
+      },
+      "blindaje_y_traccion": {
+        "blindajes": [
+          {
+            "nombre": "Blindaje remachado básico",
+            "tecnologia_inicial": true,
+            "blindaje_por_modulo": 5,
+            "peso": { "pesado_P": 3, "ligero_L": 2 },
+            "coste_p_millones": 0.30,
+            "coste_investigacion_millones": 0,
+            "tiempo_investigacion_anos": 0
+          },
+          {
+            "nombre": "Blindaje remachado mejorado",
+            "blindaje_P_por_modulo": 15,
+            "blindaje_L_por_modulo": 10,
+            "peso": { "pesado_P": 4, "ligero_L": 2 },
+            "coste_p_millones": 0.40,
+            "coste_investigacion_millones": 2,
+            "tiempo_investigacion_anos": 2
+          },
+          {
+            "nombre": "Blindaje remachado refinado",
+            "blindaje_P_por_modulo": 20,
+            "blindaje_L_por_modulo": 15,
+            "peso": { "pesado_P": 5, "ligero_L": 3 },
+            "coste_p_millones": 0.70,
+            "coste_investigacion_millones": 3,
+            "tiempo_investigacion_anos": 2
+          }
+        ],
+        "traccion": [
+          {
+            "nombre": "Llantas",
+            "tecnologia_inicial": true,
+            "capacidad_peso": "1 por cada 4 llantas",
+            "coste_p_millones": 0.15,
+            "coste_investigacion_millones": 0,
+            "tiempo_investigacion_anos": 0
+          },
+          {
+            "nombre": "Orugas de placas",
+            "tecnologia_inicial": true,
+            "capacidad_peso": "2 por cada 2 orugas",
+            "coste_p_millones": 0.20,
+            "coste_investigacion_millones": 0,
+            "tiempo_investigacion_anos": 0
+          },
+          {
+            "nombre": "Orugas de placas mejoradas",
+            "capacidad_peso": "2 por cada oruga",
+            "coste_p_millones": 0.25,
+            "coste_investigacion_millones": 2,
+            "tiempo_investigacion_anos": 2
+          }
+        ]
+      },
+      "chasis_y_comunicacion": {
+        "chasis": [
+          {
+            "nombre": "Chasis grande inicial",
+            "tecnologia_inicial": true,
+            "capacidad_piezas": 7,
+            "peso": 2,
+            "hp": 20,
+            "coste_p_millones": 8.0,
+            "coste_investigacion_millones": 0,
+            "tiempo_investigacion_anos": 0
+          },
+          {
+            "nombre": "Chasis chico inicial",
+            "tecnologia_inicial": true,
+            "capacidad_piezas": 5,
+            "peso": 1,
+            "hp": 15,
+            "coste_p_millones": 6.0,
+            "coste_investigacion_millones": 0,
+            "tiempo_investigacion_anos": 0
+          }
+        ],
+        "comunicacion": [
+          {
+            "nombre": "Sistema de banderas",
+            "tecnologia_inicial": true,
+            "velocidad": 1,
+            "ataque": 0,
+            "coste_p_millones": 0.01,
+            "coste_investigacion_millones": 0,
+            "tiempo_investigacion_anos": 0
+          },
+          {
+            "nombre": "Sistema de radio inicial",
+            "velocidad": 4,
+            "ataque": 3,
+            "coste_p_millones": 0.03,
+            "coste_investigacion_millones": 3,
+            "tiempo_investigacion_anos": 3
+          }
+        ]
+      }
+    }
+  }
+}
