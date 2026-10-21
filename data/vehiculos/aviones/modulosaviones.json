@@ -160,7 +160,7 @@
       "maniobrabilidad": 4,
       "cantidad_alas": 2,
       "espacios_piezas": 1,
-      "coste": 0.001
+      "coste": 0.01
     },
     {
       "id": "triplano",

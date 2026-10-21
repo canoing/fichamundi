@@ -1039,6 +1039,250 @@ main {
     transform: scale(1.06);
 }
 
+/* Modo oscuro Prinz */
+.theme-toggle {
+    padding: 8px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    font: inherit;
+    font-size: 0.8em;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.theme-toggle:hover,
+.theme-toggle:focus-visible {
+    background: rgba(255, 255, 255, 0.22);
+}
+
+.theme-toggle:focus-visible {
+    outline: 2px solid #ffd166;
+    outline-offset: 2px;
+}
+
+html[data-theme="prinz"] {
+    color-scheme: dark;
+}
+
+html[data-theme="prinz"] body {
+    background: linear-gradient(135deg, #07090c 0%, #070a0e 100%);
+    color: #f1f5f9;
+}
+
+html[data-theme="prinz"] header,
+html[data-theme="prinz"] .plegable-header,
+html[data-theme="prinz"] .footer {
+    background: linear-gradient(135deg, #080b10 0%, #0c1118 100%);
+}
+
+html[data-theme="prinz"] main {
+    background: #10151c;
+    color: #f1f5f9;
+}
+
+html[data-theme="prinz"] .inicio-descripcion,
+html[data-theme="prinz"] .objetivo-tarjeta,
+html[data-theme="prinz"] .campo label,
+html[data-theme="prinz"] .info-label,
+html[data-theme="prinz"] .stat-box label,
+html[data-theme="prinz"] .stat-box-pl label,
+html[data-theme="prinz"] .qty-value {
+    color: #f1f5f9;
+}
+
+html[data-theme="prinz"] .seccion {
+    border-color: #35404d;
+}
+
+html[data-theme="prinz"] .seccion h2,
+html[data-theme="prinz"] .inicio-tarjeta-header h3,
+html[data-theme="prinz"] .resumen-stats h3,
+html[data-theme="prinz"] .stats-grid-pl h4,
+html[data-theme="prinz"] .seccion-imagen h3,
+html[data-theme="prinz"] .objetivo-tarjeta strong {
+    color: #b9dcff;
+}
+
+html[data-theme="prinz"] .inicio-tarjeta,
+html[data-theme="prinz"] .opcion-casco,
+html[data-theme="prinz"] .modulo-content,
+html[data-theme="prinz"] .info-item,
+html[data-theme="prinz"] .stat-box,
+html[data-theme="prinz"] .research-branch,
+html[data-theme="prinz"] .research-sub-branch,
+html[data-theme="prinz"] .research-node {
+    background: #191f28;
+    color: #f1f5f9;
+}
+
+html[data-theme="prinz"] .inicio-tarjeta {
+    border-color: #496b8c;
+}
+
+html[data-theme="prinz"] .inicio-tarjeta p,
+html[data-theme="prinz"] .capacidad-restante,
+html[data-theme="prinz"] .research-empty {
+    color: #e2e8f0;
+}
+
+html[data-theme="prinz"] .inicio-tarjeta-bloqueada {
+    background: #20252c;
+    border-color: #737f8c;
+}
+
+html[data-theme="prinz"] .inicio-tarjeta-bloqueada h3 {
+    color: #d5dde5;
+}
+
+html[data-theme="prinz"] .campo input,
+html[data-theme="prinz"] .campo select,
+html[data-theme="prinz"] .campo textarea,
+html[data-theme="prinz"] .research-state-form select {
+    border-color: #596778;
+    background: #090d12;
+    color: #f1f5f9;
+}
+
+html[data-theme="prinz"] .campo input:focus,
+html[data-theme="prinz"] .campo select:focus,
+html[data-theme="prinz"] .campo textarea:focus {
+    background: #121a24;
+}
+
+html[data-theme="prinz"] .campo input::placeholder,
+html[data-theme="prinz"] .campo textarea::placeholder {
+    color: #b8c4d1;
+}
+
+html[data-theme="prinz"] .seccion-cascos,
+html[data-theme="prinz"] .objetivo-destacado {
+    background: linear-gradient(135deg, #251d1c 0%, #302521 100%);
+}
+
+html[data-theme="prinz"] .seccion-cascos h3 {
+    color: #ffb4a8;
+}
+html[data-theme="prinz"] .seccion-objetivo {
+    background: linear-gradient(135deg, #151c25 0%, #1c2632 100%);
+    border-color: #6285a6;
+}
+
+html[data-theme="prinz"] .seccion-objetivo .objetivo-destacado {
+    background: linear-gradient(135deg, #28221b 0%, #352a20 100%);
+    border-color: #b78d55;
+    color: #f4d7a1;
+}
+html[data-theme="prinz"] .casco-info .info-item,
+html[data-theme="prinz"] .opcion-modulo,
+html[data-theme="prinz"] .stat-box-pl {
+    background: #1d2631;
+    color: #f1f5f9;
+}
+
+html[data-theme="prinz"] .modulo-categoria {
+    background: #141a22;
+    border-color: #3c4a5a;
+}
+
+html[data-theme="prinz"] .comprobante-modulos,
+html[data-theme="prinz"] .drop-zone,
+html[data-theme="prinz"] .imagen-visor,
+html[data-theme="prinz"] .research-status,
+html[data-theme="prinz"] .research-empty {
+    background: #172432;
+    border-color: #496987;
+    color: #f1f5f9;
+}
+
+html[data-theme="prinz"] .research-status[data-error="true"] {
+    background: #3a1d24;
+    color: #ffe4e8;
+}
+
+html[data-theme="prinz"] .research-publication {
+    background: #141a22;
+    border-color: #496b8c;
+}
+
+html[data-theme="prinz"] .research-publication > summary,
+html[data-theme="prinz"] .research-branch > summary,
+html[data-theme="prinz"] .research-sub-branch > summary,
+html[data-theme="prinz"] .research-slot-counter {
+    background: #202c39;
+    color: #f1f5f9;
+}
+
+html[data-theme="prinz"] .research-node,
+html[data-theme="prinz"] .research-branch,
+html[data-theme="prinz"] .research-sub-branch {
+    border-color: #3c4a5a;
+}
+
+html[data-theme="prinz"] .research-node h4,
+html[data-theme="prinz"] .research-node-details > summary {
+    color: #b9dcff;
+}
+
+html[data-theme="prinz"] .research-initial,
+html[data-theme="prinz"] .research-category-feedback {
+    color: #a8e6b1;
+}
+
+html[data-theme="prinz"] .research-category-save {
+    border-color: #3c4a5a;
+}
+
+html[data-theme="prinz"] .btn-secondary {
+    background: #303b48;
+    color: #f1f5f9;
+}
+
+html[data-theme="prinz"] .resumen-stats,
+html[data-theme="prinz"] .output-panel {
+    background: linear-gradient(135deg, #18232f 0%, #202d3b 100%);
+    border-color: #506981;
+}
+
+html[data-theme="prinz"] .enigma-subtitle,
+html[data-theme="prinz"] .output-header {
+    color: #e2edf8;
+}
+
+html[data-theme="prinz"] .output-state {
+    background: rgba(185, 220, 255, 0.16);
+    color: #f1f7ff;
+}
+
+html[data-theme="prinz"] .cipher-letter {
+    background: rgba(185, 220, 255, 0.14);
+    border-color: rgba(185, 220, 255, 0.28);
+    color: #f1f7ff;
+}
+
+html[data-theme="prinz"] main :is(p, span, label, small, li, dt, dd, summary, h1, h2, h3, h4, h5, h6, a) {
+    color: #f1f5f9;
+}
+
+html[data-theme="prinz"] main :is(h2, h3, h4),
+html[data-theme="prinz"] main .info-value,
+html[data-theme="prinz"] main .motor-base-label,
+html[data-theme="prinz"] main .stat-value,
+html[data-theme="prinz"] main .stat-value-pl,
+html[data-theme="prinz"] main .research-node-details > summary {
+    color: #b9dcff;
+}
+
+html[data-theme="prinz"] main .inicio-tarjeta-bloqueada h3 {
+    color: #d5dde5;
+}
+
+html[data-theme="prinz"] main .research-initial,
+html[data-theme="prinz"] main .research-category-feedback {
+    color: #a8e6b1;
+}
+
 .result-final {
     background: rgba(13, 31, 45, 0.95);
     color: #dfeeff;
