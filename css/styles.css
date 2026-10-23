@@ -663,6 +663,17 @@ main {
     border-left: 4px solid #ddd;
 }
 
+.plantilla-comentarios {
+    margin-top: 10px;
+    font-size: 0.85em;
+}
+
+.plantilla-comentarios > summary {
+    color: #2d5a7b;
+    cursor: pointer;
+    font-weight: 600;
+}
+
 /* Imagen del avión (visor) */
 .seccion-imagen {
     margin-top: 15px;
