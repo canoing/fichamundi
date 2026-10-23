@@ -551,11 +551,11 @@ function actualizarCapacidadUI() {
 // Acciones
 // --------------------------------------------------------------------------
 function agregarEventListeners() {
-    const guardarBtn = document.getElementById('btn-guardar');
+    const publicarBtn = document.getElementById('btn-publicar-ficha');
     const limpiarBtn = document.getElementById('btn-limpiar');
 
-    if (guardarBtn) {
-        guardarBtn.addEventListener('click', () => guardarFicha());
+    if (publicarBtn) {
+        publicarBtn.addEventListener('click', () => publicarFicha());
     }
 
     if (limpiarBtn) {
@@ -567,11 +567,24 @@ function agregarEventListeners() {
     }
 }
 
-function guardarFicha() {
+function publicarFicha() {
+    const ficha = crearFicha();
+    if (!ficha) return;
+
+    window.publicarPlantilla({
+        country: document.getElementById('pais').value,
+        filePrefix: 'avion',
+        content: ficha,
+        button: document.getElementById('btn-publicar-ficha'),
+        status: document.getElementById('estado-publicacion')
+    });
+}
+
+function crearFicha() {
     if (!seleccionados.fuselaje) {
-        console.error('Error: No se puede guardar la ficha sin un fuselaje seleccionado');
+        console.error('Error: No se puede publicar la ficha sin un fuselaje seleccionado');
         alert('Debes seleccionar un fuselaje primero');
-        return;
+        return null;
     }
 
     const nombre = document.getElementById('nombre').value || 'Ficha Sin Nombre';
@@ -585,7 +598,7 @@ function guardarFicha() {
 
     if (capacidadPiezasActual > 0 && calcularPiezasUsadas(seleccionados) > capacidadPiezasActual) {
         alert(`El fuselaje no puede llevar más de ${capacidadPiezasActual} piezas.`);
-        return;
+        return null;
     }
 
     const ficha = {
@@ -626,18 +639,7 @@ function guardarFicha() {
         descripcion
     };
 
-    const dataStr = JSON.stringify(ficha, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${nombre.replace(/\s+/g, '-').toLowerCase()}_${Date.now()}.json`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-
-    alert('Ficha guardada como JSON');
+    return ficha;
 }
 
 function limpiarFormulario() {

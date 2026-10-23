@@ -65,7 +65,7 @@ function asegurarMotorBase(estado, motoresDisponibles = []) {
 }
 
 async function cargarDatos() {
-    try {await fetch
+    try {
         const resCascos = await fetch('../data/vehiculos/naval/cascos.json');
         const datosCascos = await resCascos.json();
         cascos = datosCascos.cascos;
@@ -496,11 +496,11 @@ function parsearCoste(coste) {
 }
 
 function agregarEventListeners() {
-    const guardarBtn = document.getElementById('btn-guardar');
+    const publicarBtn = document.getElementById('btn-publicar-ficha');
     const limpiarBtn = document.getElementById('btn-limpiar');
 
-    if (guardarBtn) {
-        guardarBtn.addEventListener('click', () => guardarFicha());
+    if (publicarBtn) {
+        publicarBtn.addEventListener('click', () => publicarFicha());
     }
 
     if (limpiarBtn) {
@@ -512,13 +512,25 @@ function agregarEventListeners() {
     }
 }
 
-function guardarFicha() {
+function publicarFicha() {
+    const ficha = crearFicha();
+    if (!ficha) return;
+
+    window.publicarPlantilla({
+        country: document.getElementById('pais').value,
+        filePrefix: 'buque',
+        content: ficha,
+        button: document.getElementById('btn-publicar-ficha'),
+        status: document.getElementById('estado-publicacion')
+    });
+}
+
+function crearFicha() {
     if (!seleccionados.casco) {
-          console.error('Error: No se puede guardar la ficha sin un casco selecciondo');
+        console.error('Error: No se puede publicar la ficha sin un casco seleccionado');
         alert('Debes seleccionar un casco primero');
-      
+        return null;
     }
-    if (seleccionados.casco) {
 
     const nombre = document.getElementById('nombre').value || 'Ficha Sin Nombre';
     const fecha = document.getElementById("fecha").value || "Fecha no especificada";
@@ -529,7 +541,7 @@ function guardarFicha() {
 
     if (capacidadModulosActual > 0 && modulosTotales > capacidadModulosActual) {
         alert(`El casco no puede llevar más de ${capacidadModulosActual} módulos.`);
-        return;
+        return null;
     }
 
     const ficha = {
@@ -563,20 +575,7 @@ function guardarFicha() {
         descripcion
     };
 
-    const dataStr = JSON.stringify(ficha, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${nombre.replace(/\s+/g, '-').toLowerCase()}_${Date.now()}.json`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-
-    alert('Ficha guardada como JSON');
-    
-    }
+    return ficha;
 }
 
 function limpiarFormulario() {

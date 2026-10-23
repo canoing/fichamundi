@@ -742,11 +742,11 @@ function calcularTotales() {
    ============================================================ */
 
 function agregarEventListeners() {
-    const guardarBtn = document.getElementById('btn-guardar');
+    const publicarBtn = document.getElementById('btn-publicar-ficha');
     const limpiarBtn = document.getElementById('btn-limpiar');
 
-    if (guardarBtn) {
-        guardarBtn.addEventListener('click', () => guardarFicha());
+    if (publicarBtn) {
+        publicarBtn.addEventListener('click', () => publicarFicha());
     }
 
     if (limpiarBtn) {
@@ -758,20 +758,33 @@ function agregarEventListeners() {
     }
 }
 
-function guardarFicha() {
+function publicarFicha() {
+    const ficha = crearFicha();
+    if (!ficha) return;
+
+    window.publicarPlantilla({
+        country: document.getElementById('pais').value,
+        filePrefix: 'tanque',
+        content: ficha,
+        button: document.getElementById('btn-publicar-ficha'),
+        status: document.getElementById('estado-publicacion')
+    });
+}
+
+function crearFicha() {
     if (!seleccionados.chasis) {
-        alert('Debes seleccionar un chasis primero');
-        return;
+        alert('Debes seleccionar un chasis antes de publicar');
+        return null;
     }
 
     if (!esValidoPorPeso()) {
-        alert('No puedes guardar una ficha que supera el límite de peso. Revisa la configuración.');
-        return;
+        alert('No puedes publicar una ficha que supera el límite de peso. Revisa la configuración.');
+        return null;
     }
 
     if (!esValidoPorPiezas()) {
-        alert(`No puedes guardar una ficha que supera la capacidad de piezas. Máximo ${capacidadPiezasActual} piezas.`);
-        return;
+        alert(`No puedes publicar una ficha que supera la capacidad de piezas. Máximo ${capacidadPiezasActual} piezas.`);
+        return null;
     }
 
     const nombre = document.getElementById('nombre').value || 'Ficha Sin Nombre';
@@ -821,18 +834,7 @@ function guardarFicha() {
         descripcion
     };
 
-    const dataStr = JSON.stringify(ficha, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${nombre.replace(/\s+/g, '-').toLowerCase()}_${Date.now()}.json`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-
-    alert('Ficha guardada como JSON');
+    return ficha;
 }
 
 function limpiarFormulario() {

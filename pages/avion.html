@@ -122,13 +122,11 @@
 
             <!-- BOTONES DE ACCIÓN -->
             <div class="acciones">
-                <button id="btn-guardar" class="btn btn-primary">Guardar Ficha</button>
+                <button id="btn-publicar-ficha" class="btn btn-primary" type="button">Publicar ficha</button>
                 <button id="btn-limpiar" class="btn btn-secondary">Limpiar Todo</button>
             </div>
-           <div class="comprobante-modulos">
-                Guardar la ficha significa que se descargará un documento JSON
-                el cual debes colocar dentro del visor de tanques.
-            </div>
+            <p id="estado-publicacion" class="comprobante-modulos" role="status" aria-live="polite" hidden></p>
+            <div class="comprobante-modulos">La ficha se publicará directamente en Plantillas comunitarias y quedará pendiente de revisión.</div>
              <nav class="nav-principal">
                 <a href="visor-avion.html" class="nav-link active">Visor</a>
             </nav>
@@ -152,6 +150,7 @@
             });
         });
     </script>
+    <script src="../js/publicar-plantilla.js"></script>
     <script src="../js/aviacio/constructor.js"></script>
 </body>
 </html>

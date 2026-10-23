@@ -349,29 +349,30 @@ function inicializarEventos() {
         }
     });
 
-    document.getElementById('btn-guardar-division').addEventListener('click', () => {
+    document.getElementById('btn-publicar-ficha').addEventListener('click', () => {
         const formulario = document.getElementById('informacion-division');
         if (!formulario.reportValidity()) return;
+        if (!catalogoDivisiones) {
+            const aviso = document.getElementById('aviso-guardado');
+            aviso.textContent = 'No se puede publicar hasta que termine de cargar la plantilla de divisiones.';
+            aviso.hidden = false;
+            aviso.style.display = 'flex';
+            aviso.setAttribute('role', 'alert');
+            return;
+        }
+
         const ficha = crearFichaDivision({
             nombre_unidad: document.getElementById('nombre-unidad').value.trim(),
             pais_operador: document.getElementById('pais-operador').value.trim(),
-            tipo_unidad: document.getElementById('tipo-unidad').value
+            tipo_unidad: document.getElementById('tipo-unidad').value.trim()
         }, regimientosDivision, apoyosDivision, catalogoDivisiones);
-        const contenido = new Blob([JSON.stringify(ficha, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(contenido);
-        const enlace = document.createElement('a');
-        const nombreArchivo = ficha.titulo.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-            .replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '').toLowerCase();
-        enlace.href = url;
-        enlace.download = `division-${nombreArchivo || 'sin-nombre'}.json`;
-        document.body.appendChild(enlace);
-        enlace.click();
-        enlace.remove();
-        URL.revokeObjectURL(url);
-        const aviso = document.getElementById('aviso-guardado');
-        aviso.textContent = 'Ficha de división descargada.';
-        aviso.hidden = false;
-        aviso.style.display = 'flex';
+        window.publicarPlantilla({
+            country: document.getElementById('pais-operador').value,
+            filePrefix: 'division',
+            content: ficha,
+            button: document.getElementById('btn-publicar-ficha'),
+            status: document.getElementById('aviso-guardado')
+        });
     });
 
     document.getElementById('btn-limpiar-division').addEventListener('click', () => {
