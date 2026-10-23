@@ -1,19 +1,36 @@
 /**
  * CREADOR DE FICHAS DE TANQUES Y VEHÍCULOS BLINDADOS - betaWorld
- * Sistema de construcción de blindados con selección modular,
- * importador de módulos personalizados (chasis y armamento) y
+ * Sistema de construcción de blindados con selección modular y
  * cálculo automático de peso/capacidad/velocidad.
  */
 
 // Estado global de la aplicación
 let chasisBase = {};                 // chazi.json -> { chasis: [], sistemas_traccion: [] }
 let modulos = {};                    // modulo.json -> { motores, blindajes, comunicacion }
-let chasisPersonalizados = [];       // chasis importados por el usuario (plantilla chazispersona.json)
-let armamentosPersonalizados = [];   // armamento importado por el usuario (plantilla armapersona.json)
+let chasisBaseCatalogo = {};
+let modulosBaseCatalogo = {};
+let chasisAprobados = [];
+let armamentosAprobados = [];
 let seleccionados = {};
 let estiloBlindajeActual = 'P';      // 'P' (Grande) o 'L' (Chico), según el chasis
 let categoriaAbierta = {};
 let capacidadPiezasActual = 0;       // Capacidad de piezas del chasis seleccionado
+
+function escaparHtml(valor) {
+    return String(valor ?? '').replace(/[&<>"']/g, caracter => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    })[caracter]);
+}
+
+function limpiarMarcaModulo(modulo) {
+    if (!modulo || typeof modulo !== 'object') return modulo;
+    const { modulo_personalizado, ...limpio } = modulo;
+    return limpio;
+}
 
 /* ============================================================
    HELPERS DE CATEGORÍAS Y CANTIDADES
@@ -212,8 +229,10 @@ async function cargarDatos() {
             fetch('../data/vehiculos/tanque/modulo.json')
         ]);
 
-        chasisBase = await resChazi.json();
-        modulos = await resModulo.json();
+        chasisBaseCatalogo = await resChazi.json();
+        modulosBaseCatalogo = await resModulo.json();
+        chasisBase = chasisBaseCatalogo;
+        modulos = modulosBaseCatalogo;
 
         // Motor base automático (primer motor disponible)
         const motorBase = Array.isArray(modulos.motores) && modulos.motores.length > 0
@@ -244,7 +263,6 @@ if (typeof document !== 'undefined') {
         if (cargado) {
             generarModulos();
             agregarEventListeners();
-            agregarImportador();
             actualizarUI();
             calcularTotales();
             actualizarCapacidadUI();
@@ -252,6 +270,61 @@ if (typeof document !== 'undefined') {
             alert('Error: No se pudo cargar el archivo de configuración');
         }
     });
+}
+
+if (typeof window !== 'undefined') {
+    window.aplicarModulosPersonalizadosTanque = (customModules) => {
+        const byType = new Map();
+        customModules.forEach(module => {
+            const list = byType.get(module.module_type) || [];
+            list.push({
+                id: module.id,
+                modulo_personalizado: true,
+                ...module.content,
+                pais_modulo: module.country,
+                coste: Number(module.price)
+            });
+            byType.set(module.module_type, list);
+        });
+        chasisAprobados = customModules
+            .filter(module => module.module_type === 'chassis')
+            .map(module => ({
+                id: module.id,
+                modulo_personalizado: true,
+                ...module.content,
+                pais_modulo: module.country,
+                coste: Number(module.price)
+            }));
+        armamentosAprobados = byType.get('armamento') || [];
+        chasisBase = {
+            ...chasisBaseCatalogo,
+            sistemas_traccion: [
+                ...(chasisBaseCatalogo.sistemas_traccion || []),
+                ...(byType.get('traccion') || [])
+            ]
+        };
+        modulos = {
+            ...modulosBaseCatalogo,
+            motores: [...(modulosBaseCatalogo.motores || []), ...(byType.get('motor') || [])],
+            comunicacion: [...(modulosBaseCatalogo.comunicacion || []), ...(byType.get('comunicacion') || [])],
+            blindajes: [...(modulosBaseCatalogo.blindajes || []), ...(byType.get('blindaje') || [])]
+        };
+
+        const approvedIds = new Set(customModules.map(module => module.id));
+        if (seleccionados.chasis?.modulo_personalizado && !approvedIds.has(seleccionados.chasis.id)) {
+            seleccionados.chasis = null;
+            capacidadPiezasActual = 0;
+        }
+        ['traccion', 'motor', 'comunicacion', 'blindaje', 'armamento'].forEach(category => {
+            seleccionados[category] = (seleccionados[category] || []).filter(module =>
+                !module.modulo_personalizado || approvedIds.has(module.id)
+            );
+        });
+        generarModulos();
+        actualizarUI();
+        calcularTotales();
+        actualizarCapacidadUI();
+    };
 }
 
 /* ============================================================
@@ -280,14 +353,12 @@ function generarModulos() {
         generarCategoriaMultiple('traccion', 'Sistema de Tracción (Llantas / Orugas)', container, chasisBase.sistemas_traccion);
     }
 
-    // El armamento SOLO proviene del importador del usuario.
-    if (armamentosPersonalizados.length > 0) {
-        generarCategoriaMultiple('armamento', 'Armamento', container, armamentosPersonalizados);
+    if (armamentosAprobados.length > 0) {
+        generarCategoriaMultiple('armamento', 'Armamento aprobado', container, armamentosAprobados);
     }
 }
 
-/* Genera las tarjetas de selección de chasis (radio), incluyendo
-   los chasis personalizados importados. */
+/* Genera las tarjetas de selección de chasis, incluyendo módulos aprobados. */
 function generarChasis(container) {
     const seccionChasis = document.createElement('div');
     seccionChasis.className = 'seccion-cascos';
@@ -296,7 +367,7 @@ function generarChasis(container) {
     const chasisContainer = document.createElement('div');
     chasisContainer.className = 'cascos-container';
 
-    const lista = (chasisBase.chasis || []).concat(chasisPersonalizados);
+    const lista = (chasisBase.chasis || []).concat(chasisAprobados);
 
     lista.forEach((chasis, index) => {
         const chasisDiv = document.createElement('div');
@@ -308,15 +379,16 @@ function generarChasis(container) {
 
         chasisDiv.innerHTML = `
             <label>
-                <input type="radio" name="chasis" id="${radioId}" value="${chasis.nombre}" ${isChecked}>
-                <strong>${chasis.nombre}</strong>
-                <span class="capacidad-badge">${chasis.tipo_blindaje === 'L' ? 'L' : 'P'}</span>
+                <input type="radio" name="chasis" id="${radioId}" value="${escaparHtml(chasis.nombre)}" ${isChecked}>
+                <strong>${escaparHtml(chasis.nombre)}</strong>
+                <span class="capacidad-badge">${escaparHtml(chasis.tipo_blindaje === 'L' ? 'L' : 'P')}</span>
             </label>
             <div class="casco-info">
-                <div class="info-item"><span class="info-label">Piezas:</span><span class="info-value">${chasis.capacidad_piezas}</span></div>
-                <div class="info-item"><span class="info-label">Peso:</span><span class="info-value">${chasis.peso}</span></div>
-                <div class="info-item"><span class="info-label">HP:</span><span class="info-value">${chasis.hp}</span></div>
-                <div class="info-item"><span class="info-label">Coste:</span><span class="info-value">${chasis.coste}M</span></div>
+                ${chasis.pais_modulo ? `<div class="info-item"><span class="info-label">País del módulo:</span><span class="info-value">${escaparHtml(chasis.pais_modulo)}</span></div>` : ''}
+                <div class="info-item"><span class="info-label">Piezas:</span><span class="info-value">${escaparHtml(chasis.capacidad_piezas)}</span></div>
+                <div class="info-item"><span class="info-label">Peso:</span><span class="info-value">${escaparHtml(chasis.peso)}</span></div>
+                <div class="info-item"><span class="info-label">HP:</span><span class="info-value">${escaparHtml(chasis.hp)}</span></div>
+                <div class="info-item"><span class="info-label">Coste:</span><span class="info-value">${escaparHtml(chasis.coste)}M</span></div>
             </div>
         `;
 
@@ -387,43 +459,46 @@ function generarCategoriaMultiple(categoria, titulo, container, items = []) {
         let htmlInfo = '';
         // Motor: muestra velocidad y capacidad de peso
         if (categoria === 'motor') {
-            if (item.velocidad !== undefined) htmlInfo += `<div class="info-item"><span class="info-label">Velocidad:</span><span class="info-value">+${item.velocidad}</span></div>`;
-            if (item.capacidad_peso !== undefined) htmlInfo += `<div class="info-item"><span class="info-label">Cap. Peso:</span><span class="info-value">${item.capacidad_peso}</span></div>`;
+            if (item.velocidad !== undefined) htmlInfo += `<div class="info-item"><span class="info-label">Velocidad:</span><span class="info-value">+${escaparHtml(item.velocidad)}</span></div>`;
+            if (item.capacidad_peso !== undefined) htmlInfo += `<div class="info-item"><span class="info-label">Cap. Peso:</span><span class="info-value">${escaparHtml(item.capacidad_peso)}</span></div>`;
         }
         // Comunicación: velocidad y ataque
         if (categoria === 'comunicacion') {
-            if (item.velocidad !== undefined) htmlInfo += `<div class="info-item"><span class="info-label">Velocidad:</span><span class="info-value">+${item.velocidad}</span></div>`;
-            if (item.ataque !== undefined) htmlInfo += `<div class="info-item"><span class="info-label">Ataque:</span><span class="info-value">+${item.ataque}</span></div>`;
+            if (item.velocidad !== undefined) htmlInfo += `<div class="info-item"><span class="info-label">Velocidad:</span><span class="info-value">+${escaparHtml(item.velocidad)}</span></div>`;
+            if (item.ataque !== undefined) htmlInfo += `<div class="info-item"><span class="info-label">Ataque:</span><span class="info-value">+${escaparHtml(item.ataque)}</span></div>`;
         }
         // Blindaje: blindaje P/L y peso P/L según el chasis
         if (categoria === 'blindaje') {
-            htmlInfo += `<div class="info-item"><span class="info-label">Blindaje P:</span><span class="info-value">${item.blindaje_P}</span></div>`;
-            htmlInfo += `<div class="info-item"><span class="info-label">Blindaje L:</span><span class="info-value">${item.blindaje_L}</span></div>`;
-            htmlInfo += `<div class="info-item"><span class="info-label">Peso P/L:</span><span class="info-value">${item.peso_P}/${item.peso_L}</span></div>`;
+            htmlInfo += `<div class="info-item"><span class="info-label">Blindaje P:</span><span class="info-value">${escaparHtml(item.blindaje_P)}</span></div>`;
+            htmlInfo += `<div class="info-item"><span class="info-label">Blindaje L:</span><span class="info-value">${escaparHtml(item.blindaje_L)}</span></div>`;
+            htmlInfo += `<div class="info-item"><span class="info-label">Peso P/L:</span><span class="info-value">${escaparHtml(item.peso_P)}/${escaparHtml(item.peso_L)}</span></div>`;
         }
         // Tracción: regla y bonus/unidades
         if (categoria === 'traccion') {
-            if (item.regla_capacidad) htmlInfo += `<div class="info-item"><span class="info-label">Regla:</span><span class="info-value">${item.regla_capacidad}</span></div>`;
-            htmlInfo += `<div class="info-item"><span class="info-label">Bonus/Unidades:</span><span class="info-value">+${item.peso_extra_por_grupo} / ${item.unidades_por_grupo}</span></div>`;
+            if (item.regla_capacidad) htmlInfo += `<div class="info-item"><span class="info-label">Regla:</span><span class="info-value">${escaparHtml(item.regla_capacidad)}</span></div>`;
+            htmlInfo += `<div class="info-item"><span class="info-label">Bonus/Unidades:</span><span class="info-value">+${escaparHtml(item.peso_extra_por_grupo)} / ${escaparHtml(item.unidades_por_grupo)}</span></div>`;
         }
         // Armamento: ataque y peso
         if (categoria === 'armamento') {
-            if (item.ataque !== undefined) htmlInfo += `<div class="info-item"><span class="info-label">Ataque:</span><span class="info-value">+${item.ataque}</span></div>`;
-            if (item.peso !== undefined) htmlInfo += `<div class="info-item"><span class="info-label">Peso:</span><span class="info-value">${item.peso}</span></div>`;
+            if (item.ataque !== undefined) htmlInfo += `<div class="info-item"><span class="info-label">Ataque:</span><span class="info-value">+${escaparHtml(item.ataque)}</span></div>`;
+            if (item.peso !== undefined) htmlInfo += `<div class="info-item"><span class="info-label">Peso:</span><span class="info-value">${escaparHtml(item.peso)}</span></div>`;
         }
         if (item.coste !== undefined) {
-            htmlInfo += `<div class="info-item"><span class="info-label">Coste:</span><span class="info-value">${item.coste}M</span></div>`;
+            htmlInfo += `<div class="info-item"><span class="info-label">Coste:</span><span class="info-value">${escaparHtml(item.coste)}M</span></div>`;
+        }
+        if (item.pais_modulo) {
+            htmlInfo += `<div class="info-item"><span class="info-label">País del módulo:</span><span class="info-value">${escaparHtml(item.pais_modulo)}</span></div>`;
         }
 
         opcion.innerHTML = `
             <div class="modulo-topline">
-                <strong>${item.nombre}</strong>
+                <strong>${escaparHtml(item.nombre)}</strong>
             </div>
             <div class="modulo-info">${htmlInfo}</div>
             <div class="modulo-controls">
-                <button type="button" class="qty-btn" data-action="decrement" data-categoria="${categoria}" data-item="${item.nombre}" ${cantidadActual <= 0 ? 'disabled' : ''}>-</button>
+                <button type="button" class="qty-btn" data-action="decrement" data-categoria="${categoria}" data-item="${escaparHtml(item.nombre)}" ${cantidadActual <= 0 ? 'disabled' : ''}>-</button>
                 <span class="qty-value" id="cantidad-${categoria}-${index}">${cantidadActual}</span>
-                <button type="button" class="qty-btn" data-action="increment" data-categoria="${categoria}" data-item="${item.nombre}" ${!puedeSumar ? 'disabled' : ''}>+</button>
+                <button type="button" class="qty-btn" data-action="increment" data-categoria="${categoria}" data-item="${escaparHtml(item.nombre)}" ${!puedeSumar ? 'disabled' : ''}>+</button>
             </div>
         `;
 
@@ -480,150 +555,6 @@ function manejarCambioCantidad(categoria, item, accion) {
     actualizarUI();
     calcularTotales();
     actualizarCapacidadUI();
-}
-
-/* ============================================================
-   IMPORTADOR DE MÓDULOS PERSONALIZADOS (CHASIS Y ARMAMENTO)
-   ============================================================ */
-
-function agregarImportador() {
-    const importChasis = document.getElementById('import-chasis');
-    const importArmamento = document.getElementById('import-armamento');
-
-    if (importChasis) {
-        importChasis.addEventListener('change', (e) => {
-            const archivo = e.target.files[0];
-            if (archivo) procesarImportacionChasis(archivo);
-            e.target.value = '';
-        });
-    }
-
-    if (importArmamento) {
-        importArmamento.addEventListener('change', (e) => {
-            const archivo = e.target.files[0];
-            if (archivo) procesarImportacionArmamento(archivo);
-            e.target.value = '';
-        });
-    }
-}
-
-function procesarImportacionChasis(archivo) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        try {
-            const data = JSON.parse(e.target.result);
-            const chasisImportados = extraerChasisPlantilla(data);
-
-            if (chasisImportados.length === 0) {
-                alert('El JSON no contiene un chasis válido según la plantilla chazispersona.json.');
-                return;
-            }
-
-            chasisPersonalizados = chasisPersonalizados.concat(chasisImportados);
-            mostrarMensajeImportacion(`Chasis "${chasisImportados[0].nombre}" importado correctamente.`);
-            generarModulos();
-        } catch (err) {
-            alert('Error: El archivo no es un JSON válido de chasis.');
-            console.error(err);
-        }
-    };
-    reader.readAsText(archivo);
-}
-
-function procesarImportacionArmamento(archivo) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        try {
-            const data = JSON.parse(e.target.result);
-            const armasImportadas = extraerArmamentoPlantilla(data);
-
-            if (armasImportadas.length === 0) {
-                alert('El JSON no contiene un armamento válido según la plantilla armapersona.json.');
-                return;
-            }
-
-            armamentosPersonalizados = armamentosPersonalizados.concat(armasImportadas);
-            mostrarMensajeImportacion(`Armamento "${armasImportadas[0].nombre}" importado correctamente.`);
-            generarModulos();
-        } catch (err) {
-            alert('Error: El archivo no es un JSON válido de armamento.');
-            console.error(err);
-        }
-    };
-    reader.readAsText(archivo);
-}
-
-// Extrae chasis desde la plantilla chazispersona.json.
-// Campos: Nombre, Capacidad de piezas, Peso, HP, Costo de producción
-function extraerChasisPlantilla(data) {
-    const resultados = [];
-    const mapear = (obj) => {
-        if (!obj || !obj.Nombre) return;
-        const limpiar = (v) => String(v || '').trim();
-        const numero = (v) => parseFloat(String(v ?? '').replace(',', '.')) || 0;
-
-        resultados.push({
-            id: 'pers_chasis_' + Date.now() + "_" + resultados.length,
-            nombre: limpiar(obj.Nombre),
-            tipo_blindaje: limpiar(obj["Tipo de blindaje"] || obj.tipo_blindaje || "P").toUpperCase() === "L" ? "L" : "P",
-            capacidad_piezas: numero(obj["Capacidad de piezas"] ?? obj.capacidad_piezas),
-            peso: numero(obj["Peso"] ?? obj.peso),
-            hp: numero(obj["HP"] ?? obj.hp),
-            coste: numero(obj["Costo de producción"] ?? obj.coste)
-        });
-    };
-
-    if (Array.isArray(data)) {
-        data.forEach(mapear);
-    } else if (Array.isArray(data.chasis)) {
-        data.chasis.forEach(mapear);
-    } else if (Array.isArray(data.chasis_personalizados)) {
-        data.chasis_personalizados.forEach(mapear);
-    } else {
-        mapear(data);
-    }
-
-    return resultados;
-}
-
-// Extrae armamento desde la plantilla armapersona.json.
-// Campos: Nombre, Ataque, Peso, Coste de producción
-function extraerArmamentoPlantilla(data) {
-    const resultados = [];
-    const mapear = (obj) => {
-        if (!obj || !obj.Nombre) return;
-        const limpiar = (v) => String(v || '').trim();
-        const numero = (v) => parseFloat(String(v ?? '').replace(',', '.')) || 0;
-
-        resultados.push({
-            id: 'pers_arma_' + Date.now() + '_' + resultados.length,
-            nombre: limpiar(obj.Nombre),
-            ataque: numero(obj["Ataque"] ?? obj.ataque),
-            peso: numero(obj["Peso"] ?? obj.peso),
-            coste: numero(obj["Coste de producción"] ?? obj.coste)
-        });
-    };
-
-    if (Array.isArray(data)) {
-        data.forEach(mapear);
-    } else if (Array.isArray(data.armamento)) {
-        data.armamento.forEach(mapear);
-    } else if (Array.isArray(data.armas)) {
-        data.armas.forEach(mapear);
-    } else {
-        mapear(data);
-    }
-
-    return resultados;
-}
-
-function mostrarMensajeImportacion(mensaje) {
-    const aviso = document.getElementById('aviso-importacion');
-    if (aviso) {
-        aviso.textContent = mensaje;
-        aviso.style.display = 'block';
-        setTimeout(() => { aviso.style.display = 'none'; }, 4000);
-    }
 }
 
 /* ============================================================
@@ -803,12 +734,12 @@ function crearFicha() {
             pais
         },
         modulos_seleccionados: {
-            chasis: seleccionados.chasis,
-            traccion: seleccionados.traccion,
-            motor: seleccionados.motor,
-            comunicacion: seleccionados.comunicacion,
-            blindaje: seleccionados.blindaje,
-            armamento: seleccionados.armamento
+            chasis: limpiarMarcaModulo(seleccionados.chasis),
+            traccion: seleccionados.traccion.map(limpiarMarcaModulo),
+            motor: seleccionados.motor.map(limpiarMarcaModulo),
+            comunicacion: seleccionados.comunicacion.map(limpiarMarcaModulo),
+            blindaje: seleccionados.blindaje.map(limpiarMarcaModulo),
+            armamento: seleccionados.armamento.map(limpiarMarcaModulo)
         },
         comprobante_modulos: {
             peso_total: pesoTotal(),

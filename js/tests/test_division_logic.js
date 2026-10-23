@@ -54,4 +54,22 @@ assert.equal(ficha.ficha_unidad.regimientos_principales.length, 2);
 assert.equal(ficha.ficha_unidad.batallones_apoyo.length, 2);
 assert.equal(ficha.estadisticas_acumuladas.MOV, 3);
 
+const armaConPrecio = { ...arma, precio: 2.5 };
+const estadisticasConPrecio = calcularEstadisticasDivision([
+  { tipo_regimiento: 'infanteria', arma_equipada: armaConPrecio },
+  { tipo_regimiento: 'infanteria', arma_equipada: armaConPrecio }
+], [], catalogo);
+assert.equal(estadisticasConPrecio.coste, 5);
+
+const fichaConPrecio = crearFichaDivision(
+  { nombre_unidad: 'División con armas', pais_operador: 'Boreostia', tipo_unidad: 'Infantería' },
+  [
+    { tipo_regimiento: 'infanteria', arma_equipada: armaConPrecio },
+    { tipo_regimiento: 'infanteria', arma_equipada: armaConPrecio }
+  ],
+  [],
+  catalogo
+);
+assert.equal(fichaConPrecio.estadisticas_acumuladas.coste, 5);
+
 console.log('Pruebas de lógica de divisiones OK');

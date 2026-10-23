@@ -24,6 +24,7 @@
             <nav class="nav-principal" id="nav-menu">
                 <a href="../index.html" class="nav-link">Inicio</a>
                 <a href="buques.html" class="nav-link active">Buques</a>
+                <a href="modulos-personalizados.html?vehicle=naval" class="nav-link">Módulos personalizados</a>
             </nav>
         </header>
             <a href="../index.html" class="nav-link active">Volver al Inicio</a>
@@ -54,6 +55,8 @@
             <!-- SECCIÓN 2: ESTADÍSTICAS Y MÓDULOS -->
             <section class="seccion" id="seccion2">
                 <h2> Sección 2: Módulos y Estadísticas</h2>
+                <p class="inicio-descripcion">El país de la ficha no limita los módulos disponibles: puedes elegir módulos aprobados de cualquier país y ver su origen en cada opción.</p>
+                <p id="aviso-modulos-aprobados" class="comprobante-modulos" role="status" aria-live="polite" hidden></p>
                 
                 <div id="modulos-container" class="modulos-container">
                     <!-- Los módulos se generarán dinámicamente aquí -->
@@ -152,5 +155,6 @@
 
         <script src="../js/publicar-plantilla.js"></script>
         <script src="../js/naval/constructor.js"></script>
+        <script type="module" src="../js/naval/catalogo-modulos.js"></script>
     </body>
 </html>

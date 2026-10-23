@@ -3,25 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tanques y blindados - betaWorld</title>
+    <title>betaWorld - Constructor de Tanques</title>
     <link rel="stylesheet" href="../css/styles.css">
     <script src="../js/tema.js"></script>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>betaWorld</h1>
-            <p>Tanques y blindados</p>
-            <nav class="nav-principal">
-                <a href="../index.html" class="nav-link">Volver al inicio</a>
+        <header class="plegable-header">
+            <div class="header-barra">
+                <div class="header-titulo">
+                    <h1>betaWorld</h1>
+                    <p>Constructor de Tanques y Blindados</p>
+                </div>
+                <button class="menu-toggle" id="menu-toggle" aria-label="Abrir menú">
+                    <span class="barra"></span>
+                    <span class="barra"></span>
+                    <span class="barra"></span>
+                </button>
+            </div>
+            <nav class="nav-principal" id="nav-menu">
+                <a href="../index.html" class="nav-link">Inicio</a>
+                <a href="tanque.html" class="nav-link active">Tanques</a>
+                <a href="modulos-personalizados.html" class="nav-link">Módulos personalizados</a>
             </nav>
         </header>
+
         <main>
             <section class="seccion">
-                <h2>Sección temporalmente deshabilitada</h2>
-                <p class="inicio-descripcion">El constructor de tanques y blindados está deshabilitado mientras se realizan cambios.</p>
+                <h2>Información general</h2>
+                <div class="formulario">
+                    <div class="campo">
+                        <label for="nombre">Nombre de clase o vehículo:</label>
+                        <input type="text" id="nombre" placeholder='Ej: Panzerkampfwagen IV "Pantera"'>
+                    </div>
+                    <div class="campo">
+                        <label for="fecha">Fecha de creación:</label>
+                        <input type="text" id="fecha" placeholder="Ej: 1910">
+                    </div>
+                    <div class="campo">
+                        <label for="tipo">Tipo:</label>
+                        <input type="text" id="tipo" placeholder="Ej: Tanque pesado, Tanque ligero, Carro blindado...">
+                    </div>
+                    <div class="campo">
+                        <label for="pais">País de origen:</label>
+                        <input type="text" id="pais" placeholder="Ej: BOREOSTIA">
+                    </div>
+                </div>
             </section>
+
+            <section class="seccion">
+                <h2>Módulos personalizados aprobados</h2>
+                <p class="inicio-descripcion">Los módulos aprobados de cualquier país están disponibles; el país de origen aparece en cada opción. <a href="modulos-personalizados.html">Crear o revisar módulos personalizados</a>.</p>
+                <p id="aviso-modulos-aprobados" class="comprobante-modulos" role="status" aria-live="polite" hidden></p>
+            </section>
+
+            <section class="seccion">
+                <h2>Módulos y estadísticas</h2>
+                <div id="modulos-container" class="modulos-container"></div>
+                <div class="resumen-stats">
+                    <h3>Estadísticas totales</h3>
+                    <div id="peso-advertencia" style="display:none;"></div>
+                    <div id="comprobante-modulos" class="comprobante-modulos"><small>Motor base: no asignado</small></div>
+                    <div class="stats-grid">
+                        <div class="stat-box"><label>Piezas colocadas:</label><span id="capacidad-piezas" class="stat-value">0 / 0</span></div>
+                        <div class="stat-box"><label>Peso total:</label><span id="peso-total" class="stat-value">0</span></div>
+                        <div class="stat-box"><label>Capacidad de peso:</label><span id="cap-peso-total" class="stat-value">0</span></div>
+                        <div class="stat-box"><label>HP:</label><span id="hp-total" class="stat-value">0</span></div>
+                        <div class="stat-box"><label>Velocidad:</label><span id="velocidad-total" class="stat-value">0</span></div>
+                        <div class="stat-box"><label>Ataque:</label><span id="ataque-total" class="stat-value">0</span></div>
+                        <div class="stat-box"><label>Defensa:</label><span id="defensa-total" class="stat-value">0</span></div>
+                        <div class="stat-box"><label>Coste total:</label><span id="coste-total" class="stat-value">0M</span></div>
+                        <div class="stat-box"><label>Estado:</label><span id="estado-validez" class="stat-value" style="font-weight:bold;">Selecciona un chasis</span></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="seccion">
+                <h2>Descripción</h2>
+                <div class="campo">
+                    <label for="descripcion">Descripción del Lore:</label>
+                    <textarea id="descripcion" rows="5" placeholder="Describe la historia y características del vehículo..."></textarea>
+                </div>
+            </section>
+
+            <div class="acciones">
+                <button id="btn-publicar-ficha" class="btn btn-primary" type="button">Publicar ficha</button>
+                <button id="btn-limpiar" class="btn btn-secondary" type="button">Limpiar todo</button>
+            </div>
+            <p id="estado-publicacion" class="comprobante-modulos" role="status" aria-live="polite" hidden></p>
         </main>
     </div>
+    <script>
+        const menuToggle = document.getElementById('menu-toggle');
+        const navMenu = document.getElementById('nav-menu');
+        menuToggle.addEventListener('click', () => {
+            navMenu.classList.toggle('abierto');
+            menuToggle.classList.toggle('open');
+        });
+    </script>
+    <script src="../js/publicar-plantilla.js"></script>
+    <script src="../js/tanque/constructor.js"></script>
+    <script type="module" src="../js/tanque/catalogo-modulos.js"></script>
 </body>
 </html>

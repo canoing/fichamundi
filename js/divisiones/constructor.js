@@ -2,6 +2,7 @@ let catalogoDivisiones = null;
 let regimientosDivision = [];
 let apoyosDivision = [];
 let armasDivision = [];
+let armasPersonalizadasAprobadas = [];
 
 function numeroSeguro(valor) {
     const numero = typeof valor === 'string' ? Number(valor.replace(',', '.')) : Number(valor);
@@ -29,7 +30,10 @@ function extraerArmasDivision(datos) {
             hp_a_regimiento: numeroSeguro(entrada.hp_a_regimiento ?? entrada.hp ?? estadisticas.hp_a_regimiento),
             ataque: numeroSeguro(entrada.ataque ?? entrada.Ataque ?? estadisticas.ataque),
             defensa: numeroSeguro(entrada.defensa ?? entrada.Defensa ?? estadisticas.defensa),
-            nivel_tech_tree: numeroSeguro(entrada.nivel_tech_tree ?? entrada.nivel_tech ?? estadisticas.nivel_tech_tree)
+            nivel_tech_tree: numeroSeguro(entrada.nivel_tech_tree ?? entrada.nivel_tech ?? estadisticas.nivel_tech_tree),
+            mov_propio: numeroSeguro(entrada.mov_propio ?? entrada.mov_arma),
+            sup_costo: numeroSeguro(entrada.sup_costo ?? entrada.sup_arma),
+            precio: numeroSeguro(entrada.precio ?? entrada.price ?? entrada.coste ?? entrada.costo)
         });
     };
 
@@ -55,6 +59,7 @@ function calcularEstadisticasDivision(regimientos, apoyos, catalogo) {
     let ataque = 0;
     let defensa = 0;
     let suministros = 0;
+    let coste = 0;
     const movimientos = [];
     const habilidades = [];
     let cantidadMontanistas = 0;
@@ -66,6 +71,7 @@ function calcularEstadisticasDivision(regimientos, apoyos, catalogo) {
         hp += numeroSeguro(tipo.hp_base) + numeroSeguro(arma.hp_a_regimiento);
         ataque += numeroSeguro(tipo.atk_base) + numeroSeguro(tipo.buffs?.atk_bonus) + numeroSeguro(arma.ataque);
         defensa += numeroSeguro(tipo.def_base) + numeroSeguro(tipo.buffs?.def_bonus) + numeroSeguro(arma.defensa);
+        coste += numeroSeguro(arma.precio ?? arma.coste ?? arma.costo);
 
         if (tipo.sup_depende_de_arma) suministros += numeroSeguro(regimiento.sup_arma);
         else suministros += numeroSeguro(tipo.sup_base);
@@ -118,6 +124,7 @@ function calcularEstadisticasDivision(regimientos, apoyos, catalogo) {
             DEF: defensa,
             MOV: Math.max(0, Math.min(...movimientos) + bonusMovimiento),
             SUP: Math.max(0, suministros),
+            coste,
             habilidades_especiales: [...new Set(habilidades)]
         };
     }
@@ -128,6 +135,7 @@ function calcularEstadisticasDivision(regimientos, apoyos, catalogo) {
         DEF: defensa,
         MOV: 0,
         SUP: Math.max(0, suministros),
+        coste,
         habilidades_especiales: [...new Set(habilidades)]
     };
 }
@@ -172,6 +180,7 @@ async function cargarCatalogoDivision() {
     if (!respuestaUnidad.ok || !respuestaPlantilla.ok) throw new Error('No se pudieron cargar los datos de divisiones.');
     const [catalogo, plantilla] = await Promise.all([respuestaUnidad.json(), respuestaPlantilla.json()]);
     catalogoDivisiones = catalogo;
+    armasDivision = [...armasPersonalizadasAprobadas];
     document.getElementById('version-plantilla').textContent = `${plantilla.titulo} · ${plantilla.version}`;
     agregarRegimiento();
     renderizarConstructor();
@@ -190,7 +199,7 @@ function renderizarRegimientos() {
         const necesitaMov = tipo.mov_depende_de_arma;
         const necesitaSup = tipo.sup_depende_de_arma;
         const opcionesArmas = '<option value="">Sin arma</option>' + armasDivision.map(arma =>
-            `<option value="${escaparHtml(arma.id_arma)}" ${regimiento.arma_equipada?.id_arma === arma.id_arma ? 'selected' : ''}>${escaparHtml(arma.nombre)} · ATK ${arma.ataque}, DEF ${arma.defensa}</option>`
+            `<option value="${escaparHtml(arma.id_arma)}" ${regimiento.arma_equipada?.id_arma === arma.id_arma ? 'selected' : ''}>${escaparHtml(arma.nombre)}${arma.pais_modulo ? ` · ${escaparHtml(arma.pais_modulo)}` : ''} · ATK ${arma.ataque}, DEF ${arma.defensa} · ${numeroSeguro(arma.precio)} M</option>`
         ).join('');
         return `<article class="opcion-modulo">
             <div class="modulo-topline"><strong>Regimiento ${indice + 1}</strong>
@@ -248,6 +257,7 @@ function actualizarEstadisticas() {
     document.getElementById('def-total').textContent = estadisticas.DEF;
     document.getElementById('mov-total').textContent = estadisticas.MOV;
     document.getElementById('sup-total').textContent = estadisticas.SUP;
+    document.getElementById('coste-total').textContent = `${estadisticas.coste.toFixed(2)} M`;
     document.getElementById('habilidades-total').innerHTML = estadisticas.habilidades_especiales.length
         ? estadisticas.habilidades_especiales.map(habilidad => `<li>${escaparHtml(habilidad)}</li>`).join('')
         : '<li>Sin habilidades especiales</li>';
@@ -293,6 +303,8 @@ function inicializarEventos() {
         const campo = control.dataset.campo;
         if (campo === 'arma_equipada') {
             regimiento.arma_equipada = armasDivision.find(arma => arma.id_arma === control.value) || null;
+            regimiento.mov_arma = numeroSeguro(regimiento.arma_equipada?.mov_propio);
+            regimiento.sup_arma = numeroSeguro(regimiento.arma_equipada?.sup_costo);
         } else if (campo === 'tipo_regimiento') {
             regimiento.tipo_regimiento = control.value;
             renderizarConstructor();
@@ -300,6 +312,7 @@ function inicializarEventos() {
         } else {
             regimiento[campo] = numeroSeguro(control.value);
         }
+
         actualizarEstadisticas();
     });
     document.getElementById('regimientos-container').addEventListener('input', evento => {
@@ -325,28 +338,6 @@ function inicializarEventos() {
         if (!control) return;
         apoyosDivision[Number(control.dataset.apoyo)][control.dataset.campo] = numeroSeguro(control.value);
         actualizarEstadisticas();
-    });
-
-    document.getElementById('importar-armas').addEventListener('change', async evento => {
-        const archivo = evento.target.files[0];
-        evento.target.value = '';
-        if (!archivo) return;
-        try {
-            const datos = JSON.parse(await archivo.text());
-            const nuevasArmas = extraerArmasDivision(datos);
-            if (!nuevasArmas.length) throw new Error('No se encontraron armas con nombre y estadísticas válidas.');
-            armasDivision = armasDivision.concat(nuevasArmas);
-            const aviso = document.getElementById('aviso-importacion');
-            aviso.textContent = `Se importaron ${nuevasArmas.length} arma(s).`;
-            aviso.hidden = false;
-            aviso.style.display = 'flex';
-            renderizarConstructor();
-        } catch (error) {
-            const aviso = document.getElementById('aviso-importacion');
-            aviso.textContent = `No se pudo importar el JSON: ${error.message}`;
-            aviso.hidden = false;
-            aviso.style.display = 'flex';
-        }
     });
 
     document.getElementById('btn-publicar-ficha').addEventListener('click', () => {
@@ -379,14 +370,28 @@ function inicializarEventos() {
         document.getElementById('informacion-division').reset();
         regimientosDivision = [];
         apoyosDivision = [];
-        armasDivision = [];
+        armasDivision = [...armasPersonalizadasAprobadas];
         agregarRegimiento();
-        document.getElementById('aviso-importacion').hidden = true;
-        document.getElementById('aviso-importacion').style.display = 'none';
         document.getElementById('aviso-guardado').hidden = true;
         document.getElementById('aviso-guardado').style.display = 'none';
         renderizarConstructor();
     });
+}
+
+if (typeof window !== 'undefined') {
+    window.establecerArmasDivisionAprobadas = (modules) => {
+        armasPersonalizadasAprobadas = modules.map(module => ({
+            id_arma: module.id,
+            tipo_ficha: 'Arma personalizada aprobada',
+            ...module.content,
+            pais_modulo: module.country,
+            precio: numeroSeguro(module.price)
+        }));
+        if (catalogoDivisiones) {
+            armasDivision = [...armasPersonalizadasAprobadas];
+            renderizarConstructor();
+        }
+    };
 }
 
 if (typeof document !== 'undefined') {

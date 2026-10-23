@@ -28,6 +28,7 @@
             <nav class="nav-principal" id="nav-menu">
                 <a href="../index.html" class="nav-link">Inicio</a>
                 <a href="avion.html" class="nav-link active">Aviones</a>
+                <a href="modulos-personalizados.html?vehicle=aircraft" class="nav-link">Módulos personalizados</a>
             </nav>
         </header>
             <a href="../index.html" class="nav-link active">Volver al Inicio</a>
@@ -54,6 +55,8 @@
             <!-- SECCIÓN 2: ESTADÍSTICAS Y COMPONENTES -->
             <section class="seccion" id="seccion2">
                 <h2>Sección 2: Componentes y Estadísticas</h2>
+                <p class="inicio-descripcion">El país de la ficha no limita los módulos disponibles: puedes elegir módulos aprobados de cualquier país y ver su origen en cada opción.</p>
+                <p id="aviso-modulos-aprobados" class="comprobante-modulos" role="status" aria-live="polite" hidden></p>
 
                 <div id="modulos-container" class="modulos-container">
                     <!-- Los componentes se generan dinámicamente aquí -->
@@ -148,5 +151,6 @@
     </script>
     <script src="../js/publicar-plantilla.js"></script>
     <script src="../js/aviacio/constructor.js"></script>
+    <script type="module" src="../js/aviacio/catalogo-modulos.js"></script>
 </body>
 </html>

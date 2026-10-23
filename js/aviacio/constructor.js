@@ -4,7 +4,9 @@
  */
 
 let fuselajes = [];
+let fuselajesBase = [];
 let modulosAviacion = {};
+let modulosAviacionBase = {};
 let seleccionados = {
     fuselaje: null,
     motores: [],
@@ -20,6 +22,18 @@ let categoriaAbierta = {};
 // Según este valor se decide si la Maniobrabilidad suma al ataque aéreo
 // o se convierte en defensa (caso bombardero).
 let tipoAvion = 'polivalente';
+
+function escaparHtml(valor) {
+    return String(valor ?? '').replace(/[&<>"']/g, caracter => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[caracter]);
+}
+
+function limpiarMarcaModulo(item) {
+    if (!item || typeof item !== 'object') return item;
+    const { modulo_personalizado, ...modulo } = item;
+    return modulo;
+}
 
 // --------------------------------------------------------------------------
 // Utilidades de acceso a estado
@@ -160,11 +174,13 @@ async function cargarDatos() {
     try {
         const resFuselajes = await fetch('../data/vehiculos/aviones/fuselaje.json');
         const datosFuselajes = await resFuselajes.json();
-        fuselajes = datosFuselajes.fuselajes || datosFuselajes;
+        fuselajesBase = datosFuselajes.fuselajes || datosFuselajes;
+        fuselajes = fuselajesBase;
 
         const resModulos = await fetch('../data/vehiculos/aviones/modulosaviones.json');
         const datosModulos = await resModulos.json();
-        modulosAviacion = datosModulos;
+        modulosAviacionBase = datosModulos;
+        modulosAviacion = modulosAviacionBase;
 
         const motorBase = Array.isArray(modulosAviacion.motores) && modulosAviacion.motores.length > 0
             ? [{ ...modulosAviacion.motores[0], cantidad: 1 }]
@@ -198,6 +214,41 @@ if (typeof document !== 'undefined') {
             alert('Error: No se pudo cargar la configuración de aviación');
         }
     });
+}
+
+if (typeof window !== 'undefined') {
+    window.aplicarModulosAprobadosAvion = (modules) => {
+        const byType = new Map();
+        modules.forEach(module => {
+            const type = module.module_type;
+            const list = byType.get(type) || [];
+            list.push({
+                id: module.id,
+                modulo_personalizado: true,
+                ...module.content,
+                pais_modulo: module.country,
+                coste: Number(module.price)
+            });
+            byType.set(type, list);
+        });
+        fuselajes = [...fuselajesBase, ...(byType.get('fuselaje') || [])];
+        modulosAviacion = Object.fromEntries(
+            Object.entries(modulosAviacionBase).map(([type, items]) => [type, [...items, ...(byType.get(type) || [])]])
+        );
+        const approvedIds = new Set(modules.map(module => module.id));
+        if (seleccionados.fuselaje?.modulo_personalizado && !approvedIds.has(seleccionados.fuselaje.id)) {
+            seleccionados.fuselaje = null;
+            capacidadPiezasActual = 0;
+        }
+        ['motores', 'armamento', 'bombas', 'torpedos', 'alas'].forEach(category => {
+            seleccionados[category] = (seleccionados[category] || []).filter(module =>
+                !module.modulo_personalizado || approvedIds.has(module.id)
+            );
+        });
+        generarModulos();
+        actualizarCapacidadUI();
+        calcularTotales();
+    };
 }
 
 // --------------------------------------------------------------------------
@@ -292,22 +343,23 @@ function generarFuselajes(container) {
 
         div.innerHTML = `
             <label>
-                <input type="radio" name="fuselaje" id="${radioId}" value="${fuselaje.nombre}" data-capacidad="${fuselaje.capacidad_piezas}" ${isChecked}>
-                <strong>${fuselaje.nombre}</strong>
-                <span class="capacidad-badge">Cap: ${fuselaje.capacidad_piezas}</span>
+                <input type="radio" name="fuselaje" id="${radioId}" value="${escaparHtml(fuselaje.nombre)}" data-capacidad="${escaparHtml(fuselaje.capacidad_piezas)}" ${isChecked}>
+                <strong>${escaparHtml(fuselaje.nombre)}</strong>
+                <span class="capacidad-badge">Cap: ${escaparHtml(fuselaje.capacidad_piezas)}</span>
             </label>
             <div class="casco-info">
+                ${fuselaje.pais_modulo ? `<div class="info-item"><span class="info-label">País del módulo:</span><span class="info-value">${escaparHtml(fuselaje.pais_modulo)}</span></div>` : ''}
                 <div class="info-item">
                     <span class="info-label">Vida:</span>
-                    <span class="info-value">${fuselaje.vida}</span>
+                    <span class="info-value">${escaparHtml(fuselaje.vida)}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Peso:</span>
-                    <span class="info-value">${fuselaje.peso}</span>
+                    <span class="info-value">${escaparHtml(fuselaje.peso)}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Coste:</span>
-                    <span class="info-value">${fuselaje.coste}</span>
+                    <span class="info-value">${escaparHtml(fuselaje.coste)}</span>
                 </div>
             </div>
         `;
@@ -316,16 +368,7 @@ function generarFuselajes(container) {
 
         const radio = div.querySelector('input[type="radio"]');
         radio.addEventListener('change', () => {
-            seleccionados.fuselaje = {
-                nombre: fuselaje.nombre,
-                categoria: fuselaje.categoria,
-                nivel: fuselaje.nivel,
-                capacidad_piezas: fuselaje.capacidad_piezas,
-                vida: fuselaje.vida,
-                peso: fuselaje.peso,
-                coste: fuselaje.coste,
-                penalizacion_peso_ala: fuselaje.penalizacion_peso_ala
-            };
+            seleccionados.fuselaje = { ...fuselaje };
             capacidadPiezasActual = fuselaje.capacidad_piezas;
             actualizarCapacidadUI();
             calcularTotales();
@@ -427,42 +470,45 @@ function generarCategoriaMultiple(categoria, titulo, container, items = []) {
 
         let htmlInfo = '';
         if (item.velocidad !== undefined) {
-            htmlInfo += `<div class="info-item"><span class="info-label">Velocidad:</span><span class="info-value">${item.velocidad}</span></div>`;
+            htmlInfo += `<div class="info-item"><span class="info-label">Velocidad:</span><span class="info-value">${escaparHtml(item.velocidad)}</span></div>`;
         }
         if (item.ataque !== undefined) {
-            htmlInfo += `<div class="info-item"><span class="info-label">Ataque A:</span><span class="info-value">${item.ataque}</span></div>`;
+            htmlInfo += `<div class="info-item"><span class="info-label">Ataque A:</span><span class="info-value">${escaparHtml(item.ataque)}</span></div>`;
         }
         if (item.ataque_tierra !== undefined) {
-            htmlInfo += `<div class="info-item"><span class="info-label">Ataque Tierra:</span><span class="info-value">${item.ataque_tierra}</span></div>`;
+            htmlInfo += `<div class="info-item"><span class="info-label">Ataque Tierra:</span><span class="info-value">${escaparHtml(item.ataque_tierra)}</span></div>`;
         }
         if (item.ataque_naval !== undefined) {
-            htmlInfo += `<div class="info-item"><span class="info-label">Ataque Naval:</span><span class="info-value">${item.ataque_naval}</span></div>`;
+            htmlInfo += `<div class="info-item"><span class="info-label">Ataque Naval:</span><span class="info-value">${escaparHtml(item.ataque_naval)}</span></div>`;
         }
         if (item.maniobrabilidad !== undefined) {
-            htmlInfo += `<div class="info-item"><span class="info-label">Manio:</span><span class="info-value">${item.maniobrabilidad}</span></div>`;
+            htmlInfo += `<div class="info-item"><span class="info-label">Manio:</span><span class="info-value">${escaparHtml(item.maniobrabilidad)}</span></div>`;
         }
         if (item.cantidad_alas !== undefined) {
-            htmlInfo += `<div class="info-item"><span class="info-label">Alas:</span><span class="info-value">${item.cantidad_alas}</span></div>`;
+            htmlInfo += `<div class="info-item"><span class="info-label">Alas:</span><span class="info-value">${escaparHtml(item.cantidad_alas)}</span></div>`;
         }
         if (item.peso !== undefined) {
-            htmlInfo += `<div class="info-item"><span class="info-label">Peso:</span><span class="info-value">${item.peso}</span></div>`;
+            htmlInfo += `<div class="info-item"><span class="info-label">Peso:</span><span class="info-value">${escaparHtml(item.peso)}</span></div>`;
         }
         if (item.espacios_piezas !== undefined) {
-            htmlInfo += `<div class="info-item"><span class="info-label">Piezas:</span><span class="info-value">${item.espacios_piezas}</span></div>`;
+            htmlInfo += `<div class="info-item"><span class="info-label">Piezas:</span><span class="info-value">${escaparHtml(item.espacios_piezas)}</span></div>`;
         }
         if (item.coste !== undefined && item.coste !== null) {
-            htmlInfo += `<div class="info-item"><span class="info-label">Coste:</span><span class="info-value">${item.coste}</span></div>`;
+            htmlInfo += `<div class="info-item"><span class="info-label">Coste:</span><span class="info-value">${escaparHtml(item.coste)}</span></div>`;
+        }
+        if (item.pais_modulo) {
+            htmlInfo += `<div class="info-item"><span class="info-label">País del módulo:</span><span class="info-value">${escaparHtml(item.pais_modulo)}</span></div>`;
         }
 
         opcion.innerHTML = `
             <div class="modulo-topline">
-                <strong>${item.nombre}</strong>
+                <strong>${escaparHtml(item.nombre)}</strong>
             </div>
             <div class="modulo-info">${htmlInfo}</div>
             <div class="modulo-controls">
-                <button type="button" class="qty-btn" data-action="decrement" data-categoria="${categoria}" data-item="${item.nombre}" ${cantidadActual <= 0 ? 'disabled' : ''}>-</button>
+                <button type="button" class="qty-btn" data-action="decrement" data-categoria="${categoria}" data-item="${escaparHtml(item.nombre)}" ${cantidadActual <= 0 ? 'disabled' : ''}>-</button>
                 <span class="qty-value" id="cantidad-${categoria}-${index}">${cantidadActual}</span>
-                <button type="button" class="qty-btn" data-action="increment" data-categoria="${categoria}" data-item="${item.nombre}" ${!puedeSumar ? 'disabled' : ''}>+</button>
+                <button type="button" class="qty-btn" data-action="increment" data-categoria="${categoria}" data-item="${escaparHtml(item.nombre)}" ${!puedeSumar ? 'disabled' : ''}>+</button>
             </div>
         `;
 
@@ -542,7 +588,7 @@ function actualizarCapacidadUI() {
         comprobante.innerHTML = `
             <strong>Comprobante de módulos:</strong>
             <span>${piezasColocadas}/${capacidadTotal || 0} piezas usadas</span>
-            <small>${motor ? `Motor base: ${motor.nombre}` : 'Sin motor asignado'} · Tipo: ${nombreTipo}</small>
+            <small>${motor ? `Motor base: ${escaparHtml(motor.nombre)}` : 'Sin motor asignado'} · Tipo: ${escaparHtml(nombreTipo)}</small>
         `;
     }
 }
@@ -611,18 +657,18 @@ function crearFicha() {
             anio
         },
         componentes_seleccionados: {
-            fuselaje: seleccionados.fuselaje,
-            motores: seleccionados.motores,
-            armamento: seleccionados.armamento,
-            bombas: seleccionados.bombas,
-            torpedos: seleccionados.torpedos,
-            alas: seleccionados.alas
+            fuselaje: limpiarMarcaModulo(seleccionados.fuselaje),
+            motores: seleccionados.motores.map(limpiarMarcaModulo),
+            armamento: seleccionados.armamento.map(limpiarMarcaModulo),
+            bombas: seleccionados.bombas.map(limpiarMarcaModulo),
+            torpedos: seleccionados.torpedos.map(limpiarMarcaModulo),
+            alas: seleccionados.alas.map(limpiarMarcaModulo)
         },
         comprobante_piezas: {
             usados: calcularPiezasUsadas(seleccionados),
             capacidad_total: capacidadPiezasActual,
             disponibles: Math.max(0, capacidadPiezasActual - calcularPiezasUsadas(seleccionados)),
-            motor_base: obtenerMotorSeleccionado(seleccionados)
+            motor_base: limpiarMarcaModulo(obtenerMotorSeleccionado(seleccionados))
         },
         estadisticas: {
             peso: calcularPesoTotal(),

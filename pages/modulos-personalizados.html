@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Módulos personalizados - betaWorld</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <script src="../js/tema.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>betaWorld</h1>
+            <p>Catálogo de módulos personalizados</p>
+            <nav class="nav-principal">
+                <a href="../index.html" class="nav-link">Inicio</a>
+                <a href="tanque.html" class="nav-link">Tanques</a>
+                <a href="divisiones.html" class="nav-link">Divisiones</a>
+            </nav>
+        </header>
+
+        <main>
+            <section class="seccion">
+                <h2>Crear o editar un módulo</h2>
+                <p class="inicio-descripcion">Los módulos enviados quedan pendientes de revisión. Los cambios a un módulo aprobado se publican como una revisión nueva y no reemplazan el original hasta ser aprobados.</p>
+                <form id="formulario-modulo">
+                    <div class="formulario">
+                        <div class="campo">
+                            <label for="vehiculo-modulo">Vehículo</label>
+                            <select id="vehiculo-modulo" required>
+                                <option value="tank">Tanques y blindados</option>
+                                <option value="aircraft">Aviones</option>
+                                <option value="naval">Buques y submarinos</option>
+                                <option value="infantry">Divisiones terrestres</option>
+                            </select>
+                        </div>
+                        <div class="campo">
+                            <label for="pais-modulo">País al que pertenece</label>
+                            <input id="pais-modulo" maxlength="100" required placeholder="Ej.: Boreostia">
+                        </div>
+                        <div class="campo">
+                            <label for="tipo-modulo">Tipo de módulo</label>
+                            <select id="tipo-modulo" required></select>
+                        </div>
+                        <div class="campo">
+                            <label for="modulo-base">Copiar un módulo existente (opcional)</label>
+                            <select id="modulo-base">
+                                <option value="">Crear desde cero</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="campos-modulo" class="formulario"></div>
+                    <p id="estado-envio-modulo" class="comprobante-modulos" role="status" aria-live="polite" hidden></p>
+                    <div class="acciones">
+                        <button type="submit" class="btn btn-primary">Enviar a revisión</button>
+                        <button id="limpiar-modulo" type="reset" class="btn btn-secondary">Limpiar</button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="seccion">
+                <div class="modulo-topline">
+                    <h2>Módulos aprobados</h2>
+                    <button id="actualizar-catalogo" type="button" class="btn btn-secondary">Actualizar lista</button>
+                </div>
+                <div class="campo">
+                    <label for="filtro-pais-modulos">Filtrar módulos por país</label>
+                    <select id="filtro-pais-modulos">
+                        <option value="">Todos los países</option>
+                    </select>
+                </div>
+                <p id="estado-catalogo" class="comprobante-modulos" role="status" aria-live="polite" hidden></p>
+                <div id="lista-modulos-aprobados" class="opciones-modulo"></div>
+            </section>
+
+            <section class="seccion">
+                <button id="mostrar-acceso-moderacion" class="btn btn-secondary" type="button" aria-expanded="false" aria-controls="acceso-moderacion">
+                    Acceso para moderadores
+                </button>
+                <div id="acceso-moderacion" hidden>
+                    <h2>Acceso de moderadores</h2>
+                    <form id="formulario-acceso-moderacion">
+                        <div class="campo">
+                            <label for="clave-moderador-modulos">Clave de moderador</label>
+                            <input id="clave-moderador-modulos" type="password" autocomplete="off" required>
+                        </div>
+                        <div class="acciones">
+                            <button type="submit" class="btn btn-primary">Mostrar cola de revisión</button>
+                        </div>
+                    </form>
+                </div>
+                <p id="estado-moderacion" class="comprobante-modulos" role="status" aria-live="polite" hidden></p>
+                <div id="panel-moderacion-modulos" hidden>
+                    <div class="acciones">
+                        <button id="cerrar-moderacion-modulos" type="button" class="btn btn-secondary">Ocultar acciones</button>
+                    </div>
+                    <div id="lista-pendientes-modulos" class="opciones-modulo"></div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script type="module" src="../js/modulos-personalizados.js"></script>
+</body>
+</html>

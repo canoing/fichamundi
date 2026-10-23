@@ -5,10 +5,24 @@
 
 let datosJSON = null;
 let cascos = {};
+let cascosBase = {};
 let modulos = {};
+let modulosBase = {};
 let seleccionados = {};
 let capacidadModulosActual = 0;
 let categoriaAbierta = {};
+
+function escaparHtml(valor) {
+    return String(valor ?? '').replace(/[&<>"']/g, caracter => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[caracter]);
+}
+
+function limpiarMarcaModulo(item) {
+    if (!item || typeof item !== 'object') return item;
+    const { modulo_personalizado, ...modulo } = item;
+    return modulo;
+}
 
 function obtenerCantidadEnCategoria(estado, categoria, nombreModulo) {
     if (!estado || !Array.isArray(estado[categoria])) return 0;
@@ -68,11 +82,13 @@ async function cargarDatos() {
     try {
         const resCascos = await fetch('../data/vehiculos/naval/cascos.json');
         const datosCascos = await resCascos.json();
-        cascos = datosCascos.cascos;
+        cascosBase = datosCascos.cascos;
+        cascos = cascosBase;
 
         const resModulos = await fetch('../data/vehiculos/naval/modulos.json');
         const datosModulos = await resModulos.json();
-        modulos = datosModulos;
+        modulosBase = datosModulos;
+        modulos = modulosBase;
 
         const motorBase = Array.isArray(modulos.propulsion) && modulos.propulsion.length > 0
             ? [{ ...modulos.propulsion[0], cantidad: 1 }]
@@ -104,6 +120,46 @@ if (typeof document !== 'undefined') {
             alert('Error: No se pudo cargar el archivo de configuración');
         }
     });
+}
+
+if (typeof window !== 'undefined') {
+    window.aplicarModulosAprobadosNavales = (modules) => {
+        const byType = new Map();
+        modules.forEach(module => {
+            const type = module.module_type;
+            const list = byType.get(type) || [];
+            list.push({
+                id: module.id,
+                modulo_personalizado: true,
+                ...module.content,
+                pais_modulo: module.country,
+                coste: `${Number(module.price)}M`
+            });
+            byType.set(type, list);
+        });
+        cascos = Object.fromEntries(Object.entries(cascosBase).map(([group, items]) => [
+            group,
+            [...items, ...(byType.get(`hull_${group}`) || [])]
+        ]));
+        modulos = Object.fromEntries(Object.entries(modulosBase).map(([type, items]) => [
+            type,
+            [...items, ...(byType.get(type) || [])]
+        ]));
+        const approvedIds = new Set(modules.map(module => module.id));
+        if (seleccionados.casco?.modulo_personalizado && !approvedIds.has(seleccionados.casco.id)) {
+            seleccionados.casco = null;
+            capacidadModulosActual = 0;
+        }
+        ['propulsion', 'armamento', 'blindaje'].forEach(category => {
+            seleccionados[category] = (seleccionados[category] || []).filter(module =>
+                !module.modulo_personalizado || approvedIds.has(module.id)
+            );
+        });
+        seleccionados = asegurarMotorBase(seleccionados, modulos.propulsion || []);
+        generarModulos();
+        actualizarCapacidadUI();
+        calcularTotales();
+    };
 }
 
 function generarModulos() {
@@ -144,18 +200,19 @@ function generarCascos(container) {
 
             cascoDiv.innerHTML = `
                 <label>
-                    <input type="radio" name="casco" id="${radioId}" value="${casco.nombre}" data-capacidad="${casco.capacidad_modulos}" ${isChecked}>
-                    <strong>${casco.nombre}</strong>
-                    <span class="capacidad-badge">Cap: ${casco.capacidad_modulos}</span>
+                    <input type="radio" name="casco" id="${radioId}" value="${escaparHtml(casco.nombre)}" data-capacidad="${escaparHtml(casco.capacidad_modulos)}" ${isChecked}>
+                    <strong>${escaparHtml(casco.nombre)}</strong>
+                    <span class="capacidad-badge">Cap: ${escaparHtml(casco.capacidad_modulos)}</span>
                 </label>
                 <div class="casco-info">
+                    ${casco.pais_modulo ? `<div class="info-item"><span class="info-label">País del módulo:</span><span class="info-value">${escaparHtml(casco.pais_modulo)}</span></div>` : ''}
                     <div class="info-item">
                         <span class="info-label">Velocidad:</span>
-                        <span class="info-value">${casco.velocidad > 0 ? '+' : ''}${casco.velocidad}</span>
+                        <span class="info-value">${casco.velocidad > 0 ? '+' : ''}${escaparHtml(casco.velocidad)}</span>
                     </div>
                     <div class="info-item">
                         <span class="info-label">Coste:</span>
-                        <span class="info-value">${casco.coste}</span>
+                        <span class="info-value">${escaparHtml(casco.coste)}</span>
                     </div>
                 </div>
             `;
@@ -164,12 +221,7 @@ function generarCascos(container) {
 
             const radio = cascoDiv.querySelector('input[type="radio"]');
             radio.addEventListener('change', () => {
-                seleccionados.casco = {
-                    nombre: casco.nombre,
-                    velocidad: casco.velocidad,
-                    coste: casco.coste,
-                    capacidad_modulos: casco.capacidad_modulos
-                };
+                seleccionados.casco = { ...casco };
                 capacidadModulosActual = casco.capacidad_modulos;
                 actualizarCapacidadUI();
                 calcularTotales();
@@ -267,38 +319,41 @@ function generarCategoriaMultiple(categoria, titulo, container, items = []) {
 
         let htmlInfo = '';
         if (item.velocidad !== undefined) {
-            htmlInfo += `<div class="info-item"><span class="info-label">Velocidad:</span><span class="info-value">${item.velocidad > 0 ? '+' : ''}${item.velocidad}</span></div>`;
+            htmlInfo += `<div class="info-item"><span class="info-label">Velocidad:</span><span class="info-value">${item.velocidad > 0 ? '+' : ''}${escaparHtml(item.velocidad)}</span></div>`;
         }
         if (item.ataque_p_l !== undefined || item.ataque !== undefined) {
             const valorAtaque = obtenerAtaqueVisible(item);
             const esDañoCompuesto = typeof valorAtaque === 'string' && esValorCompuesto(valorAtaque);
             const etiquetaAtaque = esDañoCompuesto ? 'Daño (P/L)' : 'Ataque';
-            htmlInfo += `<div class="info-item"><span class="info-label">${etiquetaAtaque}:</span><span class="info-value">${valorAtaque}</span></div>`;
+            htmlInfo += `<div class="info-item"><span class="info-label">${etiquetaAtaque}:</span><span class="info-value">${escaparHtml(valorAtaque)}</span></div>`;
         }
         if (item.defensa_p_l !== undefined || item.defensa !== undefined) {
             const valorDefensa = obtenerDefensaVisible(item);
             const esDefensaCompuesta = typeof valorDefensa === 'string' && esValorCompuesto(valorDefensa);
             const etiquetaDefensa = esDefensaCompuesta ? 'Defensa (P/L)' : 'Defensa';
-            htmlInfo += `<div class="info-item"><span class="info-label">${etiquetaDefensa}:</span><span class="info-value">${valorDefensa}</span></div>`;
+            htmlInfo += `<div class="info-item"><span class="info-label">${etiquetaDefensa}:</span><span class="info-value">${escaparHtml(valorDefensa)}</span></div>`;
         }
         if (item.coste) {
-            htmlInfo += `<div class="info-item"><span class="info-label">Coste:</span><span class="info-value">${item.coste}</span></div>`;
+            htmlInfo += `<div class="info-item"><span class="info-label">Coste:</span><span class="info-value">${escaparHtml(item.coste)}</span></div>`;
         }
 
         const infoMotor = categoria === 'propulsion' && cantidadActual > 0
             ? '<span class="motor-base-label">Motor base inclusivo sin slot</span>'
             : '<span class="motor-base-label">Sin motor asignado</span>';
+        if (item.pais_modulo) {
+            htmlInfo += `<div class="info-item"><span class="info-label">País del módulo:</span><span class="info-value">${escaparHtml(item.pais_modulo)}</span></div>`;
+        }
 
         opcion.innerHTML = `
             <div class="modulo-topline">
-                <strong>${item.nombre}</strong>
+                <strong>${escaparHtml(item.nombre)}</strong>
                 ${infoMotor}
             </div>
             <div class="modulo-info">${htmlInfo}</div>
             <div class="modulo-controls">
-                <button type="button" class="qty-btn" data-action="decrement" data-categoria="${categoria}" data-item="${item.nombre}" ${cantidadActual <= 0 ? 'disabled' : ''}>-</button>
+                <button type="button" class="qty-btn" data-action="decrement" data-categoria="${categoria}" data-item="${escaparHtml(item.nombre)}" ${cantidadActual <= 0 ? 'disabled' : ''}>-</button>
                 <span class="qty-value" id="cantidad-${categoria}-${index}">${cantidadActual}</span>
-                <button type="button" class="qty-btn" data-action="increment" data-categoria="${categoria}" data-item="${item.nombre}" ${!puedeSumar ? 'disabled' : ''}>+</button>
+                <button type="button" class="qty-btn" data-action="increment" data-categoria="${categoria}" data-item="${escaparHtml(item.nombre)}" ${!puedeSumar ? 'disabled' : ''}>+</button>
             </div>
         `;
 
@@ -395,7 +450,7 @@ function actualizarCapacidadUI() {
         comprobante.innerHTML = `
             <strong>Comprobante de módulos:</strong>
             <span>${modulosColocados}/${capacidadTotal || 0} slots usados</span>
-            <small>${motorBase ? `Motor base: ${motorBase.nombre}` : 'Sin motor base'}</small>
+            <small>${motorBase ? `Motor base: ${escaparHtml(motorBase.nombre)}` : 'Sin motor base'}</small>
         `;
     }
 }
@@ -492,7 +547,7 @@ function calcularDefensaPLTotal(estado = seleccionados) {
 
 function parsearCoste(coste) {
     if (!coste) return 0;
-    return parseInt(coste.toString().replace(/[^0-9]/g, '')) || 0;
+    return parseFloat(coste.toString().replace(/[^0-9.-]/g, '')) || 0;
 }
 
 function agregarEventListeners() {
@@ -554,16 +609,16 @@ function crearFicha() {
             pais
         },
         modulos_seleccionados: {
-            casco: seleccionados.casco,
-            propulsion: seleccionados.propulsion,
-            armamento: seleccionados.armamento,
-            blindaje: seleccionados.blindaje
+            casco: limpiarMarcaModulo(seleccionados.casco),
+            propulsion: seleccionados.propulsion.map(limpiarMarcaModulo),
+            armamento: seleccionados.armamento.map(limpiarMarcaModulo),
+            blindaje: seleccionados.blindaje.map(limpiarMarcaModulo)
         },
         comprobante_modulos: {
             usados: modulosTotales,
             capacidad_total: capacidadModulosActual,
             disponibles: Math.max(0, capacidadModulosActual - modulosTotales),
-            motor_base: obtenerMotorBaseSeleccionado(seleccionados)
+            motor_base: limpiarMarcaModulo(obtenerMotorBaseSeleccionado(seleccionados))
         },
         estadisticas: {
             velocidad: parseInt(document.getElementById('velocidad-total').textContent),
