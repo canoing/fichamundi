@@ -63,6 +63,7 @@ function humanizeKey(key) {
         coste: 'Coste',
         costo: 'Coste',
         coste_de_produccion: 'Coste de producción',
+        defensa_pl_total: 'Defensa (P/L)',
         capacidad_peso_total: 'Capacidad de peso',
         capacidad_piezas_total: 'Capacidad de piezas',
         piezas_colocadas: 'Piezas',
@@ -97,6 +98,27 @@ function createStatsGrid(stats, limit = 8) {
     return grid;
 }
 
+function calculateNavalDefenseTotal(selected) {
+    let defenseP = 0;
+    let defenseL = 0;
+
+    ['propulsion', 'armamento', 'blindaje'].forEach(category => {
+        if (!Array.isArray(selected?.[category])) return;
+        selected[category].forEach(module => {
+            if (typeof module?.defensa_p_l !== 'string') return;
+            const quantity = Number(module.cantidad ?? 1);
+            if (!Number.isFinite(quantity) || quantity <= 0) return;
+
+            const matchP = module.defensa_p_l.match(/(\d+)\s*\(?P\)?/i);
+            const matchL = module.defensa_p_l.match(/(\d+)\s*\(?L\)?/i);
+            defenseP += (matchP ? Number(matchP[1]) : 0) * quantity;
+            defenseL += (matchL ? Number(matchL[1]) : 0) * quantity;
+        });
+    });
+
+    return defenseP || defenseL ? `${defenseP}(P) ${defenseL}(L)` : null;
+}
+
 function createModuleList(groups) {
     const entries = [];
     groups.forEach(([key, label, isSingle]) => {
@@ -123,7 +145,12 @@ function createModuleList(groups) {
         const quantity = Number(module.cantidad);
         const prefix = quantity > 0 ? `x${quantity} ` : '';
         item.append(createElement('span', `${prefix}${name}`));
-        item.append(createElement('small', label));
+        const defense = module.defensa_p_l !== undefined
+            ? `Defensa (P/L): ${module.defensa_p_l}`
+            : module.defensa !== undefined
+                ? `Defensa: ${module.defensa}`
+                : '';
+        item.append(createElement('small', [label, defense].filter(Boolean).join(' · ')));
         list.append(item);
     });
     return list;
@@ -166,6 +193,7 @@ function createTemplatePreview(content) {
     const info = content?.informacion_general || {};
     const division = content?.ficha_unidad;
     const stats = division ? content.estadisticas_acumuladas : content?.estadisticas;
+    const selected = content?.componentes_seleccionados || content?.modulos_seleccionados;
     const heading = division
         ? info.nombre_unidad || content.titulo
         : info.nombre || content?.titulo || (Array.isArray(content) ? content[0]?.Nombre : '');
@@ -177,7 +205,14 @@ function createTemplatePreview(content) {
     const metadata = [type, info.anio || info.fecha || content?.fecha].filter(Boolean).join(' · ');
     if (metadata) preview.append(createElement('p', metadata, 'inicio-descripcion'));
 
-    const statsGrid = createStatsGrid(stats || (Array.isArray(content) ? content[0] : null));
+    let previewStats = stats && typeof stats === 'object' && !Array.isArray(stats) ? { ...stats } : stats;
+    if (!division && selected && (!previewStats || typeof previewStats !== 'object' || Array.isArray(previewStats))) {
+        previewStats = {};
+    }
+    if (previewStats && selected && !previewStats.defensa_pl_total) {
+        previewStats.defensa_pl_total = calculateNavalDefenseTotal(selected);
+    }
+    const statsGrid = createStatsGrid(previewStats || (Array.isArray(content) ? content[0] : null));
     if (statsGrid) preview.append(statsGrid);
 
     if (division) {
@@ -192,7 +227,6 @@ function createTemplatePreview(content) {
             preview.append(section);
         }
     } else {
-        const selected = content?.componentes_seleccionados || content?.modulos_seleccionados;
         if (selected && typeof selected === 'object') {
             const groups = [];
             const categoryLabels = {

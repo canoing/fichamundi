@@ -623,6 +623,7 @@ function crearFicha() {
         estadisticas: {
             velocidad: parseInt(document.getElementById('velocidad-total').textContent),
             ataque: parseInt(document.getElementById('ataque-total').textContent),
+            defensa_pl_total: calcularDefensaPLTotal(seleccionados),
             coste: document.getElementById('coste-total').textContent,
             modulos_colocados: modulosTotales,
             capacidad_total: capacidadModulosActual
