@@ -337,6 +337,7 @@ function generarFuselajes(container) {
     (fuselajes || []).forEach((fuselaje, index) => {
         const div = document.createElement('div');
         div.className = 'opcion-casco';
+        if (fuselaje.pais_modulo) div.dataset.paisModulo = fuselaje.pais_modulo;
 
         const radioId = `fuselaje-${index}`;
         const isChecked = seleccionados.fuselaje?.nombre === fuselaje.nombre ? 'checked' : '';
@@ -453,6 +454,7 @@ function generarCategoriaMultiple(categoria, titulo, container, items = []) {
     items.forEach((item, index) => {
         const opcion = document.createElement('div');
         opcion.className = 'opcion-modulo';
+        if (item.pais_modulo) opcion.dataset.paisModulo = item.pais_modulo;
 
         const cantidadActual = obtenerCantidadEnCategoria(seleccionados, categoria, item.nombre);
         const estadoSimulado = JSON.parse(JSON.stringify(seleccionados));

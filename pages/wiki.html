@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wiki de países - betaWorld</title>
     <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/investigaciones.css">
     <script src="../js/tema.js"></script>
 </head>
 <body>
@@ -29,23 +30,105 @@
 
         <main>
             <section class="seccion">
-                <h2>Países</h2>
+                <h2>Publicar un país</h2>
+                <p class="inicio-descripcion">
+                    Antes de publicar, busca tu país en «Publicaciones de países». Si ya aparece, no crees otra publicación:
+                    sus módulos y armamento aprobados se muestran automáticamente en su tarjeta. Si todavía no aparece,
+                    completa este formulario para crear su publicación.
+                </p>
+                <p class="inicio-descripcion">
+                    Escribe el mismo nombre de país que utilizas en el resto de la página (plantilla, módulos e investigaciones).
+                    Así se recopilarán correctamente sus armas, módulos aprobados e investigaciones. El armamento y
+                    los módulos aprobados se muestran según el catálogo actual; las investigaciones y los datos
+                    económicos quedan guardados al publicar. Cualquier visitante puede editar el texto y los datos
+                    económicos de una publicación.
+                </p>
+                <form id="formulario-publicacion-pais">
+                    <div class="formulario">
+                        <div class="campo">
+                            <label for="nombre-pais-publicacion">Nombre del país</label>
+                            <input id="nombre-pais-publicacion" name="country" type="text" maxlength="100" required>
+                        </div>
+                        <div class="campo">
+                            <label for="contenido-publicacion-pais">Publicación</label>
+                            <textarea id="contenido-publicacion-pais" name="content" rows="8" maxlength="10000" required
+                                placeholder="Escribe la historia, política, cultura y cualquier otra información del país..."></textarea>
+                        </div>
+                    </div>
+                    <details class="research-branch">
+                        <summary>Datos económicos</summary>
+                        <p class="inicio-descripcion">Si no tienes un dato, déjalo vacío. El PIB se expresa en miles de millones de USD; el gasto militar, como porcentaje del PIB.</p>
+                        <div class="formulario">
+                            <div class="campo">
+                                <label for="economia-pib">PIB más reciente (último valor proporcionado por Yair)</label>
+                                <input id="economia-pib" name="gdp_latest" type="number" min="0" step="any" placeholder="Ej.: 1250">
+                            </div>
+                            <div class="campo">
+                                <label for="economia-gasto-militar">Gasto militar (% del PIB)</label>
+                                <input id="economia-gasto-militar" name="military_spending" type="number" min="0" max="100" step="any" placeholder="Ej.: 4.5">
+                            </div>
+                            <div class="campo">
+                                <label for="economia-sector-primario">Sector primario</label>
+                                <select id="economia-sector-primario" name="primary_sector">
+                                    <option value="">Sin especificar</option>
+                                    <option value="Bajo">Bajo</option>
+                                    <option value="Medio">Medio</option>
+                                    <option value="Alto">Alto</option>
+                                </select>
+                            </div>
+                            <div class="campo">
+                                <label for="economia-sector-secundario-ligero">Sector secundario ligero</label>
+                                <select id="economia-sector-secundario-ligero" name="secondary_light">
+                                    <option value="">Sin especificar</option>
+                                    <option value="Bajo">Bajo</option>
+                                    <option value="Medio">Medio</option>
+                                    <option value="Alto">Alto</option>
+                                </select>
+                            </div>
+                            <div class="campo">
+                                <label for="economia-sector-secundario-pesado">Sector secundario pesado</label>
+                                <select id="economia-sector-secundario-pesado" name="secondary_heavy">
+                                    <option value="">Sin especificar</option>
+                                    <option value="Bajo">Bajo</option>
+                                    <option value="Medio">Medio</option>
+                                    <option value="Alto">Alto</option>
+                                </select>
+                            </div>
+                            <div class="campo">
+                                <label for="economia-sector-terciario">Sector terciario</label>
+                                <select id="economia-sector-terciario" name="tertiary_sector">
+                                    <option value="">Sin especificar</option>
+                                    <option value="Bajo">Bajo</option>
+                                    <option value="Medio">Medio</option>
+                                    <option value="Alto">Alto</option>
+                                </select>
+                            </div>
+                        </div>
+                    </details>
+                    <div class="acciones">
+                        <button id="publicar-pais" class="btn btn-primary" type="submit">Publicar país</button>
+                    </div>
+                </form>
+                <p id="estado-publicacion-pais" class="comprobante-modulos" role="status" aria-live="polite" hidden></p>
+            </section>
+
+            <section class="seccion">
+                <h2>Publicaciones de países</h2>
                 <div class="formulario">
                     <div class="campo">
-                        <label for="buscar-pais">Buscar en la wiki</label>
-                        <input id="buscar-pais" type="search" placeholder="Nombre, historia, política...">
+                        <label for="buscar-pais">Buscar publicaciones</label>
+                        <input id="buscar-pais" type="search" placeholder="País, historia, economía, investigaciones...">
                     </div>
                 </div>
-                <p id="estado-wiki" role="status" aria-live="polite">Cargando países...</p>
-                <nav id="indice-paises" class="inicio-grid" aria-label="Índice de países"></nav>
+                <p id="estado-wiki" role="status" aria-live="polite">Cargando publicaciones...</p>
             </section>
-            <div id="articulos-paises"></div>
+            <div id="articulos-paises" class="research-publications" aria-live="polite"></div>
         </main>
 
         <footer class="footer">
             <p>betaWorld · Wiki de países</p>
         </footer>
     </div>
-    <script src="../js/wiki.js"></script>
+    <script type="module" src="../js/wiki.js"></script>
 </body>
 </html>

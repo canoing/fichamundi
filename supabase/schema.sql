@@ -127,6 +127,45 @@ create table if not exists private.moderator_settings (
 );
 revoke all on private.moderator_settings from public, anon, authenticated;
 
+create or replace function public.update_pending_template_content(
+    p_template_id uuid,
+    p_content jsonb,
+    p_moderator_key text
+)
+returns boolean
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+    if p_moderator_key is null or not exists (
+        select 1
+        from private.moderator_settings
+        where setting_id and moderator_key = p_moderator_key
+    ) then
+        raise exception 'Invalid moderator key.' using errcode = '42501';
+    end if;
+
+    if p_content is null or jsonb_typeof(p_content) not in ('object', 'array') then
+        raise exception 'Template content must be a JSON object or array.' using errcode = '22023';
+    end if;
+
+    update public.templates
+    set content = p_content
+    where id = p_template_id
+      and status = 'pending';
+
+    if not found then
+        raise exception 'Template not found or no longer pending.' using errcode = 'P0002';
+    end if;
+
+    return true;
+end;
+$$;
+
+revoke all on function public.update_pending_template_content(uuid, jsonb, text) from public;
+grant execute on function public.update_pending_template_content(uuid, jsonb, text) to anon, authenticated;
+
 create table if not exists public.custom_modules (
     id uuid primary key default gen_random_uuid(),
     revision_of uuid references public.custom_modules (id) on delete restrict,
@@ -347,3 +386,54 @@ revoke all on function public.get_pending_custom_modules(text) from public;
 revoke all on function public.review_custom_module(uuid, text, jsonb, numeric, text, text) from public;
 grant execute on function public.get_pending_custom_modules(text) to anon, authenticated;
 grant execute on function public.review_custom_module(uuid, text, jsonb, numeric, text, text) to anon, authenticated;
+
+create table if not exists public.country_wiki_posts (
+    id uuid primary key default gen_random_uuid(),
+    country text not null check (char_length(trim(country)) between 1 and 100),
+    content text not null check (char_length(trim(content)) between 1 and 10000),
+    economy jsonb not null default '{}'::jsonb check (jsonb_typeof(economy) = 'object'),
+    weapons jsonb not null default '[]'::jsonb check (jsonb_typeof(weapons) = 'array'),
+    approved_modules jsonb not null default '[]'::jsonb check (jsonb_typeof(approved_modules) = 'array'),
+    investigations jsonb not null default '[]'::jsonb check (jsonb_typeof(investigations) = 'array'),
+    created_at timestamptz not null default now()
+);
+
+create index if not exists country_wiki_posts_created_idx
+    on public.country_wiki_posts (created_at desc);
+create index if not exists country_wiki_posts_country_created_idx
+    on public.country_wiki_posts (lower(trim(country)), created_at desc);
+
+alter table public.country_wiki_posts enable row level security;
+revoke all on public.country_wiki_posts from public, anon, authenticated;
+
+drop policy if exists "Anyone can read country wiki posts"
+    on public.country_wiki_posts;
+create policy "Anyone can read country wiki posts"
+    on public.country_wiki_posts for select to anon, authenticated
+    using (true);
+
+drop policy if exists "Anyone can publish country wiki posts"
+    on public.country_wiki_posts;
+create policy "Anyone can publish country wiki posts"
+    on public.country_wiki_posts for insert to anon, authenticated
+    with check (
+        char_length(trim(country)) between 1 and 100
+        and char_length(trim(content)) between 1 and 10000
+        and jsonb_typeof(weapons) = 'array'
+        and jsonb_typeof(approved_modules) = 'array'
+        and jsonb_typeof(investigations) = 'array'
+    );
+
+grant select, insert on public.country_wiki_posts to anon, authenticated;
+grant update (content, economy) on public.country_wiki_posts to anon, authenticated;
+
+drop policy if exists "Anyone can edit country wiki posts"
+    on public.country_wiki_posts;
+create policy "Anyone can edit country wiki posts"
+    on public.country_wiki_posts for update to anon, authenticated
+    using (true)
+    with check (
+        char_length(trim(country)) between 1 and 100
+        and char_length(trim(content)) between 1 and 10000
+        and jsonb_typeof(economy) = 'object'
+    );

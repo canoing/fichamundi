@@ -63,6 +63,7 @@ function humanizeKey(key) {
         coste: 'Coste',
         costo: 'Coste',
         coste_de_produccion: 'Coste de producción',
+        ataque_pl_total: 'Ataque (P/L)',
         defensa_pl_total: 'Defensa (P/L)',
         capacidad_peso_total: 'Capacidad de peso',
         capacidad_piezas_total: 'Capacidad de piezas',
@@ -73,7 +74,9 @@ function humanizeKey(key) {
         peso_total: 'Peso',
         maniobrabilidad: 'Maniobrabilidad',
         nivel_tech_tree: 'Nivel tecnológico',
-        hp_a_regimiento: 'HP aportado'
+        hp_a_regimiento: 'HP aportado',
+        ataque_naval: 'Daño naval',
+        ataque_tierra: 'Daño terrestre'
     };
     const normalized = key.toLocaleLowerCase('es').replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
     return labels[normalized] || normalized.replace(/_/g, ' ').replace(/^./, character => character.toLocaleUpperCase('es'));
@@ -119,6 +122,27 @@ function calculateNavalDefenseTotal(selected) {
     return defenseP || defenseL ? `${defenseP}(P) ${defenseL}(L)` : null;
 }
 
+function calculateNavalAttackTotal(selected) {
+    let attackP = 0;
+    let attackL = 0;
+
+    ['propulsion', 'armamento', 'blindaje'].forEach(category => {
+        if (!Array.isArray(selected?.[category])) return;
+        selected[category].forEach(module => {
+            if (typeof module?.ataque_p_l !== 'string') return;
+            const quantity = Number(module.cantidad ?? 1);
+            if (!Number.isFinite(quantity) || quantity <= 0) return;
+
+            const matchP = module.ataque_p_l.match(/(\d+)\s*\(?P\)?/i);
+            const matchL = module.ataque_p_l.match(/(\d+)\s*\(?L\)?/i);
+            attackP += (matchP ? Number(matchP[1]) : 0) * quantity;
+            attackL += (matchL ? Number(matchL[1]) : 0) * quantity;
+        });
+    });
+
+    return attackP || attackL ? `${attackP}(P) ${attackL}(L)` : null;
+}
+
 function createModuleList(groups) {
     const entries = [];
     groups.forEach(([key, label, isSingle]) => {
@@ -150,7 +174,13 @@ function createModuleList(groups) {
             : module.defensa !== undefined
                 ? `Defensa: ${module.defensa}`
                 : '';
-        item.append(createElement('small', [label, defense].filter(Boolean).join(' · ')));
+        const attacks = [
+            module.ataque_p_l !== undefined ? `Ataque (P/L): ${module.ataque_p_l}` : '',
+            module.ataque_naval !== undefined ? `Daño naval: ${displayValue(module.ataque_naval)}` : '',
+            module.ataque_tierra !== undefined ? `Daño terrestre: ${displayValue(module.ataque_tierra)}` : '',
+            module.ataque !== undefined ? `Ataque: ${displayValue(module.ataque)}` : ''
+        ];
+        item.append(createElement('small', [label, ...attacks, defense].filter(Boolean).join(' · ')));
         list.append(item);
     });
     return list;
@@ -211,6 +241,9 @@ function createTemplatePreview(content) {
     }
     if (previewStats && selected && !previewStats.defensa_pl_total) {
         previewStats.defensa_pl_total = calculateNavalDefenseTotal(selected);
+    }
+    if (previewStats && selected && !previewStats.ataque_pl_total) {
+        previewStats.ataque_pl_total = calculateNavalAttackTotal(selected);
     }
     const statsGrid = createStatsGrid(previewStats || (Array.isArray(content) ? content[0] : null));
     if (statsGrid) preview.append(statsGrid);
@@ -389,7 +422,7 @@ async function refreshTemplates() {
 
     if (templatesResult.error) {
         showStatus(listStatus, `No se pudieron cargar las plantillas: ${templatesResult.error.message}`, true);
-        return;
+        return false;
     }
     templates = templatesResult.data;
 
@@ -404,7 +437,7 @@ async function refreshTemplates() {
 
         if (commentsResult.error) {
             showStatus(listStatus, `No se pudieron cargar los comentarios: ${commentsResult.error.message}`, true);
-            return;
+            return false;
         }
         commentsResult.data.forEach(comment => {
             const comments = commentsByTemplate.get(comment.template_id) || [];
@@ -416,10 +449,89 @@ async function refreshTemplates() {
     renderCountryOptions();
     renderTemplates();
     showStatus(listStatus, `${templates.length} plantillas cargadas.`);
+    return true;
 }
 
 function createModeratorTools(template) {
     const section = createElement('section');
+    const statsTarget = getEditableStats(template.content);
+    if (statsTarget) {
+        const statsEditor = createElement('div', undefined, 'formulario');
+        statsEditor.append(createElement('h4', 'Editar estadísticas'));
+        let editableCount = 0;
+        Object.entries(statsTarget.stats).forEach(([key, value]) => {
+            if (value === null || !['string', 'number', 'boolean'].includes(typeof value)) return;
+            const field = createElement('div', undefined, 'campo');
+            const inputId = `estadistica-${template.id}-${editableCount}`;
+            const label = createElement('label', humanizeKey(key));
+            label.htmlFor = inputId;
+            const input = document.createElement('input');
+            input.id = inputId;
+            input.dataset.statKey = key;
+            input.type = typeof value === 'number' ? 'number' : typeof value === 'boolean' ? 'checkbox' : 'text';
+            if (input.type === 'number') input.step = 'any';
+            input.required = input.type === 'number';
+            if (input.type === 'checkbox') input.checked = value;
+            else input.value = value ?? '';
+            field.append(label, input);
+            statsEditor.append(field);
+            editableCount += 1;
+        });
+        if (editableCount) {
+            const saveStatsButton = createElement('button', 'Guardar estadísticas');
+            saveStatsButton.type = 'button';
+            saveStatsButton.className = 'btn btn-secondary';
+            const statsFeedback = createElement('p');
+            statsFeedback.setAttribute('role', 'status');
+            saveStatsButton.addEventListener('click', async () => {
+                const invalidInput = [...statsEditor.querySelectorAll('input')]
+                    .find(input => !input.reportValidity());
+                if (invalidInput) return;
+                saveStatsButton.disabled = true;
+                let saved = false;
+                try {
+                    const content = JSON.parse(JSON.stringify(template.content));
+                    const target = getEditableStats(content);
+                    statsEditor.querySelectorAll('[data-stat-key]').forEach(input => {
+                        const key = input.dataset.statKey;
+                        const original = target.stats[key];
+                        target.stats[key] = typeof original === 'number'
+                            ? Number(input.value)
+                            : typeof original === 'boolean'
+                                ? input.checked
+                                : input.value.trim();
+                        if (typeof original === 'number' && !Number.isFinite(target.stats[key])) {
+                            throw new Error(`El valor de ${humanizeKey(key)} debe ser un número válido.`);
+                        }
+                    });
+                    const { error } = await supabase.rpc('update_pending_template_content', {
+                        p_template_id: template.id,
+                        p_content: content,
+                        p_moderator_key: moderatorKey
+                    });
+                    if (error) throw error;
+                    saved = true;
+                    if (!await refreshTemplates()) {
+                        throw new Error('No se pudo actualizar la lista.');
+                    }
+                    showStatus(listStatus, 'Estadísticas corregidas. La plantilla sigue pendiente de revisión.');
+                } catch (error) {
+                    showStatus(
+                        saved ? listStatus : statsFeedback,
+                        saved
+                            ? `Las estadísticas se guardaron, pero ${error.message}`
+                            : `No se pudieron guardar las estadísticas: ${error.message}`,
+                        true
+                    );
+                } finally {
+                    saveStatsButton.disabled = false;
+                }
+            });
+            statsEditor.append(saveStatsButton, statsFeedback);
+            section.append(statsEditor);
+        }
+    }
+
     const reviewCommentField = createElement('div', undefined, 'campo');
     const reviewCommentLabel = createElement('label', 'Comentario (opcional)');
     const reviewCommentInput = document.createElement('textarea');
@@ -466,6 +578,21 @@ function createModeratorTools(template) {
     approveButton.addEventListener('click', () => setReviewStatus('approved', approveButton));
     rejectButton.addEventListener('click', () => setReviewStatus('rejected', rejectButton));
     return section;
+}
+
+function getEditableStats(content) {
+    if (content?.ficha_unidad?.estadisticas_acumuladas
+        && typeof content.ficha_unidad.estadisticas_acumuladas === 'object'
+        && !Array.isArray(content.ficha_unidad.estadisticas_acumuladas)) {
+        return { stats: content.ficha_unidad.estadisticas_acumuladas };
+    }
+    if (content?.estadisticas && typeof content.estadisticas === 'object' && !Array.isArray(content.estadisticas)) {
+        return { stats: content.estadisticas };
+    }
+    if (Array.isArray(content) && content[0] && typeof content[0] === 'object' && !Array.isArray(content[0])) {
+        return { stats: content[0] };
+    }
+    return null;
 }
 
 accessForm.addEventListener('submit', async event => {

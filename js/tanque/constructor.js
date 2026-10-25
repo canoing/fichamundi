@@ -376,6 +376,7 @@ function generarChasis(container) {
         const radioId = `chasis-${index}`;
         const isChecked = seleccionados.chasis && seleccionados.chasis.nombre === chasis.nombre ? 'checked' : '';
         const estilo = chasis.tipo_blindaje === 'L' ? 'L' : 'P';
+        if (chasis.pais_modulo) chasisDiv.dataset.paisModulo = chasis.pais_modulo;
 
         chasisDiv.innerHTML = `
             <label>
@@ -442,6 +443,7 @@ function generarCategoriaMultiple(categoria, titulo, container, items = []) {
     items.forEach((item, index) => {
         const opcion = document.createElement('div');
         opcion.className = 'opcion-modulo';
+        if (item.pais_modulo) opcion.dataset.paisModulo = item.pais_modulo;
 
         const cantidadActual = obtenerCantidadEnCategoria(seleccionados, categoria, item.nombre);
 

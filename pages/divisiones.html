@@ -64,7 +64,13 @@
 
             <section class="seccion">
                 <h2>Armas para divisiones</h2>
-                <p class="inicio-descripcion">Las armas aprobadas de cualquier país aparecen en la lista de cada regimiento; su país de origen se muestra junto al nombre. <a href="modulos-personalizados.html">Crear o editar un arma personalizada</a>.</p>
+                <p class="inicio-descripcion">Las armas aprobadas de cualquier país aparecen en la lista de cada regimiento; su país de origen se muestra junto al nombre. El filtro solo facilita la búsqueda. <a href="modulos-personalizados.html">Crear o editar un arma personalizada</a>.</p>
+                <div class="campo">
+                    <label for="filtro-pais-modulos-creador">Filtrar armas personalizadas por país (opcional)</label>
+                    <select id="filtro-pais-modulos-creador">
+                        <option value="">Todos los países</option>
+                    </select>
+                </div>
                 <p id="aviso-modulos-aprobados" class="comprobante-modulos" role="status" aria-live="polite" hidden></p>
             </section>
 
@@ -93,5 +99,6 @@
     <script src="../js/publicar-plantilla.js"></script>
     <script src="../js/divisiones/constructor.js"></script>
     <script type="module" src="../js/divisiones/catalogo-modulos.js"></script>
+    <script src="../js/filtro-modulos-pais.js"></script>
 </body>
 </html>

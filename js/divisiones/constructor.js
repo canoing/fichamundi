@@ -199,7 +199,7 @@ function renderizarRegimientos() {
         const necesitaMov = tipo.mov_depende_de_arma;
         const necesitaSup = tipo.sup_depende_de_arma;
         const opcionesArmas = '<option value="">Sin arma</option>' + armasDivision.map(arma =>
-            `<option value="${escaparHtml(arma.id_arma)}" ${regimiento.arma_equipada?.id_arma === arma.id_arma ? 'selected' : ''}>${escaparHtml(arma.nombre)}${arma.pais_modulo ? ` · ${escaparHtml(arma.pais_modulo)}` : ''} · ATK ${arma.ataque}, DEF ${arma.defensa} · ${numeroSeguro(arma.precio)} M</option>`
+            `<option value="${escaparHtml(arma.id_arma)}" ${arma.pais_modulo ? `data-pais-modulo="${escaparHtml(arma.pais_modulo)}"` : ''} ${regimiento.arma_equipada?.id_arma === arma.id_arma ? 'selected' : ''}>${escaparHtml(arma.nombre)}${arma.pais_modulo ? ` · ${escaparHtml(arma.pais_modulo)}` : ''} · ATK ${arma.ataque}, DEF ${arma.defensa} · ${numeroSeguro(arma.precio)} M</option>`
         ).join('');
         return `<article class="opcion-modulo">
             <div class="modulo-topline"><strong>Regimiento ${indice + 1}</strong>

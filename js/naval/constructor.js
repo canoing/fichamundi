@@ -194,6 +194,7 @@ function generarCascos(container) {
         items.forEach((casco, index) => {
             const cascoDiv = document.createElement('div');
             cascoDiv.className = 'opcion-casco';
+            if (casco.pais_modulo) cascoDiv.dataset.paisModulo = casco.pais_modulo;
 
             const radioId = `casco-${tipoKey}-${index}`;
             const isChecked = seleccionados.casco?.nombre === casco.nombre ? 'checked' : '';
@@ -302,6 +303,7 @@ function generarCategoriaMultiple(categoria, titulo, container, items = []) {
     items.forEach((item, index) => {
         const opcion = document.createElement('div');
         opcion.className = 'opcion-modulo';
+        if (item.pais_modulo) opcion.dataset.paisModulo = item.pais_modulo;
 
         const cantidadActual = obtenerCantidadEnCategoria(seleccionados, categoria, item.nombre);
         const estadoSimulado = JSON.parse(JSON.stringify(seleccionados));
@@ -623,6 +625,7 @@ function crearFicha() {
         estadisticas: {
             velocidad: parseInt(document.getElementById('velocidad-total').textContent),
             ataque: parseInt(document.getElementById('ataque-total').textContent),
+            ataque_pl_total: calcularAtaquePLTotal(seleccionados),
             defensa_pl_total: calcularDefensaPLTotal(seleccionados),
             coste: document.getElementById('coste-total').textContent,
             modulos_colocados: modulosTotales,

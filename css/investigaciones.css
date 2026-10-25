@@ -34,7 +34,148 @@
 }
 
 .research-publication-content {
-    padding: 12px;
+    display: grid;
+    gap: 14px;
+    padding: 16px;
+}
+
+.wiki-publication-section {
+    min-width: 0;
+    padding: 14px;
+    border: 1px solid #dce4ea;
+    border-radius: 8px;
+    background: #fff;
+}
+
+.wiki-publication-section > h3 {
+    margin: 0 0 10px;
+    color: #1a3a52;
+    font-size: 1.05rem;
+}
+
+.wiki-narrative {
+    overflow-wrap: anywhere;
+}
+
+.wiki-empty {
+    margin: 0;
+    color: #667788;
+    font-size: 0.92em;
+}
+
+.wiki-economy-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+    gap: 8px;
+    margin: 0;
+}
+
+.wiki-economy-grid dt,
+.wiki-economy-grid dd {
+    margin: 0;
+}
+
+.wiki-economy-grid dt {
+    color: #536779;
+    font-size: 0.82em;
+}
+
+.wiki-economy-grid dd {
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.wiki-catalog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+    gap: 14px;
+}
+
+.wiki-name-list {
+    display: grid;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.wiki-name-item {
+    padding: 8px 10px;
+    border: 1px solid #e1e8ee;
+    border-radius: 6px;
+    background: #f7fafc;
+    overflow-wrap: anywhere;
+}
+
+.wiki-research-categories {
+    display: grid;
+    gap: 8px;
+}
+
+.wiki-research-category {
+    border: 1px solid #dce4ea;
+    border-radius: 7px;
+    overflow: hidden;
+}
+
+.wiki-research-category > summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+    padding: 9px 11px;
+    background: #eef5fb;
+    color: #1a3a52;
+    cursor: pointer;
+}
+
+.wiki-research-count {
+    color: #536779;
+    font-size: 0.82em;
+}
+
+.wiki-research-category > .wiki-name-list {
+    padding: 8px;
+}
+
+.wiki-research-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 6px 12px;
+    padding: 7px 9px;
+    border-bottom: 1px solid #e1e8ee;
+}
+
+.wiki-research-item:last-child {
+    border-bottom: 0;
+}
+
+.wiki-research-name {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.wiki-research-status {
+    flex: 0 0 auto;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: #e7edf2;
+    color: #425466;
+    font-size: 0.78em;
+    font-weight: 700;
+}
+
+.wiki-research-status-completed {
+    background: #e4f3e7;
+    color: #286238;
+}
+
+.wiki-research-status-in_progress {
+    background: #fff2d6;
+    color: #765113;
 }
 
 .research-slot-counters {
@@ -182,6 +323,10 @@
 }
 
 @media (min-width: 700px) {
+    .research-publication-content {
+        padding: 20px;
+    }
+
     .research-slot-counters {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }

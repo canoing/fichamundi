@@ -55,7 +55,13 @@
             <!-- SECCIÓN 2: ESTADÍSTICAS Y MÓDULOS -->
             <section class="seccion" id="seccion2">
                 <h2> Sección 2: Módulos y Estadísticas</h2>
-                <p class="inicio-descripcion">El país de la ficha no limita los módulos disponibles: puedes elegir módulos aprobados de cualquier país y ver su origen en cada opción.</p>
+                <p class="inicio-descripcion">El país de la ficha no limita los módulos disponibles: puedes elegir módulos aprobados de cualquier país y ver su origen en cada opción. El filtro solo facilita la búsqueda.</p>
+                <div class="campo">
+                    <label for="filtro-pais-modulos-creador">Filtrar módulos personalizados por país (opcional)</label>
+                    <select id="filtro-pais-modulos-creador">
+                        <option value="">Todos los países</option>
+                    </select>
+                </div>
                 <p id="aviso-modulos-aprobados" class="comprobante-modulos" role="status" aria-live="polite" hidden></p>
                 
                 <div id="modulos-container" class="modulos-container">
@@ -156,5 +162,6 @@
         <script src="../js/publicar-plantilla.js"></script>
         <script src="../js/naval/constructor.js"></script>
         <script type="module" src="../js/naval/catalogo-modulos.js"></script>
+        <script src="../js/filtro-modulos-pais.js"></script>
     </body>
 </html>

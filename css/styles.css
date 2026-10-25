@@ -1225,6 +1225,48 @@ html[data-theme="prinz"] .research-slot-counter {
     color: #f1f5f9;
 }
 
+html[data-theme="prinz"] .wiki-publication-section,
+html[data-theme="prinz"] .wiki-research-category {
+    border-color: #3c4a5a;
+    background: #191f28;
+    color: #f1f5f9;
+}
+
+html[data-theme="prinz"] .wiki-publication-section > h3,
+html[data-theme="prinz"] .wiki-research-category > summary {
+    color: #d8eaff;
+}
+
+html[data-theme="prinz"] .wiki-name-item,
+html[data-theme="prinz"] .wiki-research-category > summary {
+    border-color: #3c4a5a;
+    background: #202c39;
+}
+
+html[data-theme="prinz"] .wiki-economy-grid dt,
+html[data-theme="prinz"] .wiki-research-count {
+    color: #b8c4d1;
+}
+
+html[data-theme="prinz"] .wiki-research-item {
+    border-color: #3c4a5a;
+}
+
+html[data-theme="prinz"] .wiki-research-status {
+    background: #303b48;
+    color: #f1f5f9;
+}
+
+html[data-theme="prinz"] .wiki-research-status-completed {
+    background: #1d402b;
+    color: #b9ebc2;
+}
+
+html[data-theme="prinz"] .wiki-research-status-in_progress {
+    background: #493919;
+    color: #ffe0a1;
+}
+
 html[data-theme="prinz"] .research-node,
 html[data-theme="prinz"] .research-branch,
 html[data-theme="prinz"] .research-sub-branch {

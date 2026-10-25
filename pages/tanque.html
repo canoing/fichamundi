@@ -53,7 +53,13 @@
 
             <section class="seccion">
                 <h2>Módulos personalizados aprobados</h2>
-                <p class="inicio-descripcion">Los módulos aprobados de cualquier país están disponibles; el país de origen aparece en cada opción. <a href="modulos-personalizados.html">Crear o revisar módulos personalizados</a>.</p>
+                <p class="inicio-descripcion">Los módulos aprobados de cualquier país están disponibles; el país de origen aparece en cada opción. El filtro solo facilita la búsqueda y no limita qué módulos puedes usar. <a href="modulos-personalizados.html">Crear o revisar módulos personalizados</a>.</p>
+                <div class="campo">
+                    <label for="filtro-pais-modulos-creador">Filtrar módulos personalizados por país (opcional)</label>
+                    <select id="filtro-pais-modulos-creador">
+                        <option value="">Todos los países</option>
+                    </select>
+                </div>
                 <p id="aviso-modulos-aprobados" class="comprobante-modulos" role="status" aria-live="polite" hidden></p>
             </section>
 
@@ -104,5 +110,6 @@
     <script src="../js/publicar-plantilla.js"></script>
     <script src="../js/tanque/constructor.js"></script>
     <script type="module" src="../js/tanque/catalogo-modulos.js"></script>
+    <script src="../js/filtro-modulos-pais.js"></script>
 </body>
 </html>
