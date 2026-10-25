@@ -801,5 +801,129 @@
         ]
       }
     }
+  },
+  "arbol_infanteria_1910_1920": {
+    "armas": {
+      "fusiles": [
+        {
+          "nombre": "Rifle de Gran Guerra (1)",
+          "tipo": "infanteria",
+          "nst": 0,
+          "investigacion_inicial": true,
+          "coste_investigacion": 0,
+          "coste_produccion": "1 M anuales",
+          "tiempo_investigacion_anos": 0,
+          "requisitos": []
+        },
+        {
+          "nombre": "Rifle de Gran Guerra (2)",
+          "tipo": "infanteria",
+          "nst": 1,
+          "investigacion_inicial": false,
+          "coste_investigacion": "20 M anuales",
+          "coste_produccion": "2 M anuales",
+          "tiempo_investigacion_anos": 4,
+          "requisitos": ["Rifle de Gran Guerra (1)"]
+        },
+        {
+          "nombre": "Rifle de Gran Guerra (3)",
+          "tipo": "infanteria",
+          "nst": 2,
+          "investigacion_inicial": false,
+          "coste_investigacion": "40 M anuales",
+          "coste_produccion": "5 M anuales",
+          "tiempo_investigacion_anos": 2,
+          "requisitos": ["Rifle de Gran Guerra (2)"]
+        }
+      ],
+      "subfusiles": [
+        {
+          "nombre": "Subfusil de Gran Guerra (1)",
+          "tipo": "infanteria",
+          "nst": 2,
+          "investigacion_especial": "Requiere Rifle de Gran Guerra (2)",
+          "coste_investigacion": 0,
+          "coste_produccion": "6 M anuales",
+          "tiempo_investigacion_anos": 0,
+          "requisitos": ["Rifle de Gran Guerra (2)"]
+        }
+      ],
+      "ametralladoras": [
+        {
+          "nombre": "Ametralladora de Gran Guerra (1)",
+          "tipo": "infanteria",
+          "nst": 1,
+          "investigacion_inicial": false,
+          "coste_investigacion": "20 M anuales",
+          "coste_produccion": "4 M anuales",
+          "tiempo_investigacion_anos": 1,
+          "requisitos": []
+        },
+        {
+          "nombre": "Ametralladora de Gran Guerra (2)",
+          "tipo": "infanteria",
+          "nst": 2,
+          "investigacion_inicial": false,
+          "coste_investigacion": "20 M anuales",
+          "coste_produccion": "5 M anuales",
+          "tiempo_investigacion_anos": 1,
+          "requisitos": ["Ametralladora de Gran Guerra (1)"]
+        }
+      ],
+      "antitanque": [
+        {
+          "nombre": "Antitanque de Gran Guerra (1)",
+          "tipo": "infanteria",
+          "nst": 0,
+          "at": 1,
+          "investigacion_especial": "Requiere Rifle de Gran Guerra (2)",
+          "coste_investigacion": 0,
+          "coste_produccion": "4 M anuales",
+          "tiempo_investigacion_anos": 0,
+          "requisitos": []
+        },
+        {
+          "nombre": "Antitanque de Gran Guerra (2)",
+          "tipo": "infanteria",
+          "nst": 1,
+          "at": 2,
+          "investigacion_inicial": false,
+          "coste_investigacion": "40 M anuales",
+          "coste_produccion": "6 M anuales",
+          "tiempo_investigacion_anos": 2,
+          "requisitos": ["Antitanque de Gran Guerra (1)"]
+        }
+      ]
+    },
+    "artilleria": [
+      {
+        "nombre": "Artillería Nivel 0",
+        "tipo": "artilleria",
+        "nst": 0,
+        "investigacion_inicial": true,
+        "consumo_suministros": 2,
+        "tiempo_investigacion_anos": 0,
+        "requisitos": []
+      },
+      {
+        "nombre": "Artillería Nivel 1",
+        "tipo": "artilleria",
+        "nst": 1,
+        "investigacion_inicial": false,
+        "consumo_suministros": 2,
+        "tiempo_investigacion_anos": 2,
+        "requisitos": ["Artillería Nivel 0"]
+      },
+      {
+        "nombre": "Artillería Nivel 2",
+        "tipo": "artilleria",
+        "nst": 2,
+        "investigacion_inicial": false,
+        "consumo_suministros": 2,
+        "tiempo_investigacion_anos": 3,
+        "requisitos": ["Artillería Nivel 1"]
+      }
+    ]
   }
 }
+

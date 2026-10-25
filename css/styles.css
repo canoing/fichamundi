@@ -416,6 +416,34 @@ main {
     font-weight: 700;
 }
 
+/* Punto verde: módulo ya investigado por el país introducido (solo indicación) */
+.indicador-investigado {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    margin-right: 6px;
+    border-radius: 50%;
+    background: #2b8a3e;
+    box-shadow: 0 0 0 2px rgba(43, 138, 62, 0.25);
+    flex-shrink: 0;
+    align-self: center;
+}
+
+.opcion-modulo.modulo-investigado {
+    border-left-color: #2b8a3e;
+    background: linear-gradient(135deg, #f3fbf4 0%, #e6f6e9 100%);
+}
+
+html[data-theme="prinz"] .indicador-investigado {
+    background: #51cf66;
+    box-shadow: 0 0 0 2px rgba(81, 207, 102, 0.3);
+}
+
+html[data-theme="prinz"] .opcion-modulo.modulo-investigado {
+    border-left-color: #51cf66;
+    background: #16241a;
+}
+
 .modulo-info {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));

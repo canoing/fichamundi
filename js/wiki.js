@@ -707,6 +707,26 @@ async function loadResearchNames() {
         }
         visit(branch);
     });
+
+    // El árbol de infantería es una clave hermana de arboles_tecnologicos_CM.
+    const infantryTree = treeData?.arbol_infanteria_1910_1920;
+    if (infantryTree && typeof infantryTree === 'object') {
+        function visitInfantry(value, path = []) {
+            if (Array.isArray(value)) {
+                value.forEach((item, index) => visitInfantry(item, [...path, String(index)]));
+                return;
+            }
+            if (!value || typeof value !== 'object') return;
+            if (typeof value.nombre === 'string') {
+                researchNames.set(
+                    ['arbol_infanteria_1910_1920', ...path].map(escapePathPart).join('/'),
+                    value.nombre
+                );
+            }
+            Object.entries(value).forEach(([key, child]) => visitInfantry(child, [...path, key]));
+        }
+        visitInfantry(infantryTree);
+    }
 }
 
 publicationForm.addEventListener('submit', async event => {

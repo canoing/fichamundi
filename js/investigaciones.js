@@ -22,6 +22,15 @@ const TREE_CATEGORY_BY_KEY = {
     aviacion: 'aerea'
 };
 
+// El árbol de infantería vive fuera de `arboles_tecnologicos_CM` en tree.json
+// (como clave hermana) y agrupa sus nodos por rama de armas/artillería.
+const INFANTRY_TREE_KEY = 'arbol_infanteria_1910_1920';
+// Propiedades de infantería que ya no se muestran como dato suelto.
+const INFANTRY_HIDDEN_KEYS = new Set([
+    'nombre', 'id', 'tipo', 'requisitos',
+    'investigacion_inicial', 'investigacion_especial'
+]);
+
 const branchForm = document.getElementById('formulario-rama');
 const countryInput = document.getElementById('nombre-pais');
 const branchStatus = document.getElementById('estado-rama');
@@ -48,10 +57,22 @@ function showStatus(element, message, isError = false) {
     element.setAttribute('role', isError ? 'alert' : 'status');
 }
 
+// Corrige tildes en etiquetas generadas a partir de claves sin acentos.
+const LABEL_ACCENTS = {
+    artilleria: 'Artillería',
+    ingenieria: 'Ingeniería',
+    construccion: 'Construcción',
+    extraccion: 'Extracción',
+    aviacion: 'Aviación',
+    comunicacion: 'Comunicación',
+    traccion: 'Tracción'
+};
+
 function formatLabel(value) {
-    return value
+    const formatted = value
         .replaceAll('_', ' ')
         .replace(/\b\w/g, character => character.toLocaleUpperCase('es'));
+    return LABEL_ACCENTS[value] || formatted;
 }
 
 function formatValue(value) {
@@ -84,6 +105,10 @@ function collectTechnologies() {
         Object.keys(CATEGORY_LABELS).map(category => [category, []])
     );
 
+    function addNode(category, id, branch, technology) {
+        nodesByCategory.get(category).push({ id, category, branch, technology });
+    }
+
     Object.entries(tree).forEach(([treeKey, branch]) => {
         const category = TREE_CATEGORY_BY_KEY[treeKey];
         if (!category) return;
@@ -100,12 +125,12 @@ function collectTechnologies() {
                 : [...subBranches, ...path.slice(-1)];
 
             if (typeof value.nombre === 'string') {
-                nodesByCategory.get(category).push({
-                    id: [treeKey, ...path].map(escapePathPart).join('/'),
+                addNode(
                     category,
-                    branch: nextBranches.map(formatLabel).join(' / ') || CATEGORY_LABELS[category],
-                    technology: value
-                });
+                    [treeKey, ...path].map(escapePathPart).join('/'),
+                    nextBranches.map(formatLabel).join(' / ') || CATEGORY_LABELS[category],
+                    value
+                );
             }
 
             Object.entries(value).forEach(([key, child]) => {
@@ -116,7 +141,48 @@ function collectTechnologies() {
         visit(branch);
     });
 
+    collectInfantryTechnologies(treeData?.[INFANTRY_TREE_KEY], addNode);
+
     return nodesByCategory;
+}
+
+function collectInfantryTechnologies(infantryTree, addNode) {
+    if (!infantryTree || typeof infantryTree !== 'object') return;
+
+    function visit(value, path = [], subBranches = []) {
+        if (Array.isArray(value)) {
+            // La clave del array (p. ej. `fusiles`) identifica la rama junto a
+            // su grupo contenedor (p. ej. `armas`).
+            const key = path[path.length - 1];
+            const nextBranches = key && /^\d+$/.test(key) ? subBranches : [...subBranches, key].filter(Boolean);
+            value.forEach((item, index) => visit(item, [...path, String(index)], nextBranches));
+            return;
+        }
+        if (!value || typeof value !== 'object') return;
+
+        if (typeof value.nombre === 'string') {
+            addNode(
+                'infanteria',
+                [INFANTRY_TREE_KEY, ...path].map(escapePathPart).join('/'),
+                subBranches.map(formatLabel).join(' / ') || CATEGORY_LABELS.infanteria,
+                value
+            );
+            return;
+        }
+
+        Object.entries(value).forEach(([key, child]) => {
+            const nextBranches = Array.isArray(child)
+                ? subBranches
+                : [...subBranches, key];
+            visit(child, [...path, key], nextBranches);
+        });
+    }
+
+    visit(infantryTree);
+}
+
+function isInitialTechnology(technology) {
+    return Boolean(technology.tecnologia_inicial || technology.investigacion_inicial);
 }
 
 function renderTechnologyDetails(technology) {
@@ -126,14 +192,26 @@ function renderTechnologyDetails(technology) {
 
     const list = document.createElement('ul');
     Object.entries(technology)
-        .filter(([key]) => key !== 'nombre' && key !== 'tecnologia_inicial')
+        .filter(([key]) => !INFANTRY_HIDDEN_KEYS.has(key) && key !== 'tecnologia_inicial')
         .forEach(([key, value]) => {
             const item = createElement('li');
             item.append(createElement('strong', `${formatLabel(key)}: `));
             item.append(document.createTextNode(formatValue(value)));
             list.append(item);
         });
-    if (!list.childElementCount && !technology.tecnologia_inicial) {
+    if (technology.investigacion_especial) {
+        const item = createElement('li');
+        item.append(createElement('strong', 'Investigación especial: '));
+        item.append(document.createTextNode(formatValue(technology.investigacion_especial)));
+        list.append(item);
+    }
+    if (Array.isArray(technology.requisitos) && technology.requisitos.length) {
+        const item = createElement('li');
+        item.append(createElement('strong', 'Requisitos: '));
+        item.append(document.createTextNode(technology.requisitos.join(', ')));
+        list.append(item);
+    }
+    if (!list.childElementCount && !isInitialTechnology(technology)) {
         list.append(createElement('li', 'Sin datos adicionales.'));
     }
     details.append(list);
@@ -213,7 +291,7 @@ function renderTechnologyNode(country, node, drafts, nodes, counter) {
     const card = createElement('article', undefined, 'research-node');
     const heading = createElement('div', undefined, 'research-node-heading');
     heading.append(createElement('h4', node.technology.nombre));
-    if (node.technology.tecnologia_inicial) {
+    if (isInitialTechnology(node.technology)) {
         heading.append(createElement('span', 'Tecnología inicial', 'research-initial'));
     }
     card.append(heading, renderTechnologyDetails(node.technology));
@@ -252,6 +330,7 @@ function renderCountry(country) {
         const categoryNodes = technologiesByCategory.get(category) || [];
         const categoryBranch = document.createElement('details');
         categoryBranch.className = 'research-branch';
+        categoryBranch.open = category === 'infanteria';
         categoryBranch.append(createElement('summary', label));
 
         const categoryContent = createElement('div', undefined, 'research-category-content');
@@ -276,6 +355,7 @@ function renderCountry(country) {
                 if (!branches.has(node.branch)) {
                     const branch = document.createElement('details');
                     branch.className = 'research-sub-branch';
+                    branch.open = true;
                     branch.append(createElement('summary', node.branch));
                     const nodeList = createElement('div', undefined, 'research-nodes');
                     branch.append(nodeList);

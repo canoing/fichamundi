@@ -27,11 +27,11 @@
             </div>
             <nav class="nav-principal" id="nav-menu">
                 <a href="../index.html" class="nav-link">Inicio</a>
-                <a href="avion.html" class="nav-link active">Aviones</a>
+                <a href="plantillas.html" class="nav-link">Plantillas</a>
                 <a href="modulos-personalizados.html?vehicle=aircraft" class="nav-link">Módulos personalizados</a>
             </nav>
         </header>
-            <a href="../index.html" class="nav-link active">Volver al Inicio</a>
+          
         <main>
             <!-- SECCIÓN 1: INFORMACIÓN GENERAL -->
             <section class="seccion" id="seccion1">
@@ -59,6 +59,7 @@
                 <div class="campo">
                     <label for="filtro-pais-modulos-creador">Filtrar módulos personalizados por país (opcional)</label>
                     <select id="filtro-pais-modulos-creador">
+                        <option value="__ningun_pais__" selected>Ningún país</option>
                         <option value="">Todos los países</option>
                     </select>
                 </div>
@@ -159,5 +160,6 @@
     <script src="../js/aviacio/constructor.js"></script>
     <script type="module" src="../js/aviacio/catalogo-modulos.js"></script>
     <script src="../js/filtro-modulos-pais.js"></script>
+    <script type="module" src="../js/indicador-investigacion.js"></script>
 </body>
 </html>
