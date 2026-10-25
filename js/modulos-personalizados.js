@@ -139,8 +139,15 @@ function readContent(container, vehicle, type) {
                 throw new Error(`El campo ${field.label} no contiene JSON válido.`);
             }
         }
-        return [field.key, field.type === 'number' ? Number(input.value) : input.value.trim()];
-    }));
+        if (field.type === 'number') {
+            const raw = input.value.trim();
+            // Los números no obligatorios pueden dejarse vacíos: se omiten del módulo
+            // en lugar de forzarlos a 0.
+            if (raw === '' && !field.required) return [field.key, undefined];
+            return [field.key, raw === '' ? 0 : Number(raw)];
+        }
+        return [field.key, input.value.trim()];
+    }).filter(([, value]) => value !== undefined));
 }
 
 async function fetchJson(path) {
@@ -153,15 +160,31 @@ function recordSources(vehicle, type, modules) {
     const records = (modules || []).filter(module => module && typeof module === 'object' && module.nombre)
         .map(module => ({ label: module.nombre, content: module }));
     sources.set(keyFor(vehicle, type), records);
-    const example = records[0]?.content || {};
-    const fields = Object.entries(example)
-        .filter(([key, value]) => !['id', 'inicial', 'coste', 'costo', 'price', 'precio'].includes(key) && value !== undefined)
-        .map(([key, value]) => ({
+    const excluded = ['id', 'inicial', 'coste', 'costo', 'price', 'precio'];
+    // Se unen las claves de todos los módulos del tipo (no solo del primero) para no
+    // perder campos que algunos módulos usan en lugar de otros (p. ej. las armas
+    // navales usan "ataque" o "ataque_p_l" según el caso).
+    const exampleEntries = new Map();
+    records.forEach(({ content }) => Object.entries(content).forEach(([key, value]) => {
+        if (excluded.includes(key) || value === undefined) return;
+        const current = exampleEntries.get(key);
+        // Se conserva el primer valor no vacío encontrado para inferir el tipo del campo.
+        if (!current || current.value === '' || current.value === null) {
+            exampleEntries.set(key, { value });
+        } else {
+            exampleEntries.set(key, current);
+        }
+    }));
+    const fields = [...exampleEntries.entries()]
+        .map(([key, { value }]) => ({
             key,
             type: typeof value === 'number' ? 'number' : value && typeof value === 'object' ? 'json' : typeof value === 'boolean' ? 'checkbox' : 'text',
             label: key === 'nombre' ? 'Nombre' : key.replace(/_/g, ' ').replace(/^./, character => character.toLocaleUpperCase('es')),
             defaultValue: typeof value === 'boolean' || (value && typeof value === 'object') ? value : '',
-            required: true
+            // Solo el nombre es obligatorio: hay módulos del catálogo (p. ej. armas
+            // navales con ataque_p_l en vez de ataque) que omiten campos numéricos,
+            // así que se permite dejar esos campos vacíos al crear un módulo nuevo.
+            required: key === 'nombre'
         }));
     fieldDefinitions.set(keyFor(vehicle, type), fields);
 }
@@ -204,7 +227,7 @@ async function loadBuiltInSources() {
             nombre: weapon.nombre,
             tipo: weapon.tipo || '',
             hp_a_regimiento: 0,
-            ataque: Number(weapon.buffs?.atk) || 0,
+            ataque: weapon.atk || 0,
             defensa: Number(weapon.buffs?.def) || 0,
             nivel_tech_tree: 0,
             mov_propio: Number(weapon.mov_propio) || 0,
