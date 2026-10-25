@@ -38,6 +38,7 @@
         "atk_bonus": 2,
         "def_bonus": 2
       },
+      "permite_chasis": true,
       "descripcion": "Vehículos ligeros. Su MOV lo determina el arma/chasis instalado."
     },
     "carros_de_combate": {
@@ -52,6 +53,7 @@
       "habilidad_pasiva": {
         "ignora_def_ametralladoras": true
       },
+      "permite_chasis": true,
       "descripcion": "Fuerza de choque blindada. Ignora la defensa otorgada por ametralladoras enemigas."
     },
     "montanistas": {

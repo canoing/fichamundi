@@ -3,6 +3,45 @@ let regimientosDivision = [];
 let apoyosDivision = [];
 let armasDivision = [];
 let armasPersonalizadasAprobadas = [];
+// Plantillas de tanques aprobadas en plantillas.html, disponibles como
+// "módulo" para los regimientos blindados.
+let vehiculosAprobados = [];
+
+/* ============================================================
+   VEHÍCULOS (PLANTILLAS DE TANQUE APROBADAS)
+   Un regimiento blindado no monta módulos uno a uno: elige un
+   tanque ya creado y aprobado en plantillas.html y usa sus
+   estadísticas ya calculadas.
+   ============================================================ */
+
+// Detecta si una plantilla es un tanque y devuelve sus estadísticas.
+function extraerVehiculoPlantilla(template) {
+    const content = template?.content;
+    if (!content || typeof content !== 'object') return null;
+    const esTanque = typeof template.file_name === 'string' && template.file_name.startsWith('tanque-')
+        || Boolean(content.modulos_seleccionados?.chasis)
+        || Boolean(content.componentes_seleccionados?.chasis);
+    if (!esTanque) return null;
+
+    const stats = content.estadisticas || content.comprobante_modulos || {};
+    const info = content.informacion_general || {};
+    return {
+        id: template.id,
+        nombre: content.titulo || info.nombre || template.file_name,
+        pais: template.country,
+        hp: numeroSeguro(stats.hp),
+        ataque: numeroSeguro(stats.ataque),
+        defensa: numeroSeguro(stats.defensa),
+        velocidad: numeroSeguro(stats.velocidad),
+        coste: numeroSeguro(stats.coste)
+    };
+}
+
+// Busca un vehículo aprobado por id.
+function buscarVehiculoAprobado(id) {
+    if (!id) return null;
+    return vehiculosAprobados.find(vehiculo => vehiculo.id === id) || null;
+}
 
 function numeroSeguro(valor) {
     const numero = typeof valor === 'string' ? Number(valor.replace(',', '.')) : Number(valor);
@@ -67,20 +106,28 @@ function calcularEstadisticasDivision(regimientos, apoyos, catalogo) {
     (regimientos || []).forEach(regimiento => {
         const tipo = tiposRegimiento[regimiento.tipo_regimiento];
         if (!tipo) return;
+
         const arma = regimiento.arma_equipada || {};
-        hp += numeroSeguro(tipo.hp_base) + numeroSeguro(arma.hp_a_regimiento);
-        ataque += numeroSeguro(tipo.atk_base) + numeroSeguro(tipo.buffs?.atk_bonus) + numeroSeguro(arma.ataque);
-        defensa += numeroSeguro(tipo.def_base) + numeroSeguro(tipo.buffs?.def_bonus) + numeroSeguro(arma.defensa);
-        coste += numeroSeguro(arma.precio ?? arma.coste ?? arma.costo);
+
+        // Regimiento blindado con un tanque aprobado: arma y vehículo se
+        // suman. Las estadísticas del tanque vienen ya calculadas.
+        const vehiculo = tipo.permite_chasis ? buscarVehiculoAprobado(regimiento.vehiculo_id) : null;
+
+        hp += numeroSeguro(tipo.hp_base) + numeroSeguro(arma.hp_a_regimiento) + (vehiculo ? vehiculo.hp : 0);
+        ataque += numeroSeguro(tipo.atk_base) + numeroSeguro(tipo.buffs?.atk_bonus) + numeroSeguro(arma.ataque) + (vehiculo ? vehiculo.ataque : 0);
+        defensa += numeroSeguro(tipo.def_base) + numeroSeguro(tipo.buffs?.def_bonus) + numeroSeguro(arma.defensa) + (vehiculo ? vehiculo.defensa : 0);
+        coste += numeroSeguro(arma.precio ?? arma.coste ?? arma.costo) + (vehiculo ? vehiculo.coste : 0);
 
         if (tipo.sup_depende_de_arma) suministros += numeroSeguro(regimiento.sup_arma);
         else suministros += numeroSeguro(tipo.sup_base);
 
-        if (tipo.mov_depende_de_arma) movimientos.push(numeroSeguro(regimiento.mov_arma));
+        // MOV: si hay vehículo usa su velocidad; si no, el MOV del arma / base.
+        if (vehiculo) movimientos.push(vehiculo.velocidad);
+        else if (tipo.mov_depende_de_arma) movimientos.push(numeroSeguro(regimiento.mov_arma));
         else if (tipo.mov_base !== null && tipo.mov_base !== undefined) movimientos.push(numeroSeguro(tipo.mov_base));
 
         if (regimiento.tipo_regimiento === 'montanistas') cantidadMontanistas += 1;
-        if (tipo.habilidad_pasiva?.ignora_def_ametralladoras) {
+        if (tipo.habilidad_pasiva?.ignora_def_ametralladoras && (vehiculo || defensa > 0)) {
             habilidades.push('Ignora la defensa otorgada por ametralladoras enemigas');
         }
     });
@@ -151,13 +198,31 @@ function crearFichaDivision(informacion, regimientos, apoyos, catalogo) {
                 pais_operador: informacion.pais_operador,
                 tipo_unidad: informacion.tipo_unidad
             },
-            regimientos_principales: regimientos.map((regimiento, indice) => ({
-                slot: indice + 1,
-                tipo_regimiento: catalogo.regimientos_principales[regimiento.tipo_regimiento]?.nombre || regimiento.tipo_regimiento,
-                arma_equipada: regimiento.arma_equipada || null,
-                ...(regimiento.mov_arma !== undefined ? { mov_arma: numeroSeguro(regimiento.mov_arma) } : {}),
-                ...(regimiento.sup_arma !== undefined ? { sup_arma: numeroSeguro(regimiento.sup_arma) } : {})
-            })),
+            regimientos_principales: regimientos.map((regimiento, indice) => {
+                const tipo = catalogo.regimientos_principales[regimiento.tipo_regimiento];
+                const vehiculo = tipo?.permite_chasis ? buscarVehiculoAprobado(regimiento.vehiculo_id) : null;
+                return {
+                    slot: indice + 1,
+                    tipo_regimiento: tipo?.nombre || regimiento.tipo_regimiento,
+                    arma_equipada: regimiento.arma_equipada || null,
+                    ...(vehiculo
+                        ? {
+                            vehiculo: {
+                                plantilla_id: vehiculo.id,
+                                nombre: vehiculo.nombre,
+                                pais: vehiculo.pais,
+                                hp: vehiculo.hp,
+                                ataque: vehiculo.ataque,
+                                defensa: vehiculo.defensa,
+                                velocidad: vehiculo.velocidad,
+                                coste: vehiculo.coste
+                            }
+                        }
+                        : {}),
+                    ...(regimiento.mov_arma !== undefined ? { mov_arma: numeroSeguro(regimiento.mov_arma) } : {}),
+                    ...(regimiento.sup_arma !== undefined ? { sup_arma: numeroSeguro(regimiento.sup_arma) } : {})
+                };
+            }),
             batallones_apoyo: apoyos.map((apoyo, indice) => ({
                 slot: indice + 1,
                 tipo_apoyo: catalogo.batallones_apoyo[apoyo.tipo_apoyo]?.nombre || apoyo.tipo_apoyo,
@@ -192,12 +257,22 @@ function opcionesTiposRegimiento(seleccionado) {
     ).join('');
 }
 
+function opcionesVehiculos(seleccionado) {
+    if (!vehiculosAprobados.length) {
+        return '<option value="">No hay tanques aprobados</option>';
+    }
+    return '<option value="">Sin vehículo</option>' + vehiculosAprobados.map(vehiculo =>
+        `<option value="${escaparHtml(vehiculo.id)}" ${vehiculo.pais ? `data-pais-modulo="${escaparHtml(vehiculo.pais)}"` : ''} ${vehiculo.id === seleccionado ? 'selected' : ''}>${escaparHtml(vehiculo.nombre)}${vehiculo.pais ? ` · ${escaparHtml(vehiculo.pais)}` : ''} · HP ${vehiculo.hp}, ATK ${vehiculo.ataque}, DEF ${vehiculo.defensa}, MOV ${vehiculo.velocidad} · ${vehiculo.coste} M</option>`
+    ).join('');
+}
+
 function renderizarRegimientos() {
     const contenedor = document.getElementById('regimientos-container');
     contenedor.innerHTML = regimientosDivision.map((regimiento, indice) => {
         const tipo = catalogoDivisiones.regimientos_principales[regimiento.tipo_regimiento];
         const necesitaMov = tipo.mov_depende_de_arma;
         const necesitaSup = tipo.sup_depende_de_arma;
+        const permiteVehiculo = Boolean(tipo.permite_chasis);
         const opcionesArmas = '<option value="">Sin arma</option>' + armasDivision.map(arma =>
             `<option value="${escaparHtml(arma.id_arma)}" ${arma.pais_modulo ? `data-pais-modulo="${escaparHtml(arma.pais_modulo)}"` : ''} ${regimiento.arma_equipada?.id_arma === arma.id_arma ? 'selected' : ''}>${escaparHtml(arma.nombre)}${arma.pais_modulo ? ` · ${escaparHtml(arma.pais_modulo)}` : ''} · ATK ${arma.ataque}, DEF ${arma.defensa} · ${numeroSeguro(arma.precio)} M</option>`
         ).join('');
@@ -209,11 +284,11 @@ function renderizarRegimientos() {
                 <div class="campo"><label for="tipo-regimiento-${indice}">Tipo de regimiento</label>
                     <select id="tipo-regimiento-${indice}" data-regimiento="${indice}" data-campo="tipo_regimiento">${opcionesTiposRegimiento(regimiento.tipo_regimiento)}</select>
                 </div>
-                <div class="campo"><label for="arma-regimiento-${indice}">Arma equipada</label>
+                ${permiteVehiculo ? `<div class="campo"><label for="vehiculo-regimiento-${indice}">Vehículo (tanque aprobado)</label>
+                    <select id="vehiculo-regimiento-${indice}" data-regimiento="${indice}" data-campo="vehiculo_id">${opcionesVehiculos(regimiento.vehiculo_id)}</select>
+                </div>` : `<div class="campo"><label for="arma-regimiento-${indice}">Arma equipada</label>
                     <select id="arma-regimiento-${indice}" data-regimiento="${indice}" data-campo="arma_equipada">${opcionesArmas}</select>
-                </div>
-                ${necesitaMov ? `<div class="campo"><label for="mov-arma-${indice}">MOV propio del vehículo</label><input id="mov-arma-${indice}" type="number" min="0" step="any" value="${numeroSeguro(regimiento.mov_arma)}" data-regimiento="${indice}" data-campo="mov_arma" required></div>` : ''}
-                ${necesitaSup ? `<div class="campo"><label for="sup-arma-${indice}">SUP del arma de artillería</label><input id="sup-arma-${indice}" type="number" min="0" step="any" value="${numeroSeguro(regimiento.sup_arma)}" data-regimiento="${indice}" data-campo="sup_arma" required></div>` : ''}
+                </div>`}
                 <p class="inicio-descripcion">Base: ${tipo.sup_base ?? 'SUP por arma'} SUP · ${tipo.mov_base ?? 'MOV por arma'} MOV · ${tipo.hp_base} HP · ${tipo.atk_base || 0} ATK · ${tipo.def_base || 0} DEF</p>
             </div>
         </article>`;
@@ -265,7 +340,7 @@ function actualizarEstadisticas() {
 
 function agregarRegimiento() {
     if (regimientosDivision.length >= 16) return;
-    regimientosDivision.push({ tipo_regimiento: 'infanteria', arma_equipada: null, mov_arma: 1, sup_arma: 0 });
+    regimientosDivision.push({ tipo_regimiento: 'infanteria', arma_equipada: null, vehiculo_id: null, mov_arma: 1, sup_arma: 0 });
 }
 
 function agregarApoyo() {
@@ -305,8 +380,18 @@ function inicializarEventos() {
             regimiento.arma_equipada = armasDivision.find(arma => arma.id_arma === control.value) || null;
             regimiento.mov_arma = numeroSeguro(regimiento.arma_equipada?.mov_propio);
             regimiento.sup_arma = numeroSeguro(regimiento.arma_equipada?.sup_costo);
+        } else if (campo === 'vehiculo_id') {
+            regimiento.vehiculo_id = control.value || null;
+            renderizarConstructor();
+            return;
         } else if (campo === 'tipo_regimiento') {
             regimiento.tipo_regimiento = control.value;
+            // Los regimientos blindados usan vehículo en lugar de arma.
+            if (catalogoDivisiones.regimientos_principales[control.value]?.permite_chasis) {
+                regimiento.arma_equipada = null;
+            } else {
+                regimiento.vehiculo_id = null;
+            }
             renderizarConstructor();
             return;
         } else {
@@ -379,6 +464,24 @@ function inicializarEventos() {
 }
 
 if (typeof window !== 'undefined') {
+    // Recibe las plantillas de tanques aprobadas en plantillas.html y las
+    // expone como vehículos disponibles para los regimientos blindados.
+    window.establecerVehiculosDivisionAprobados = (templates) => {
+        vehiculosAprobados = (templates || [])
+            .map(extraerVehiculoPlantilla)
+            .filter(Boolean);
+        // Si un régimiento apuntaba a un tanque que ya no está aprobado, se limpia.
+        regimientosDivision.forEach(regimiento => {
+            if (regimiento.vehiculo_id && !buscarVehiculoAprobado(regimiento.vehiculo_id)) {
+                regimiento.vehiculo_id = null;
+            }
+        });
+        if (catalogoDivisiones) {
+            renderizarRegimientos();
+            actualizarEstadisticas();
+        }
+    };
+
     window.establecerArmasDivisionAprobadas = (modules) => {
         armasPersonalizadasAprobadas = modules.map(module => ({
             id_arma: module.id,
