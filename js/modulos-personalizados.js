@@ -82,8 +82,12 @@ function moduleFields(vehicle, type, content = {}) {
         return {
             key,
             label: field?.label || key.replace(/_/g, ' ').replace(/^./, character => character.toLocaleUpperCase('es')),
+            // Si el campo está definido a mano (armamento de tanque, armas de
+            // división) su tipo manda: un texto vacío o un número copiado de otro
+            // módulo no debe cambiar el control del formulario.
             type: field?.type || (typeof value === 'number' ? 'number' : value && typeof value === 'object' ? 'json' : typeof value === 'boolean' ? 'checkbox' : 'text'),
             defaultValue: field?.defaultValue ?? (typeof value === 'boolean' ? value : ''),
+            placeholder: field?.placeholder || '',
             required: key === 'nombre' || field?.required || false
         };
     });
@@ -114,6 +118,7 @@ function createField(field, value, idPrefix) {
     input.id = id;
     input.name = field.key;
     input.required = Boolean(field.required);
+    if (field.placeholder) input.placeholder = field.placeholder;
     wrapper.append(input);
     return wrapper;
 }
@@ -189,6 +194,76 @@ function recordSources(vehicle, type, modules) {
     fieldDefinitions.set(keyFor(vehicle, type), fields);
 }
 
+/* Armamento de tanque: el catálogo base (data/vehiculos/tanque/modulo.json)
+   NO incluye armamento, así que este tipo se crea siempre desde cero. Antes
+   caía en el catálogo del resto de módulos y el formulario aparecía con los
+   campos de otro módulo (chasis, motor…). Aquí se fijan los campos reales
+   del armamento; todo lo que no esté en la lista se descarta. */
+const camposArmamentoTanque = [
+    { key: 'nombre', type: 'text', label: 'Nombre del armamento', defaultValue: '', required: true },
+    { key: 'tipo', type: 'text', label: 'Tipo de armamento', defaultValue: '', required: false, placeholder: 'Ej.: Cañón, Ametralladora' },
+    { key: 'ataque', type: 'number', label: 'Ataque', defaultValue: 0, required: true },
+    // Peso y espacios de pieza son obligatorios: al convertir un arma de
+    // división el usuario debe decidir cuánto pesa y cuántas piezas ocupa en
+    // el tanque (el arma de división no trae esos datos).
+    { key: 'peso', type: 'number', label: 'Peso', defaultValue: '', required: true },
+    { key: 'espacios_piezas', type: 'number', label: 'Espacios de piezas', defaultValue: '', required: true },
+    // El coste es editable: al copiar un arma de división se rellena con su
+    // precio aprobado, pero el usuario puede ajustarlo antes de enviarlo.
+    // Se guarda en content.coste porque el precio (price) de un módulo pending
+    // debe quedar vacío y sólo el moderador lo fija al aprobar.
+    { key: 'coste', type: 'number', label: 'Coste de producción (M)', defaultValue: 0, required: true, placeholder: 'Ej.: si esta hecho dese 0 dejar esto en blanco' }
+];
+
+function definirCamposArmamentoTanque() {
+    // Sin fuentes "Base: ..." para armamento de tanque (no hay catálogo base).
+    sources.set(keyFor('tank', 'armamento'), []);
+    fieldDefinitions.set(keyFor('tank', 'armamento'), camposArmamentoTanque);
+}
+
+/* ============================================================
+   CONVERTIR ARMAS DE DIVISIÓN EN ARMAMENTO DE TANQUE
+   A un tanque se le coloca un arma ya hecha. Las armas de división
+   aprobadas (custom_modules: vehicle=infantry, module_type=weapon)
+   se ofrecen en "Copiar un módulo existente" para convertirlas en
+   armamento de tanque. Un arma de división no trae `peso` ni
+   `espacios_piezas`, así que esos dos los rellena el usuario; el
+   resto de campos (nombre, ataque, coste) se copian del arma.
+   ============================================================ */
+
+// Devuelve las armas de división aprobadas como fuentes copiables.
+function armasDivisionComoArmamentoTanque() {
+    return approvedModules
+        .filter(module => module.vehicle === 'infantry' && module.module_type === 'weapon')
+        .map(module => ({
+            // El prefijo "Arma de división:" deja claro el origen. No se filtra
+            // por país: la lista muestra todas las armas aprobadas y el país
+            // aparece en la propia opción.
+            label: `Arma de división: ${module.content?.nombre || 'Sin nombre'}${module.country ? ` · ${module.country}` : ''} · ${Number(module.price || 0).toFixed(2)} M`,
+            content: {
+                nombre: module.content?.nombre || '',
+                ataque: Number(module.content?.ataque) || 0,
+                coste: Number(module.price) || 0,
+                // peso y espacios_piezas quedan vacíos: los decide el usuario.
+                peso: '',
+                espacios_piezas: ''
+            }
+        }));
+}
+
+// Convierte el contenido de un arma de división al shape de armamento de tanque.
+// Se usa al elegir una fuente "Arma de división" en el selector.
+function contenidoArmamentoDesdeArma(content = {}) {
+    return {
+        nombre: content.nombre || '',
+        ataque: content.ataque ?? 0,
+        coste: content.coste ?? 0,
+        // Dejar vacíos para que el usuario escriba peso y piezas.
+        peso: '',
+        espacios_piezas: ''
+    };
+}
+
 async function loadBuiltInSources() {
     const [tankChassis, tankModules, aircraftFuselages, aircraftModules, navalHulls, navalModules, infantryData] = await Promise.all([
         fetchJson('../data/vehiculos/tanque/chazi.json'),
@@ -205,6 +280,7 @@ async function loadBuiltInSources() {
     recordSources('tank', 'motor', tankModules.motores);
     recordSources('tank', 'comunicacion', tankModules.comunicacion);
     recordSources('tank', 'blindaje', tankModules.blindajes);
+    definirCamposArmamentoTanque();
     recordSources('aircraft', 'fuselaje', aircraftFuselages);
     Object.entries(aircraftModules).forEach(([type, modules]) => recordSources('aircraft', type, modules));
     Object.entries(navalHulls.cascos || {}).forEach(([group, modules]) => recordSources('naval', `hull_${group}`, modules));
@@ -250,6 +326,9 @@ async function refreshSources() {
         module.vehicle === vehicle && module.module_type === type &&
         module.country.trim().toLocaleLowerCase('es') === country
     );
+    // Armamento de tanque: además de los armamentos aprobados, se pueden copiar
+    // armas de división aprobadas (de cualquier país) para convertirlas.
+    const armasDivision = esArmamentoTanque(vehicle, type) ? armasDivisionComoArmamentoTanque() : [];
     sourcesByKey = new Map();
     sourceSelect.replaceChildren(new Option('Crear desde cero', ''));
     builtIn.forEach((source, index) => {
@@ -262,7 +341,16 @@ async function refreshSources() {
         sourcesByKey.set(key, module.content);
         sourceSelect.add(new Option(`Aprobado: ${module.content.nombre}`, key));
     });
+    armasDivision.forEach((source, index) => {
+        const key = `weapon:${index}`;
+        sourcesByKey.set(key, source.content);
+        sourceSelect.add(new Option(source.label, key));
+    });
     renderFields(fieldsContainer, vehicle, type);
+}
+
+function esArmamentoTanque(vehicle, type) {
+    return vehicle === 'tank' && type === 'armamento';
 }
 
 function refreshCountryOptions() {
@@ -444,7 +532,12 @@ countryInput.addEventListener('change', () => {
 countryFilter.addEventListener('change', renderApprovedModules);
 sourceSelect.addEventListener('change', () => {
     const source = sourcesByKey.get(sourceSelect.value);
-    renderFields(fieldsContainer, vehicleSelect.value, typeSelect.value, source || {});
+    // Al copiar un arma de división se vuelve a mapear al shape de armamento de
+    // tanque para que peso y espacios de pieza queden vacíos y se rellenen a mano.
+    const content = sourceSelect.value.startsWith('weapon:')
+        ? contenidoArmamentoDesdeArma(source || {})
+        : (source || {});
+    renderFields(fieldsContainer, vehicleSelect.value, typeSelect.value, content);
     if (sourceSelect.value.startsWith('approved:')) {
         const module = approvedModules.find(item => item.id === sourceSelect.value.slice('approved:'.length));
         if (module) countryInput.value = module.country;

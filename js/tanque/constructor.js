@@ -282,7 +282,11 @@ if (typeof window !== 'undefined') {
                 modulo_personalizado: true,
                 ...module.content,
                 pais_modulo: module.country,
-                coste: Number(module.price)
+                // Un módulo aprobado siempre lleva `price`, pero el armamento de
+                // tanque convertido desde un arma de división también puede traer
+                // un `coste` editable en su contenido; se respeta ese coste si el
+                // moderador no fijó precio.
+                coste: module.price != null ? Number(module.price) : Number(module.content?.coste) || 0
             });
             byType.set(module.module_type, list);
         });
@@ -293,7 +297,7 @@ if (typeof window !== 'undefined') {
                 modulo_personalizado: true,
                 ...module.content,
                 pais_modulo: module.country,
-                coste: Number(module.price)
+                coste: module.price != null ? Number(module.price) : Number(module.content?.coste) || 0
             }));
         armamentosAprobados = byType.get('armamento') || [];
         chasisBase = {
