@@ -185,6 +185,63 @@ header p,
     text-transform: uppercase;
 }
 
+.inicio-estado-pending {
+    background: #fff0d6;
+    color: #754600;
+}
+
+.inicio-estado-approved {
+    background: #e2f3e5;
+    color: #246236;
+}
+
+.inicio-estado-rejected {
+    background: #fde7e7;
+    color: #922b2b;
+}
+
+.legacy-valky-warning {
+    padding: 10px 12px;
+    border-left: 4px solid #d18a1b;
+    border-radius: 5px;
+    background: #fff4df;
+    color: #69430c;
+}
+
+.legacy-valky-text {
+    margin: 0;
+    padding: 12px;
+    border: 1px solid #d5dce3;
+    border-radius: 6px;
+    background: #fff;
+    color: #222;
+    font: inherit;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.plantillas-categorias,
+.modulos-categorias {
+    display: grid;
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.plantilla-categoria,
+.modulo-categoria-lista {
+    min-width: 0;
+    padding: 12px;
+    border: 1px solid #dce4ea;
+    border-radius: 8px;
+    background: #f8fbff;
+}
+
+.plantilla-categoria > h3,
+.modulo-categoria-lista > h3 {
+    margin: 0 0 10px;
+    color: #1a3a52;
+}
+
 .inicio-tarjeta-bloqueada {
     background: #f2f2f2;
     border: 2px dashed #aaa;
@@ -1364,6 +1421,44 @@ html[data-theme="prinz"] main .research-category-feedback {
     color: #a8e6b1;
 }
 
+html[data-theme="prinz"] main .inicio-estado-pending {
+    background: #493919;
+    color: #ffe0a1;
+}
+
+html[data-theme="prinz"] main .inicio-estado-approved {
+    background: #1d402b;
+    color: #b9ebc2;
+}
+
+html[data-theme="prinz"] main .inicio-estado-rejected {
+    background: #49252a;
+    color: #ffc2c7;
+}
+
+html[data-theme="prinz"] main .legacy-valky-warning {
+    border-color: #b78d55;
+    background: #352a20;
+    color: #f4d7a1;
+}
+
+html[data-theme="prinz"] main .legacy-valky-text {
+    border-color: #596778;
+    background: #090d12;
+    color: #f1f5f9;
+}
+
+html[data-theme="prinz"] main .plantilla-categoria,
+html[data-theme="prinz"] main .modulo-categoria-lista {
+    border-color: #35404d;
+    background: #141a22;
+}
+
+html[data-theme="prinz"] main .plantilla-categoria > h3,
+html[data-theme="prinz"] main .modulo-categoria-lista > h3 {
+    color: #b9dcff;
+}
+
 .result-final {
     background: rgba(13, 31, 45, 0.95);
     color: #dfeeff;
@@ -1389,6 +1484,11 @@ html[data-theme="prinz"] main .research-category-feedback {
 }
 
 @media (min-width: 768px) {
+    .plantillas-categorias,
+    .modulos-categorias {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .enigma-machine {
         padding: 22px;
     }

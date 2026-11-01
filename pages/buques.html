@@ -64,6 +64,14 @@
                     </select>
                 </div>
                 <p id="aviso-modulos-aprobados" class="comprobante-modulos" role="status" aria-live="polite" hidden></p>
+
+                <div class="campo">
+                    <label for="tipo-defensa">Tipo de defensa del buque:</label>
+                    <select id="tipo-defensa">
+                        <option value="P">P (Pesada)</option>
+                        <option value="L">L (Ligera)</option>
+                    </select>
+                </div>
                 
                 <div id="modulos-container" class="modulos-container">
                     <!-- Los módulos se generarán dinámicamente aquí -->
@@ -95,13 +103,13 @@
 
                     <!-- ESTADÍSTICAS DE DAÑO COMPUESTO (P/L) -->
                     <div class="stats-grid-pl">
-                        <h4>Daño y Defensa Compuesto (P/L)</h4>
+                        <h4>Daño (P/L) y defensa elegida</h4>
                         <div class="stat-box-pl">
                             <label>Daño Total (P/L):</label>
                             <span id="ataque-pl-total" class="stat-value-pl">-</span>
                         </div>
                         <div class="stat-box-pl">
-                            <label>Defensa Total (P/L):</label>
+                            <label id="defensa-pl-label">Defensa Total (P):</label>
                             <span id="defensa-pl-total" class="stat-value-pl">-</span>
                         </div>
                     </div>

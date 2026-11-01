@@ -43,6 +43,7 @@
                         <input id="tipo-unidad" name="tipo_unidad" type="text" maxlength="100" required>
                     </div>
                 </form>
+                <p id="estado-investigaciones-division" class="inicio-descripcion" role="status" aria-live="polite"></p>
             </section>
 
             <section class="seccion">
@@ -57,7 +58,7 @@
             <section class="seccion">
                 <div class="modulo-topline">
                     <h2>Batallones de apoyo</h2>
-                    <strong id="contador-apoyos">0 / 2</strong>
+                    <strong id="contador-apoyos">0 / 4</strong>
                 </div>
                 <div id="apoyos-container" class="opciones-modulo"></div>
                 <button id="btn-agregar-apoyo" type="button" class="btn btn-secondary">Añadir apoyo</button>
@@ -100,6 +101,7 @@
     </div>
     <script src="../js/publicar-plantilla.js"></script>
     <script src="../js/divisiones/constructor.js"></script>
+    <script type="module" src="../js/divisiones/investigaciones.js"></script>
     <script type="module" src="../js/divisiones/catalogo-modulos.js"></script>
     <script src="../js/filtro-modulos-pais.js"></script>
 </body>

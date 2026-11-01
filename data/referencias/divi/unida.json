@@ -78,6 +78,32 @@
         "def_bonus": 1
       },
       "descripcion": "Aporte masivo de ataque. No aporta movilidad propia (N/A MOV)."
+    },
+    "granaderos": {
+      "nombre": "Regimiento de Granaderos",
+      "sup_base": 2,
+      "mov_base": 2,
+      "hp_base": 5,
+      "atk_base": 6,
+      "def_base": 2,
+      "hp_penalty_arma": 5,
+      "arma_permitida": "fusil",
+      "buffs": {
+        "atk_bonus_vs_units": 5
+      },
+      "descripcion": "Especializados en asalto con granadas. Causan +5 ATK extra contra unidades. Tienen -5 HP en comparación con el arma equipada (mínimo 1 HP). Solo pueden ser equipados con fusiles."
+    },
+    "morteros": {
+      "nombre": "Regimiento de Morteros",
+      "sup_base": 2,
+      "mov_base": 2,
+      "hp_base": 5,
+      "atk_base": 15,
+      "def_base": 1,
+      "habilidad_pasiva": {
+        "rango_atk": "14 a 16 en línea"
+      },
+      "descripcion": "Artillería de apoyo portátil de menor rango pero gran utilidad. Rango de ataque en línea de 14 a 16."
     }
   },
   "batallones_apoyo": {
@@ -135,6 +161,59 @@
         "hp_bonus_ingenieria": "Variable según tecnología de ingeniería"
       },
       "descripcion": "Incrementa la durabilidad (HP) del equipo y los vehículos de la unidad."
+    },
+    "escopeteros": {
+      "nombre": "Batallón de Apoyo de Escopeteros",
+      "sup_costo": 4,
+      "buffs": {
+        "atk": 4,
+        "atk_trincheras": 12
+      },
+      "descripcion": "Desbloqueado en la Gran Guerra. Otorga +4 ATK (sube a +12 ATK en trincheras) y consume 4 de SUP."
+    },
+    "lanzallamas_apoyo": {
+      "nombre": "Batallón de Apoyo Lanzallamas",
+      "sup_costo": 4,
+      "buffs": {
+        "atk_trincheras": 14
+      },
+      "descripcion": "Disponible con la guerra de trincheras. Otorga +14 de ATK exclusivamente en trincheras. Consume 4 de SUP."
+    },
+    "tropas_de_asalto": {
+      "nombre": "Batallón de Tropas de Asalto (Choque)",
+      "sup_costo": 2,
+      "mov_base": 2,
+      "buffs": {
+        "atk_modificador": -1,
+        "def_modificador": -1,
+        "fortificación_atk": 30,
+        "ignora_debuff_fortificaciones": true
+      },
+      "armas_fortificacion_permitidas": ["escopeta", "subfusil", "fusil de asalto"],
+      "descripcion": "Especialistas en romper defensas. En combate normal penalizan con -1 ATK/DEF al arma equipada. Ignoran debuffs de fortificaciones y hacen 30 de ATK fijo contra ellas si se equipan con escopetas, subfusiles o fusiles de asalto."
+    },
+    "tropas_lanzallamas_combate": {
+      "nombre": "Batallón de Tropas Lanzallamas",
+      "sup_costo": 4,
+      "mov_base": 2,
+      "hp_base": 3,
+      "def_base": 1,
+      "buffs": {
+        "atk": 5,
+        "fortificación_atk": 30,
+        "ignora_debuff_fortificaciones": true
+      },
+      "descripcion": "Unidad de combate con defensa casi nula (1 DEF) y poca salud (3 HP). Genera 5 de ATK contra cualquier unidad y 30 de ATK contra fortificaciones, ignorando sus debuffs defensivos."
+    },
+    "guerra_quimica": {
+      "nombre": "Batallón de Guerra Química",
+      "sup_costo": 6,
+      "buffs": {
+        "atk": 20,
+        "reduccion_def_enemiga": "1/6 por 4 turnos (CD de 4 turnos)",
+        "ignora_fortificaciones": true
+      },
+      "descripcion": "Batallón de apoyo químico de alta letalidad. Reduce la DEF enemiga 1/6 por 4 turnos (con CD de 4 turnos) e inflige 20 de ATK ignorando TODAS las fortificaciones. Consume 6 de SUP."
     }
   },
   "ejemplo_armas_equipables": [

@@ -2,13 +2,22 @@ import { supabase } from './supabase.js';
 
 const countryFilter = document.getElementById('filtro-pais');
 const statusFilter = document.getElementById('filtro-estado');
-const templateList = document.getElementById('lista-plantillas');
+const templateLists = {
+    naval: document.getElementById('lista-plantillas-buques'),
+    aircraft: document.getElementById('lista-plantillas-aviones'),
+    tank: document.getElementById('lista-plantillas-tanques'),
+    infantry: document.getElementById('lista-plantillas-divisiones'),
+    legacy: document.getElementById('lista-plantillas-viejo-valky'),
+    other: document.getElementById('lista-plantillas-otras')
+};
 const listStatus = document.getElementById('estado-lista');
 const accessForm = document.getElementById('formulario-acceso');
 const accessSection = document.getElementById('acceso-moderacion');
 const accessToggle = document.getElementById('mostrar-acceso');
 const moderatorStatus = document.getElementById('estado-moderador');
 const moderatorPanel = document.getElementById('panel-moderacion');
+const legacyForm = document.getElementById('formulario-viejo-valky');
+const legacyStatus = document.getElementById('estado-viejo-valky');
 
 let templates = [];
 let commentsByTemplate = new Map();
@@ -49,6 +58,24 @@ function displayValue(value) {
         return Number(Number(value).toFixed(2)).toString();
     }
     return String(value);
+}
+
+function isOldValky(content) {
+    return content?.formato === 'viejo_valky' && typeof content.texto === 'string';
+}
+
+function getTemplateCategory(template) {
+    if (isOldValky(template.content)) return 'legacy';
+    const fileName = String(template.file_name || '').toLocaleLowerCase('es');
+    const selected = template.content?.modulos_seleccionados
+        || template.content?.componentes_seleccionados
+        || {};
+
+    if (fileName.startsWith('buque-') || selected.casco) return 'naval';
+    if (fileName.startsWith('avion-') || selected.fuselaje || selected.motores) return 'aircraft';
+    if (fileName.startsWith('tanque-') || selected.chasis || selected.traccion) return 'tank';
+    if (fileName.startsWith('division-') || template.content?.ficha_unidad) return 'infantry';
+    return 'other';
 }
 
 function humanizeKey(key) {
@@ -220,6 +247,11 @@ function createDivisionLists(unidad) {
 
 function createTemplatePreview(content) {
     const preview = createElement('div', undefined, 'ficha-compacta active');
+    if (isOldValky(content)) {
+        preview.append(createElement('pre', content.texto, 'legacy-valky-text'));
+        return preview;
+    }
+
     const info = content?.informacion_general || {};
     const division = content?.ficha_unidad;
     const stats = division ? content.estadisticas_acumuladas : content?.estadisticas;
@@ -334,7 +366,9 @@ function addTemplateComments(container, templateId) {
 function createTemplateCard(template) {
     const card = createElement('details', undefined, 'opcion-modulo');
     const summary = document.createElement('summary');
-    const contentTitle = template.content?.titulo
+    const contentTitle = isOldValky(template.content)
+        ? `El viejo Valky · ${template.content.destino === 'modulo' ? 'Módulo antiguo' : 'Plantilla antigua'}`
+        : template.content?.titulo
         || template.content?.ficha_unidad?.informacion_general?.nombre_unidad
         || template.content?.informacion_general?.nombre
         || template.content?.informacion_general?.nombre_unidad
@@ -347,7 +381,11 @@ function createTemplateCard(template) {
         approved: 'Aprobada',
         rejected: 'Desaprobada'
     };
-    summary.append(createElement('span', statuses[template.status], 'inicio-estado'));
+    summary.append(createElement(
+        'span',
+        statuses[template.status] || 'Estado desconocido',
+        `inicio-estado inicio-estado-${template.status || 'desconocido'}`
+    ));
     const templateComments = commentsByTemplate.get(template.id) || [];
     const reviewPreview = template.review_comment || templateComments[0]?.comment;
     if (reviewPreview) {
@@ -384,20 +422,27 @@ function renderTemplates() {
     const visibleTemplates = templates.filter(template =>
         (!selectedCountry || template.country === selectedCountry)
         && (!selectedStatus || template.status === selectedStatus)
+        && (moderatorKey || template.status !== 'approved'
+            || !isOldValky(template.content) || template.content.destino !== 'modulo')
     );
 
-    templateList.replaceChildren();
+    const groupedTemplates = Object.fromEntries(
+        Object.keys(templateLists).map(category => [category, []])
+    );
     const firstPendingTemplateId = moderatorKey
         ? visibleTemplates.find(template => template.status === 'pending')?.id
         : undefined;
     visibleTemplates.forEach(template => {
         const card = createTemplateCard(template);
         card.open = Boolean(firstPendingTemplateId && template.id === firstPendingTemplateId);
-        templateList.append(card);
+        groupedTemplates[getTemplateCategory(template)].push(card);
     });
-    if (!visibleTemplates.length) {
-        templateList.append(createElement('p', 'No hay plantillas para los filtros seleccionados.'));
-    }
+    Object.entries(templateLists).forEach(([category, list]) => {
+        list.replaceChildren(...groupedTemplates[category]);
+        if (!groupedTemplates[category].length) {
+            list.append(createElement('p', 'No hay plantillas para los filtros seleccionados.'));
+        }
+    });
 }
 
 function renderCountryOptions() {
@@ -454,6 +499,47 @@ async function refreshTemplates() {
 
 function createModeratorTools(template) {
     const section = createElement('section');
+    if (isOldValky(template.content)) {
+        const editor = createElement('div', undefined, 'campo');
+        const label = createElement('label', 'Editar texto antiguo');
+        const textInput = document.createElement('textarea');
+        textInput.rows = 18;
+        textInput.value = template.content.texto;
+        label.append(textInput);
+        editor.append(label);
+        const saveButton = createElement('button', 'Guardar texto');
+        saveButton.type = 'button';
+        saveButton.className = 'btn btn-secondary';
+        const saveStatus = createElement('p');
+        saveStatus.setAttribute('role', 'status');
+        saveButton.addEventListener('click', async () => {
+            if (!textInput.value.trim()) {
+                textInput.setCustomValidity('El texto no puede estar vacío.');
+                textInput.reportValidity();
+                textInput.setCustomValidity('');
+                return;
+            }
+            saveButton.disabled = true;
+            try {
+                const content = { ...template.content, texto: textInput.value };
+                const { error } = await supabase.rpc('update_pending_template_content', {
+                    p_template_id: template.id,
+                    p_content: content,
+                    p_moderator_key: moderatorKey
+                });
+                if (error) throw error;
+                if (!await refreshTemplates()) throw new Error('No se pudo actualizar la lista.');
+                showStatus(listStatus, 'Texto guardado; la entrada sigue pendiente de revisión.');
+            } catch (error) {
+                saveStatus.textContent = `No se pudo guardar el texto: ${error.message}`;
+                saveStatus.setAttribute('role', 'alert');
+            } finally {
+                saveButton.disabled = false;
+            }
+        });
+        section.append(editor, saveButton, saveStatus);
+    }
+
     const statsTarget = getEditableStats(template.content);
     if (statsTarget) {
         const statsEditor = createElement('div', undefined, 'formulario');
@@ -645,6 +731,43 @@ document.getElementById('actualizar-plantillas').addEventListener('click', refre
 
 accessToggle.addEventListener('click', () => {
     setAccessOpen(accessSection.hidden);
+});
+
+legacyForm.addEventListener('submit', async event => {
+    event.preventDefault();
+    if (!legacyForm.reportValidity()) return;
+
+    const country = document.getElementById('viejo-valky-pais').value.trim();
+    const destino = document.getElementById('viejo-valky-destino').value;
+    const texto = document.getElementById('viejo-valky-texto').value;
+    if (!texto.trim()) {
+        showStatus(legacyStatus, 'Escribe el texto que deseas enviar.', true);
+        return;
+    }
+
+    const button = legacyForm.querySelector('[type="submit"]');
+    button.disabled = true;
+    showStatus(legacyStatus, 'Enviando texto a revisión...');
+    try {
+        const fileName = `viejo-valky-${destino}-${Date.now()}.json`;
+        const { error } = await supabase.from('templates').insert({
+            country,
+            file_name: fileName,
+            content: {
+                formato: 'viejo_valky',
+                destino,
+                texto
+            }
+        });
+        if (error) throw error;
+        legacyForm.reset();
+        showStatus(legacyStatus, 'Enviado a revisión. El texto se conserva tal cual dentro del JSON.');
+        await refreshTemplates();
+    } catch (error) {
+        showStatus(legacyStatus, `No se pudo enviar el texto: ${error.message}`, true);
+    } finally {
+        button.disabled = false;
+    }
 });
 
 refreshTemplates();

@@ -41,14 +41,22 @@ const countryInput = document.getElementById('pais-modulo');
 const countryFilter = document.getElementById('filtro-pais-modulos');
 const moduleForm = document.getElementById('formulario-modulo');
 const fieldsContainer = document.getElementById('campos-modulo');
-const approvedList = document.getElementById('lista-modulos-aprobados');
+const approvedLists = {
+    naval: document.getElementById('lista-modulos-navales'),
+    aircraft: document.getElementById('lista-modulos-aviones'),
+    tank: document.getElementById('lista-modulos-tanques'),
+    infantry: document.getElementById('lista-modulos-divisiones')
+};
 const catalogStatus = document.getElementById('estado-catalogo');
+const legacyModulesList = document.getElementById('lista-modulos-viejo-valky');
+const legacyModulesStatus = document.getElementById('estado-modulos-viejo-valky');
 const submitStatus = document.getElementById('estado-envio-modulo');
 const moderationStatus = document.getElementById('estado-moderacion');
 const moderationPanel = document.getElementById('panel-moderacion-modulos');
 const pendingList = document.getElementById('lista-pendientes-modulos');
 
 let approvedModules = [];
+let approvedLegacyModules = [];
 let sourcesByKey = new Map();
 let moderatorKey = '';
 let pendingModules = [];
@@ -76,9 +84,19 @@ function moduleFields(vehicle, type, content = {}) {
     const definitions = fieldDefinitions.get(keyFor(vehicle, type)) || [];
     const values = Object.keys(content).filter(key => !['id', 'inicial', 'price', 'precio', 'coste', 'costo'].includes(key));
     const keys = definitions.length ? definitions.map(field => field.key) : values;
-    return keys.map(key => {
+    const fields = keys.map(key => {
         const value = content[key];
         const field = definitions.find(item => item.key === key);
+        if (key === 'descripcion') {
+            return {
+                key,
+                label: 'Descripción del módulo',
+                type: 'textarea',
+                defaultValue: '',
+                placeholder: 'Describe las características o el funcionamiento del módulo.',
+                required: false
+            };
+        }
         return {
             key,
             label: field?.label || key.replace(/_/g, ' ').replace(/^./, character => character.toLocaleUpperCase('es')),
@@ -91,6 +109,17 @@ function moduleFields(vehicle, type, content = {}) {
             required: key === 'nombre' || field?.required || false
         };
     });
+    if (!fields.some(field => field.key === 'descripcion')) {
+        fields.push({
+            key: 'descripcion',
+            label: 'Descripción del módulo',
+            type: 'textarea',
+            defaultValue: '',
+            placeholder: 'Describe las características o el funcionamiento del módulo.',
+            required: false
+        });
+    }
+    return fields;
 }
 
 function createField(field, value, idPrefix) {
@@ -103,10 +132,11 @@ function createField(field, value, idPrefix) {
     wrapper.append(label);
 
     let input;
-    if (field.type === 'json') {
+    if (field.type === 'json' || field.type === 'textarea') {
         input = document.createElement('textarea');
-        input.rows = 4;
-        input.value = JSON.stringify(value ?? {}, null, 2);
+        input.rows = field.type === 'textarea' ? 3 : 4;
+        input.value = field.type === 'json' ? JSON.stringify(value ?? {}, null, 2) : String(value ?? '');
+        if (field.type === 'textarea') input.maxLength = 2000;
     } else {
         input = document.createElement('input');
         input.type = field.type;
@@ -166,6 +196,7 @@ function recordSources(vehicle, type, modules) {
         .map(module => ({ label: module.nombre, content: module }));
     sources.set(keyFor(vehicle, type), records);
     const excluded = ['id', 'inicial', 'coste', 'costo', 'price', 'precio'];
+    if (vehicle === 'tank') excluded.push('investigacion');
     // Se unen las claves de todos los módulos del tipo (no solo del primero) para no
     // perder campos que algunos módulos usan en lugar de otros (p. ej. las armas
     // navales usan "ataque" o "ataque_p_l" según el caso).
@@ -183,14 +214,36 @@ function recordSources(vehicle, type, modules) {
     const fields = [...exampleEntries.entries()]
         .map(([key, { value }]) => ({
             key,
-            type: typeof value === 'number' ? 'number' : value && typeof value === 'object' ? 'json' : typeof value === 'boolean' ? 'checkbox' : 'text',
-            label: key === 'nombre' ? 'Nombre' : key.replace(/_/g, ' ').replace(/^./, character => character.toLocaleUpperCase('es')),
+            type: vehicle === 'naval' && type === 'blindaje' && key === 'velocidad'
+                ? 'text'
+                : typeof value === 'number' ? 'number' : value && typeof value === 'object' ? 'json' : typeof value === 'boolean' ? 'checkbox' : 'text',
+            label: key === 'nombre'
+                ? 'Nombre'
+                : key === 'defensa_p_l'
+                    ? 'Defensa (P/L)'
+                    : key === 'coste'
+                        ? 'Coste de producción (M)'
+                        : vehicle === 'naval' && type === 'blindaje' && key === 'velocidad'
+                            ? 'Velocidad (P/L)'
+                        : key.replace(/_/g, ' ').replace(/^./, character => character.toLocaleUpperCase('es')),
+            placeholder: vehicle === 'naval' && type === 'blindaje' && key === 'velocidad'
+                ? 'Ej.: -25(P) -10(L)'
+                : '',
             defaultValue: typeof value === 'boolean' || (value && typeof value === 'object') ? value : '',
             // Solo el nombre es obligatorio: hay módulos del catálogo (p. ej. armas
             // navales con ataque_p_l en vez de ataque) que omiten campos numéricos,
             // así que se permite dejar esos campos vacíos al crear un módulo nuevo.
             required: key === 'nombre'
         }));
+    if (vehicle === 'tank') {
+        fields.push({
+            key: 'coste',
+            type: 'number',
+            label: 'Coste de producción (M)',
+            defaultValue: 0,
+            required: true
+        });
+    }
     fieldDefinitions.set(keyFor(vehicle, type), fields);
 }
 
@@ -354,7 +407,10 @@ function esArmamentoTanque(vehicle, type) {
 }
 
 function refreshCountryOptions() {
-    const countries = [...new Set(approvedModules.map(module => module.country.trim()).filter(Boolean))]
+    const countries = [...new Set([
+        ...approvedModules.map(module => module.country.trim()),
+        ...approvedLegacyModules.map(module => module.country.trim())
+    ].filter(Boolean))]
         .sort((left, right) => left.localeCompare(right, 'es'));
     const selected = countryFilter.value;
     countryFilter.replaceChildren(new Option('Todos los países', ''));
@@ -367,12 +423,20 @@ function renderApprovedModules() {
     const filtered = approvedModules.filter(module =>
         !country || module.country.trim().toLocaleLowerCase('es') === country
     );
-    approvedList.replaceChildren();
+    const filteredLegacy = approvedLegacyModules.filter(module =>
+        !country || module.country.trim().toLocaleLowerCase('es') === country
+    );
+    const groupedModules = Object.fromEntries(
+        Object.keys(approvedLists).map(vehicle => [vehicle, []])
+    );
     filtered.forEach(module => {
         const card = document.createElement('article');
         card.className = 'opcion-modulo';
         const title = document.createElement('h3');
         title.textContent = module.content.nombre;
+        const description = document.createElement('p');
+        description.className = 'inicio-descripcion';
+        description.textContent = module.content.descripcion || '';
         const details = document.createElement('p');
         details.className = 'inicio-descripcion';
         details.textContent = `${module.country} · ${typeLabel(module.vehicle, module.module_type)} · Precio: ${Number(module.price).toFixed(2)} M`;
@@ -390,10 +454,35 @@ function renderApprovedModules() {
             renderFields(fieldsContainer, module.vehicle, module.module_type, module.content);
             moduleForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
         });
-        card.append(title, details, copyButton);
-        approvedList.append(card);
+        card.append(title);
+        if (description.textContent) card.append(description);
+        card.append(details, copyButton);
+        groupedModules[module.vehicle]?.push(card);
+    });
+    Object.entries(approvedLists).forEach(([vehicle, list]) => {
+        list.replaceChildren(...groupedModules[vehicle]);
+        if (!groupedModules[vehicle].length) {
+            list.append(Object.assign(document.createElement('p'), {
+                className: 'inicio-descripcion',
+                textContent: 'No hay módulos aprobados para este grupo y filtro.'
+            }));
+        }
     });
     setStatus(catalogStatus, filtered.length ? '' : 'No hay módulos aprobados para este filtro.');
+
+    legacyModulesList.replaceChildren();
+    filteredLegacy.forEach(module => {
+        const card = document.createElement('article');
+        card.className = 'opcion-modulo';
+        const title = document.createElement('h3');
+        title.textContent = `${module.country} · ${new Date(module.created_at).toLocaleDateString('es')}`;
+        const text = document.createElement('pre');
+        text.className = 'legacy-valky-text';
+        text.textContent = module.content.texto;
+        card.append(title, text);
+        legacyModulesList.append(card);
+    });
+    setStatus(legacyModulesStatus, filteredLegacy.length ? '' : 'No hay módulos antiguos aprobados para este filtro.');
 }
 
 function renderReviewFields(container, module) {
@@ -407,7 +496,7 @@ function renderReviewFields(container, module) {
         label: 'Precio de producción (M)',
         type: 'number',
         required: true
-    }, module.price ?? '', idPrefix);
+    }, module.price ?? module.content?.coste ?? '', idPrefix);
     priceField.querySelector('input').min = '0';
     priceField.querySelector('input').step = 'any';
     const commentField = createField({
@@ -510,6 +599,21 @@ async function loadApprovedModules() {
     await refreshSources();
 }
 
+async function loadApprovedLegacyModules() {
+    const { data, error } = await supabase
+        .from('templates')
+        .select('id, country, content, created_at')
+        .eq('status', 'approved')
+        .eq('content->>formato', 'viejo_valky')
+        .eq('content->>destino', 'modulo')
+        .order('created_at', { ascending: false })
+        .limit(100);
+    if (error) throw error;
+    approvedLegacyModules = data || [];
+    refreshCountryOptions();
+    renderApprovedModules();
+}
+
 async function loadPendingModules() {
     const { data, error } = await supabase.rpc('get_pending_custom_modules', {
         p_moderator_key: moderatorKey
@@ -584,7 +688,8 @@ document.getElementById('limpiar-modulo').addEventListener('click', () => {
     });
 });
 document.getElementById('actualizar-catalogo').addEventListener('click', () => {
-    loadApprovedModules().catch(error => setStatus(catalogStatus, `No se pudo cargar el catálogo: ${error.message}`, true));
+    Promise.all([loadApprovedModules(), loadApprovedLegacyModules()])
+        .catch(error => setStatus(catalogStatus, `No se pudo actualizar el catálogo: ${error.message}`, true));
 });
 
 const moderatorAccess = document.getElementById('acceso-moderacion');
@@ -630,6 +735,6 @@ if (vehicleTypeOptions(vehicleSelect.value).some(([type]) => type === params.get
     typeSelect.value = params.get('type');
 }
 
-Promise.all([loadBuiltInSources(), loadApprovedModules()])
+Promise.all([loadBuiltInSources(), loadApprovedModules(), loadApprovedLegacyModules()])
     .then(() => refreshSources())
     .catch(error => setStatus(catalogStatus, `No se pudo cargar el catálogo de módulos: ${error.message}`, true));

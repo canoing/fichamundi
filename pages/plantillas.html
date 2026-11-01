@@ -41,7 +41,32 @@
                     <button id="actualizar-plantillas" class="btn btn-secondary" type="button">Actualizar lista</button>
                 </div>
                 <p id="estado-lista" class="comprobante-modulos" role="status" aria-live="polite" hidden></p>
-                <div id="lista-plantillas" class="opciones-modulo"></div>
+                <div class="plantillas-categorias">
+                    <section class="plantilla-categoria">
+                        <h3>Barcos</h3>
+                        <div id="lista-plantillas-buques" class="opciones-modulo"></div>
+                    </section>
+                    <section class="plantilla-categoria">
+                        <h3>Aviones</h3>
+                        <div id="lista-plantillas-aviones" class="opciones-modulo"></div>
+                    </section>
+                    <section class="plantilla-categoria">
+                        <h3>Tanques</h3>
+                        <div id="lista-plantillas-tanques" class="opciones-modulo"></div>
+                    </section>
+                    <section class="plantilla-categoria">
+                        <h3>Divisiones</h3>
+                        <div id="lista-plantillas-divisiones" class="opciones-modulo"></div>
+                    </section>
+                    <section class="plantilla-categoria">
+                        <h3>El viejo Valky</h3>
+                        <div id="lista-plantillas-viejo-valky" class="opciones-modulo"></div>
+                    </section>
+                    <section class="plantilla-categoria">
+                        <h3>Otras plantillas</h3>
+                        <div id="lista-plantillas-otras" class="opciones-modulo"></div>
+                    </section>
+                </div>
             </section>
 
             <section class="seccion">
@@ -69,6 +94,34 @@
                     </div>
                     <p class="inicio-descripcion">Las acciones para aprobar, desaprobar y comentar aparecen dentro de cada plantilla pendiente.</p>
                 </div>
+            </section>
+
+               <section class="seccion">
+                <h2>El viejo Valky</h2>
+                <p class="legacy-valky-warning" role="note">Este modo guarda el texto tal cual en formato JSON. No es compatible con los constructores ni con el resto de las funciones estructuradas de la página.</p>
+                <form id="formulario-viejo-valky">
+                    <div class="formulario">
+                        <div class="campo">
+                            <label for="viejo-valky-pais">País</label>
+                            <input id="viejo-valky-pais" maxlength="100" required placeholder="Ej.: Boreostia">
+                        </div>
+                        <div class="campo">
+                            <label for="viejo-valky-destino">Enviar como</label>
+                            <select id="viejo-valky-destino" required>
+                                <option value="plantilla">Plantilla antigua</option>
+                                <option value="modulo">Módulo antiguo</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="campo">
+                        <label for="viejo-valky-texto">Texto</label>
+                        <textarea id="viejo-valky-texto" rows="18" required placeholder="Escribe o pega aquí el contenido antiguo. Se conservará tal cual."></textarea>
+                    </div>
+                    <p id="estado-viejo-valky" class="comprobante-modulos" role="status" aria-live="polite" hidden></p>
+                    <div class="acciones">
+                        <button class="btn btn-primary" type="submit">Enviar a revisión</button>
+                    </div>
+                </form>
             </section>
         </main>
     </div>

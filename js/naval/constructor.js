@@ -64,6 +64,7 @@ function obtenerMotorBaseSeleccionado(estado = seleccionados) {
 function asegurarMotorBase(estado, motoresDisponibles = []) {
     const siguiente = {
         casco: estado?.casco || null,
+        tipo_defensa: estado?.tipo_defensa === 'L' ? 'L' : 'P',
         propulsion: Array.isArray(estado?.propulsion) ? [...estado.propulsion] : [],
         armamento: Array.isArray(estado?.armamento) ? [...estado.armamento] : [],
         blindaje: Array.isArray(estado?.blindaje) ? [...estado.blindaje] : []
@@ -96,6 +97,7 @@ async function cargarDatos() {
 
         seleccionados = {
             casco: null,
+            tipo_defensa: 'P',
             propulsion: motorBase,
             armamento: [],
             blindaje: []
@@ -211,6 +213,7 @@ function generarCascos(container) {
                         <span class="info-label">Velocidad:</span>
                         <span class="info-value">${casco.velocidad > 0 ? '+' : ''}${escaparHtml(casco.velocidad)}</span>
                     </div>
+                    ${casco.defensa_p_l ? `<div class="info-item"><span class="info-label">Defensa (P/L):</span><span class="info-value">${escaparHtml(casco.defensa_p_l)}</span></div>` : ''}
                     <div class="info-item">
                         <span class="info-label">Coste:</span>
                         <span class="info-value">${escaparHtml(casco.coste)}</span>
@@ -242,6 +245,7 @@ function manejarCambioCantidad(categoria, item, accion) {
 
     const proximoEstado = {
         casco: seleccionados.casco ? { ...seleccionados.casco } : null,
+        tipo_defensa: seleccionados.tipo_defensa === 'L' ? 'L' : 'P',
         propulsion: Array.isArray(seleccionados.propulsion) ? [...seleccionados.propulsion] : [],
         armamento: Array.isArray(seleccionados.armamento) ? [...seleccionados.armamento] : [],
         blindaje: Array.isArray(seleccionados.blindaje) ? [...seleccionados.blindaje] : []
@@ -402,7 +406,10 @@ function calcularTotales() {
                 if (!modulo || !modulo.nombre) return;
 
                 const cantidad = Number(modulo.cantidad || 1);
-                velocidadTotal += (modulo.velocidad || 0) * cantidad;
+                const velocidadModulo = cat === 'blindaje'
+                    ? obtenerVelocidadBlindaje(modulo.velocidad, seleccionados.tipo_defensa)
+                    : Number(modulo.velocidad) || 0;
+                velocidadTotal += velocidadModulo * cantidad;
 
                 ataqueTotal += obtenerAtaqueTotal(modulo) * cantidad;
                 defensaTotal += obtenerDefensaTotal(modulo) * cantidad;
@@ -417,6 +424,7 @@ function calcularTotales() {
     const costeEl = document.getElementById('coste-total');
     const ataquePLEl = document.getElementById('ataque-pl-total');
     const defensaPLEl = document.getElementById('defensa-pl-total');
+    const defensaPLLabel = document.getElementById('defensa-pl-label');
 
     if (velocidadEl) velocidadEl.textContent = velocidadTotal;
     if (ataqueEl) ataqueEl.textContent = ataqueTotal;
@@ -426,9 +434,11 @@ function calcularTotales() {
     // Calcula y muestra los totales de daño y defensa compuesto (P/L)
     const ataquePLTotal = calcularAtaquePLTotal();
     const defensaPLTotal = calcularDefensaPLTotal();
+    const tipoDefensa = seleccionados.tipo_defensa === 'L' ? 'L' : 'P';
 
     if (ataquePLEl) ataquePLEl.textContent = ataquePLTotal || '-';
     if (defensaPLEl) defensaPLEl.textContent = defensaPLTotal || '-';
+    if (defensaPLLabel) defensaPLLabel.textContent = `Defensa Total (${tipoDefensa}):`;
 }
 
 function actualizarCapacidadUI() {
@@ -496,7 +506,8 @@ function obtenerDefensaTotal(modulo) {
 
 // Extrae los valores P y L de un valor compuesto como "30(P) 10(L)" o "30 P / 10 L"
 function extraerValorPL(valor) {
-    if (typeof valor !== 'string') return { p: 0, l: 0 };
+    if (typeof valor !== 'string' && typeof valor !== 'number') return { p: 0, l: 0 };
+    if (typeof valor === 'number') return { p: valor, l: valor };
 
     const coincidenciaP = valor.match(/(\d+)\s*\(?P\)?/i);
     const coincidenciaL = valor.match(/(\d+)\s*\(?L\)?/i);
@@ -505,6 +516,15 @@ function extraerValorPL(valor) {
         p: coincidenciaP ? parseInt(coincidenciaP[1], 10) : 0,
         l: coincidenciaL ? parseInt(coincidenciaL[1], 10) : 0
     };
+}
+
+function obtenerVelocidadBlindaje(velocidad, tipoDefensa = 'P') {
+    if (typeof velocidad === 'number') return velocidad;
+    if (typeof velocidad !== 'string') return 0;
+
+    const tipo = tipoDefensa === 'L' ? 'L' : 'P';
+    const coincidencia = velocidad.match(new RegExp(`(-?\\d+(?:\\.\\d+)?)\\s*\\(?${tipo}\\)?`, 'i'));
+    return coincidencia ? Number(coincidencia[1]) : Number(velocidad) || 0;
 }
 
 // Calcula el total de ataque compuesto (P/L) de todos los módulos seleccionados
@@ -529,22 +549,26 @@ function calcularAtaquePLTotal(estado = seleccionados) {
 
 // Calcula el total de defensa compuesta (P/L) de todos los módulos seleccionados
 function calcularDefensaPLTotal(estado = seleccionados) {
-    let defensaP = 0;
-    let defensaL = 0;
+    const tipoDefensa = estado.tipo_defensa === 'L' ? 'L' : 'P';
+    let defensaTotal = 0;
+
+    if (estado.casco?.defensa_p_l) {
+        const defensaCasco = extraerValorPL(estado.casco.defensa_p_l);
+        defensaTotal += defensaCasco[tipoDefensa.toLowerCase()];
+    }
 
     ['propulsion', 'armamento', 'blindaje'].forEach(cat => {
         if (Array.isArray(estado[cat])) {
             estado[cat].forEach(modulo => {
                 if (!modulo || !modulo.nombre || !modulo.defensa_p_l) return;
                 const cantidad = Number(modulo.cantidad || 1);
-                const { p, l } = extraerValorPL(modulo.defensa_p_l);
-                defensaP += p * cantidad;
-                defensaL += l * cantidad;
+                const defensaModulo = extraerValorPL(modulo.defensa_p_l);
+                defensaTotal += defensaModulo[tipoDefensa.toLowerCase()] * cantidad;
             });
         }
     });
 
-    return defensaP === 0 && defensaL === 0 ? null : `${defensaP}(P) ${defensaL}(L)`;
+    return defensaTotal === 0 ? null : `${defensaTotal}(${tipoDefensa})`;
 }
 
 function parsearCoste(coste) {
@@ -555,6 +579,14 @@ function parsearCoste(coste) {
 function agregarEventListeners() {
     const publicarBtn = document.getElementById('btn-publicar-ficha');
     const limpiarBtn = document.getElementById('btn-limpiar');
+    const tipoDefensaSelect = document.getElementById('tipo-defensa');
+
+    if (tipoDefensaSelect) {
+        tipoDefensaSelect.addEventListener('change', () => {
+            seleccionados.tipo_defensa = tipoDefensaSelect.value === 'L' ? 'L' : 'P';
+            calcularTotales();
+        });
+    }
 
     if (publicarBtn) {
         publicarBtn.addEventListener('click', () => publicarFicha());
@@ -627,6 +659,7 @@ function crearFicha() {
             ataque: parseInt(document.getElementById('ataque-total').textContent),
             ataque_pl_total: calcularAtaquePLTotal(seleccionados),
             defensa_pl_total: calcularDefensaPLTotal(seleccionados),
+            tipo_defensa: seleccionados.tipo_defensa === 'L' ? 'L' : 'P',
             coste: document.getElementById('coste-total').textContent,
             modulos_colocados: modulosTotales,
             capacidad_total: capacidadModulosActual
@@ -649,10 +682,14 @@ function limpiarFormulario() {
 
     seleccionados = {
         casco: null,
+        tipo_defensa: 'P',
         propulsion: motorBase,
         armamento: [],
         blindaje: []
     };
+
+    const tipoDefensaSelect = document.getElementById('tipo-defensa');
+    if (tipoDefensaSelect) tipoDefensaSelect.value = 'P';
 
     capacidadModulosActual = 0;
     generarModulos();
@@ -664,6 +701,9 @@ if (typeof module !== 'undefined') {
     module.exports = {
         calcularModulosUsados,
         asegurarMotorBase,
-        obtenerCantidadEnCategoria
+        obtenerCantidadEnCategoria,
+        calcularAtaquePLTotal,
+        calcularDefensaPLTotal,
+        obtenerVelocidadBlindaje
     };
 }

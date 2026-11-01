@@ -93,26 +93,14 @@
     {
       "nombre": "Blindaje remachado avanzado",
       "defensa_p_l": "80(P) 30(L)",
-      "velocidad": -25,
+      "velocidad": "-25(p) -10(l)",
       "coste": "1M"
     },
     {
       "nombre": "Casco soldado",
       "defensa_p_l": "120(P) 60(L)",
-      "velocidad": -40,
+      "velocidad": "-40(p) -20(l)",
       "coste": "2M"
-    },
-    {
-      "nombre": "defensa submarino inicial",
-      "defensa_p_l": "5(P) 5(L)",
-      "velocidad": 0,
-      "coste": 0
-    },
-    {
-      "nombre": "defensa submarino básico",
-      "defensa_p_l": "10(P) 10(L)",
-      "velocidad": 0,
-      "coste": 0
     }
 
   ]

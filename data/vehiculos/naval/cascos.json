@@ -98,17 +98,18 @@
       "nombre": "Casco submarino inicial",
       "capacidad_modulos": 3,
       "velocidad": -5,
-      "coste": "4M"
+      "coste": "4M",
+      "defensa_p_l": "5(P) 5(L)"
       
     },
     {
       "nombre": "Casco submarino básico",
       "capacidad_modulos": 6,
       "velocidad": -15,
-      "coste": "5M"
+      "coste": "5M",
+      "defensa_p_l": "10(P) 10(L)"
     }
   ]
 }
 
 }
-

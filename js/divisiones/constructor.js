@@ -3,6 +3,9 @@ let regimientosDivision = [];
 let apoyosDivision = [];
 let armasDivision = [];
 let armasPersonalizadasAprobadas = [];
+let nivelesInvestigacionDivision = { medicina: null, ingenieria: null };
+let estadoInvestigacionDivision = '';
+const MAX_APOYOS_DIVISION = 4;
 // Plantillas de tanques aprobadas en plantillas.html, disponibles como
 // "módulo" para los regimientos blindados.
 let vehiculosAprobados = [];
@@ -67,8 +70,8 @@ function extraerArmasDivision(datos) {
             tipo_ficha: entrada.tipo_ficha || datos.tipo_ficha || 'Arma personalizada',
             nombre: String(nombre).trim(),
             hp_a_regimiento: numeroSeguro(entrada.hp_a_regimiento ?? entrada.hp ?? estadisticas.hp_a_regimiento),
-            ataque: numeroSeguro(entrada.ataque ?? entrada.Ataque ?? estadisticas.ataque),
-            defensa: numeroSeguro(entrada.defensa ?? entrada.Defensa ?? estadisticas.defensa),
+            ataque: numeroSeguro(entrada.ataque ?? entrada.Ataque ?? estadisticas.ataque ?? entrada.buffs?.atk),
+            defensa: numeroSeguro(entrada.defensa ?? entrada.Defensa ?? estadisticas.defensa ?? entrada.buffs?.def),
             nivel_tech_tree: numeroSeguro(entrada.nivel_tech_tree ?? entrada.nivel_tech ?? estadisticas.nivel_tech_tree),
             mov_propio: numeroSeguro(entrada.mov_propio ?? entrada.mov_arma),
             sup_costo: numeroSeguro(entrada.sup_costo ?? entrada.sup_arma),
@@ -107,16 +110,30 @@ function calcularEstadisticasDivision(regimientos, apoyos, catalogo) {
         const tipo = tiposRegimiento[regimiento.tipo_regimiento];
         if (!tipo) return;
 
-        const arma = regimiento.arma_equipada || {};
+        const armaSeleccionada = regimiento.arma_equipada || {};
+        const arma = tipo.arma_permitida === 'fusil' && !armaEsFusil(armaSeleccionada)
+            ? {}
+            : armaSeleccionada;
 
         // Regimiento blindado con un tanque aprobado: arma y vehículo se
         // suman. Las estadísticas del tanque vienen ya calculadas.
         const vehiculo = tipo.permite_chasis ? buscarVehiculoAprobado(regimiento.vehiculo_id) : null;
 
-        hp += numeroSeguro(tipo.hp_base) + numeroSeguro(arma.hp_a_regimiento) + (vehiculo ? vehiculo.hp : 0);
+        const penalizacionHpArma = regimiento.arma_equipada && arma === armaSeleccionada
+            && tipo.arma_permitida === 'fusil'
+            ? numeroSeguro(tipo.hp_penalty_arma)
+            : 0;
+        const hpRegimiento = numeroSeguro(tipo.hp_base) + numeroSeguro(arma.hp_a_regimiento) + (vehiculo ? vehiculo.hp : 0);
+        hp += penalizacionHpArma ? Math.max(1, hpRegimiento - penalizacionHpArma) : hpRegimiento;
         ataque += numeroSeguro(tipo.atk_base) + numeroSeguro(tipo.buffs?.atk_bonus) + numeroSeguro(arma.ataque) + (vehiculo ? vehiculo.ataque : 0);
         defensa += numeroSeguro(tipo.def_base) + numeroSeguro(tipo.buffs?.def_bonus) + numeroSeguro(arma.defensa) + (vehiculo ? vehiculo.defensa : 0);
         coste += numeroSeguro(arma.precio ?? arma.coste ?? arma.costo) + (vehiculo ? vehiculo.coste : 0);
+        if (tipo.buffs?.atk_bonus_vs_units) {
+            habilidades.push(`+${numeroSeguro(tipo.buffs.atk_bonus_vs_units)} ATK contra unidades (${tipo.nombre})`);
+        }
+        if (tipo.habilidad_pasiva?.rango_atk) {
+            habilidades.push(`Rango de ataque: ${tipo.habilidad_pasiva.rango_atk}`);
+        }
 
         if (tipo.sup_depende_de_arma) suministros += numeroSeguro(regimiento.sup_arma);
         else suministros += numeroSeguro(tipo.sup_base);
@@ -137,15 +154,54 @@ function calcularEstadisticasDivision(regimientos, apoyos, catalogo) {
         const tipo = tiposApoyo[apoyo.tipo_apoyo];
         if (!tipo) return;
         const buffs = tipo.buffs || {};
-        ataque += numeroSeguro(buffs.atk_bonus);
+        hp += numeroSeguro(tipo.hp_base);
+        ataque += numeroSeguro(buffs.atk_bonus) + numeroSeguro(buffs.atk);
         defensa += numeroSeguro(buffs.def_bonus);
+        defensa += numeroSeguro(tipo.def_base);
+        if (tipo.mov_base !== null && tipo.mov_base !== undefined) {
+            movimientos.push(numeroSeguro(tipo.mov_base));
+        }
         if (apoyo.tipo_apoyo === 'logistica') {
-            suministros -= Math.max(1, numeroSeguro(apoyo.reduccion_sup) || 1);
+            suministros -= Math.max(1, numeroSeguro(apoyo.reduccion_sup) || numeroSeguro(buffs.reduccion_sup) || 1);
         } else {
             suministros += numeroSeguro(tipo.sup_costo);
         }
-        hp += numeroSeguro(buffs.hp_bonus_base) + numeroSeguro(apoyo.hp_bonus_tecnologico);
+        const tecnologiaHp = apoyo.tipo_apoyo === 'hospital_campana'
+            ? 'medicina'
+            : apoyo.tipo_apoyo === 'mantenimiento'
+                ? 'ingenieria'
+                : null;
+        const bonusHpTecnologico = tecnologiaHp
+            ? calcularBonusTecnologico(obtenerNivelTecnologico(apoyo, tecnologiaHp).nivel)
+            : numeroSeguro(apoyo.hp_bonus_tecnologico);
+        hp += numeroSeguro(buffs.hp_bonus_base) + bonusHpTecnologico;
         bonusMovimiento += numeroSeguro(buffs.mov_bonus_global);
+
+        if (buffs.atk_trincheras) {
+            habilidades.push(`+${numeroSeguro(buffs.atk_trincheras)} ATK en trincheras (${tipo.nombre})`);
+        }
+        const ataqueFortificacion = buffs.fortificación_atk ?? buffs.fortificacion_atk;
+        if (ataqueFortificacion) {
+            const armasPermitidas = tipo.armas_fortificacion_permitidas;
+            const requisito = Array.isArray(armasPermitidas) ? ` con ${armasPermitidas.join(', ')}` : '';
+            habilidades.push(`${numeroSeguro(ataqueFortificacion)} ATK contra fortificaciones${requisito} (${tipo.nombre})`);
+        }
+        if (buffs.ignora_debuff_fortificaciones) {
+            habilidades.push(`Ignora penalizadores defensivos de fortificaciones (${tipo.nombre})`);
+        }
+        if (buffs.ignora_fortificaciones) {
+            habilidades.push(`Ignora todas las fortificaciones (${tipo.nombre})`);
+        }
+        if (buffs.reduccion_def_enemiga) {
+            habilidades.push(`Reduce la DEF enemiga ${buffs.reduccion_def_enemiga}`);
+        }
+        const modificadorArma = numeroSeguro(buffs.atk_modificador);
+        const modificadorDefensaArma = numeroSeguro(buffs.def_modificador);
+        if (modificadorArma || modificadorDefensaArma) {
+            const armasEquipadas = (regimientos || []).filter(regimiento => regimiento.arma_equipada).length;
+            ataque += modificadorArma * armasEquipadas;
+            defensa += modificadorDefensaArma * armasEquipadas;
+        }
 
         const terrenos = tipo.habilidad_pasiva?.ignora_debuff_mov_terrenos;
         if (Array.isArray(terrenos) && terrenos.length) {
@@ -229,12 +285,35 @@ function crearFichaDivision(informacion, regimientos, apoyos, catalogo) {
                 arma_o_equipo_asignado: null,
                 ...(apoyo.tipo_apoyo === 'logistica' ? { reduccion_sup_tecnologica: Math.max(1, numeroSeguro(apoyo.reduccion_sup) || 1) } : {}),
                 ...(['hospital_campana', 'mantenimiento'].includes(apoyo.tipo_apoyo)
-                    ? { hp_bonus_tecnologico: numeroSeguro(apoyo.hp_bonus_tecnologico) }
+                    ? {
+                        nivel_tecnologico: obtenerNivelTecnologico(apoyo, apoyo.tipo_apoyo === 'hospital_campana' ? 'medicina' : 'ingenieria').nivel,
+                        hp_bonus_tecnologico: calcularBonusTecnologico(
+                            obtenerNivelTecnologico(apoyo, apoyo.tipo_apoyo === 'hospital_campana' ? 'medicina' : 'ingenieria').nivel
+                        ),
+                        origen_nivel_tecnologico: obtenerNivelTecnologico(
+                            apoyo,
+                            apoyo.tipo_apoyo === 'hospital_campana' ? 'medicina' : 'ingenieria'
+                        ).automatico ? 'investigacion' : 'manual'
+                    }
                     : {})
             }))
         },
         estadisticas_acumuladas: estadisticas
     };
+}
+
+function calcularBonusTecnologico(nivel) {
+    const bonusPorNivel = [0, 20, 20, 40];
+    const nivelSeguro = Math.max(0, Math.min(3, Math.floor(numeroSeguro(nivel))));
+    return bonusPorNivel.slice(1, nivelSeguro + 1).reduce((total, bonus) => total + bonus, 0);
+}
+
+function obtenerNivelTecnologico(apoyo, tecnologia) {
+    const nivelInvestigado = nivelesInvestigacionDivision[tecnologia];
+    const automatico = Number.isInteger(nivelInvestigado);
+    const campoManual = tecnologia === 'medicina' ? 'nivel_medicina_manual' : 'nivel_ingenieria_manual';
+    const nivel = automatico ? nivelInvestigado : numeroSeguro(apoyo[campoManual]);
+    return { nivel: Math.max(0, Math.min(3, Math.floor(nivel))), automatico };
 }
 
 async function cargarCatalogoDivision() {
@@ -266,14 +345,19 @@ function opcionesVehiculos(seleccionado) {
     ).join('');
 }
 
+function armaEsFusil(arma) {
+    return /fusil|rifle/i.test(`${arma?.tipo_ficha || ''} ${arma?.nombre || ''}`);
+}
+
 function renderizarRegimientos() {
     const contenedor = document.getElementById('regimientos-container');
     contenedor.innerHTML = regimientosDivision.map((regimiento, indice) => {
         const tipo = catalogoDivisiones.regimientos_principales[regimiento.tipo_regimiento];
-        const necesitaMov = tipo.mov_depende_de_arma;
-        const necesitaSup = tipo.sup_depende_de_arma;
         const permiteVehiculo = Boolean(tipo.permite_chasis);
-        const opcionesArmas = '<option value="">Sin arma</option>' + armasDivision.map(arma =>
+        const armasDisponibles = tipo.arma_permitida === 'fusil'
+            ? armasDivision.filter(armaEsFusil)
+            : armasDivision;
+        const opcionesArmas = '<option value="">Sin arma</option>' + armasDisponibles.map(arma =>
             `<option value="${escaparHtml(arma.id_arma)}" ${arma.pais_modulo ? `data-pais-modulo="${escaparHtml(arma.pais_modulo)}"` : ''} ${regimiento.arma_equipada?.id_arma === arma.id_arma ? 'selected' : ''}>${escaparHtml(arma.nombre)}${arma.pais_modulo ? ` · ${escaparHtml(arma.pais_modulo)}` : ''} · ATK ${arma.ataque}, DEF ${arma.defensa} · ${numeroSeguro(arma.precio)} M</option>`
         ).join('');
         return `<article class="opcion-modulo">
@@ -299,11 +383,18 @@ function renderizarApoyos() {
     const contenedor = document.getElementById('apoyos-container');
     contenedor.innerHTML = apoyosDivision.map((apoyo, indice) => {
         const tipo = catalogoDivisiones.batallones_apoyo[apoyo.tipo_apoyo];
-        const extra = apoyo.tipo_apoyo === 'logistica'
-            ? `<div class="campo"><label for="logistica-${indice}">Reducción SUP por tecnología</label><input id="logistica-${indice}" type="number" min="1" step="1" value="${numeroSeguro(apoyo.reduccion_sup) || 1}" data-apoyo="${indice}" data-campo="reduccion_sup"></div>`
-            : ['hospital_campana', 'mantenimiento'].includes(apoyo.tipo_apoyo)
-                ? `<div class="campo"><label for="hp-apoyo-${indice}">HP adicional por tecnología</label><input id="hp-apoyo-${indice}" type="number" min="0" step="any" value="${numeroSeguro(apoyo.hp_bonus_tecnologico)}" data-apoyo="${indice}" data-campo="hp_bonus_tecnologico"></div>`
-                : '';
+        let extra = '';
+        if (apoyo.tipo_apoyo === 'logistica') {
+            extra = `<div class="campo"><label for="logistica-${indice}">Reducción total de SUP</label><input id="logistica-${indice}" type="number" min="1" step="1" value="${numeroSeguro(apoyo.reduccion_sup) || 1}" data-apoyo="${indice}" data-campo="reduccion_sup"></div>`;
+        } else if (['hospital_campana', 'mantenimiento'].includes(apoyo.tipo_apoyo)) {
+            const tecnologia = apoyo.tipo_apoyo === 'hospital_campana' ? 'medicina' : 'ingenieria';
+            const nombreTecnologia = tecnologia === 'medicina' ? 'Medicina moderna' : 'Ingeniería';
+            const nivel = obtenerNivelTecnologico(apoyo, tecnologia);
+            extra = `<div class="campo"><label for="nivel-apoyo-${indice}">Nivel manual de ${nombreTecnologia} (0-3)</label>
+                <input id="nivel-apoyo-${indice}" type="number" min="0" max="3" step="1" value="${numeroSeguro(apoyo[`nivel_${tecnologia}_manual`])}" data-apoyo="${indice}" data-campo="nivel_${tecnologia}_manual" ${nivel.automatico ? 'disabled' : ''}>
+                <small>${nivel.automatico ? `Aplicando automáticamente nivel ${nivel.nivel} según las investigaciones del país.` : 'No hay nivel investigado disponible; se usa el nivel manual.'}</small>
+            </div>`;
+        }
         return `<article class="opcion-modulo">
             <div class="modulo-topline"><strong>Apoyo ${indice + 1}</strong>
                 <button type="button" class="btn btn-secondary" data-quitar-apoyo="${indice}" aria-label="Quitar apoyo ${indice + 1}">Quitar</button>
@@ -319,9 +410,12 @@ function renderizarConstructor() {
     renderizarRegimientos();
     renderizarApoyos();
     document.getElementById('contador-regimientos').textContent = `${regimientosDivision.length} / 16`;
-    document.getElementById('contador-apoyos').textContent = `${apoyosDivision.length} / 2`;
+    document.getElementById('contador-apoyos').textContent = `${apoyosDivision.length} / ${MAX_APOYOS_DIVISION}`;
     document.getElementById('btn-agregar-regimiento').disabled = regimientosDivision.length >= 16;
-    document.getElementById('btn-agregar-apoyo').disabled = apoyosDivision.length >= 2;
+    document.getElementById('btn-agregar-apoyo').disabled = apoyosDivision.length >= MAX_APOYOS_DIVISION;
+    const estadoInvestigacion = document.getElementById('estado-investigaciones-division');
+    estadoInvestigacion.textContent = estadoInvestigacionDivision;
+    estadoInvestigacion.hidden = !estadoInvestigacionDivision;
     actualizarEstadisticas();
 }
 
@@ -344,11 +438,21 @@ function agregarRegimiento() {
 }
 
 function agregarApoyo() {
-    if (apoyosDivision.length >= 2) return;
-    apoyosDivision.push({ tipo_apoyo: 'ingenieros', reduccion_sup: 1, hp_bonus_tecnologico: 0 });
+    if (apoyosDivision.length >= MAX_APOYOS_DIVISION) return;
+    apoyosDivision.push({
+        tipo_apoyo: 'ingenieros',
+        reduccion_sup: 1,
+        nivel_medicina_manual: 0,
+        nivel_ingenieria_manual: 0
+    });
 }
 
 function inicializarEventos() {
+    document.addEventListener('division:investigaciones', evento => {
+        nivelesInvestigacionDivision = evento.detail?.niveles || { medicina: null, ingenieria: null };
+        estadoInvestigacionDivision = evento.detail?.mensaje || '';
+        if (catalogoDivisiones) renderizarConstructor();
+    });
     document.getElementById('btn-agregar-regimiento').addEventListener('click', () => {
         agregarRegimiento();
         renderizarConstructor();
@@ -391,6 +495,10 @@ function inicializarEventos() {
                 regimiento.arma_equipada = null;
             } else {
                 regimiento.vehiculo_id = null;
+            }
+            if (catalogoDivisiones.regimientos_principales[control.value]?.arma_permitida === 'fusil'
+                && regimiento.arma_equipada && !armaEsFusil(regimiento.arma_equipada)) {
+                regimiento.arma_equipada = null;
             }
             renderizarConstructor();
             return;
@@ -455,10 +563,12 @@ function inicializarEventos() {
         document.getElementById('informacion-division').reset();
         regimientosDivision = [];
         apoyosDivision = [];
+        nivelesInvestigacionDivision = { medicina: null, ingenieria: null };
         armasDivision = [...armasPersonalizadasAprobadas];
         agregarRegimiento();
         document.getElementById('aviso-guardado').hidden = true;
         document.getElementById('aviso-guardado').style.display = 'none';
+        document.dispatchEvent(new CustomEvent('division:buscar-investigaciones', { detail: { pais: '' } }));
         renderizarConstructor();
     });
 }
@@ -511,5 +621,11 @@ if (typeof document !== 'undefined') {
 }
 
 if (typeof module !== 'undefined') {
-    module.exports = { calcularEstadisticasDivision, crearFichaDivision, extraerArmasDivision };
+    module.exports = {
+        calcularEstadisticasDivision,
+        calcularBonusTecnologico,
+        crearFichaDivision,
+        extraerArmasDivision,
+        MAX_APOYOS_DIVISION
+    };
 }
