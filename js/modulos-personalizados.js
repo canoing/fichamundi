@@ -510,6 +510,27 @@ function renderReviewFields(container, module) {
 
 function renderPendingModules() {
     pendingList.replaceChildren();
+    pendingList.className = 'modulos-categorias';
+    const categories = {
+        naval: 'Barcos y submarinos',
+        aircraft: 'Aviones',
+        tank: 'Tanques y blindados',
+        infantry: 'Divisiones'
+    };
+    const groupedModules = new Map(
+        Object.keys(categories).map(vehicle => {
+            const section = document.createElement('section');
+            section.className = 'modulo-categoria-lista';
+            const heading = document.createElement('h3');
+            heading.textContent = categories[vehicle];
+            const list = document.createElement('div');
+            list.className = 'opciones-modulo';
+            section.append(heading, list);
+            pendingList.append(section);
+            return [vehicle, list];
+        })
+    );
+
     pendingModules.forEach(module => {
         const card = document.createElement('article');
         card.className = 'opcion-modulo';
@@ -574,14 +595,17 @@ function renderPendingModules() {
         actions.append(approve, reject);
         editor.append(actions);
         card.append(heading, details, editor);
-        pendingList.append(card);
+        groupedModules.get(module.vehicle)?.append(card);
     });
-    if (!pendingModules.length) {
-        pendingList.append(Object.assign(document.createElement('p'), {
+    groupedModules.forEach(list => {
+        if (list.childElementCount) return;
+        list.append(Object.assign(document.createElement('p'), {
             className: 'inicio-descripcion',
-            textContent: 'No hay módulos pendientes de revisión.'
+            textContent: pendingModules.length
+                ? 'No hay módulos pendientes en esta categoría.'
+                : 'No hay módulos pendientes de revisión.'
         }));
-    }
+    });
 }
 
 async function loadApprovedModules() {
