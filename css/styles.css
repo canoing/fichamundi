@@ -1217,6 +1217,71 @@ html[data-theme="prinz"] .inicio-tarjeta {
     border-color: #496b8c;
 }
 
+.portavasos {
+    position: fixed;
+    z-index: 20;
+    right: 24px;
+    bottom: 24px;
+    display: grid;
+    width: 96px;
+    height: 96px;
+    place-items: center;
+    border: 2px solid #d0a574;
+    border-radius: 18px;
+    background: linear-gradient(145deg, #f7fbfd, #dce8f0);
+    box-shadow: 0 5px 16px rgba(8, 20, 31, 0.35), inset 0 1px 3px rgba(255, 255, 255, 0.8);
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+}
+
+.portavasos:active {
+    cursor: grabbing;
+}
+
+.portavasos:focus-visible {
+    outline: 3px solid #ff6b6b;
+    outline-offset: 3px;
+}
+
+.portavasos-insignia {
+    display: block;
+    width: 70px;
+    height: 70px;
+    border: 2px solid rgba(13, 31, 45, 0.55);
+    border-radius: 50%;
+    background: radial-gradient(
+        circle,
+        #ff6b6b 0 17%,
+        #f7fbfd 18% 24%,
+        #2d5a7b 25% 44%,
+        #f7fbfd 45% 51%,
+        #3d7aab 52% 70%,
+        #d0a574 71% 76%,
+        #1a3a52 77% 100%
+    );
+    box-shadow: 0 2px 6px rgba(8, 20, 31, 0.35);
+}
+
+html[data-theme="prinz"] .portavasos {
+    border-color: #496b8c;
+    background: linear-gradient(145deg, #202a35, #10151c);
+}
+
+html[data-theme="prinz"] .portavasos-insignia {
+    border-color: rgba(185, 220, 255, 0.6);
+    background: radial-gradient(
+        circle,
+        #ff6b6b 0 17%,
+        #10151c 18% 24%,
+        #2d5a7b 25% 44%,
+        #10151c 45% 51%,
+        #3d7aab 52% 70%,
+        #d0a574 71% 76%,
+        #0d1f2d 77% 100%
+    );
+}
+
 html[data-theme="prinz"] .inicio-tarjeta p,
 html[data-theme="prinz"] .capacidad-restante,
 html[data-theme="prinz"] .research-empty {

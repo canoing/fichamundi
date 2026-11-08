@@ -106,6 +106,7 @@ function moduleFields(vehicle, type, content = {}) {
             type: field?.type || (typeof value === 'number' ? 'number' : value && typeof value === 'object' ? 'json' : typeof value === 'boolean' ? 'checkbox' : 'text'),
             defaultValue: field?.defaultValue ?? (typeof value === 'boolean' ? value : ''),
             placeholder: field?.placeholder || '',
+            helpText: field?.helpText || '',
             required: key === 'nombre' || field?.required || false
         };
     });
@@ -150,6 +151,12 @@ function createField(field, value, idPrefix) {
     input.required = Boolean(field.required);
     if (field.placeholder) input.placeholder = field.placeholder;
     wrapper.append(input);
+    if (field.helpText) {
+        const helpText = document.createElement('small');
+        helpText.className = 'inicio-descripcion';
+        helpText.textContent = field.helpText;
+        wrapper.append(helpText);
+    }
     return wrapper;
 }
 
@@ -219,6 +226,8 @@ function recordSources(vehicle, type, modules) {
                 : typeof value === 'number' ? 'number' : value && typeof value === 'object' ? 'json' : typeof value === 'boolean' ? 'checkbox' : 'text',
             label: key === 'nombre'
                 ? 'Nombre'
+                : key === 'dano_submarino'
+                    ? 'Daño submarino'
                 : key === 'defensa_p_l'
                     ? 'Defensa (P/L)'
                     : key === 'coste'
@@ -228,6 +237,11 @@ function recordSources(vehicle, type, modules) {
                         : key.replace(/_/g, ' ').replace(/^./, character => character.toLocaleUpperCase('es')),
             placeholder: vehicle === 'naval' && type === 'blindaje' && key === 'velocidad'
                 ? 'Ej.: -25(P) -10(L)'
+                : vehicle === 'naval' && type === 'armamento' && key === 'dano_submarino'
+                    ? 'Daño contra submarinos'
+                : '',
+            helpText: vehicle === 'naval' && type === 'armamento' && key === 'dano_submarino'
+                ? 'Este campo es solo para cargas de profundidad. Se mostrará por separado y no se sumará al daño total.'
                 : '',
             defaultValue: typeof value === 'boolean' || (value && typeof value === 'object') ? value : '',
             // Solo el nombre es obligatorio: hay módulos del catálogo (p. ej. armas
@@ -235,6 +249,17 @@ function recordSources(vehicle, type, modules) {
             // así que se permite dejar esos campos vacíos al crear un módulo nuevo.
             required: key === 'nombre'
         }));
+    if (vehicle === 'naval' && type === 'armamento' && !fields.some(field => field.key === 'dano_submarino')) {
+        fields.push({
+            key: 'dano_submarino',
+            type: 'number',
+            label: 'Daño submarino',
+            defaultValue: '',
+            placeholder: 'Daño contra submarinos',
+            helpText: 'Este campo es solo para cargas de profundidad. Se mostrará por separado y no se sumará al daño total.',
+            required: false
+        });
+    }
     if (vehicle === 'tank') {
         fields.push({
             key: 'coste',

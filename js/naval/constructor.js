@@ -330,8 +330,16 @@ function generarCategoriaMultiple(categoria, titulo, container, items = []) {
         if (item.ataque_p_l !== undefined || item.ataque !== undefined) {
             const valorAtaque = obtenerAtaqueVisible(item);
             const esDañoCompuesto = typeof valorAtaque === 'string' && esValorCompuesto(valorAtaque);
-            const etiquetaAtaque = esDañoCompuesto ? 'Daño (P/L)' : 'Ataque';
-            htmlInfo += `<div class="info-item"><span class="info-label">${etiquetaAtaque}:</span><span class="info-value">${escaparHtml(valorAtaque)}</span></div>`;
+            const tieneDanoSubmarino = item.dano_submarino !== undefined;
+            if (!(tieneDanoSubmarino && esNombreCargaProfundidad(item))) {
+                const etiquetaAtaque = esNombreCargaProfundidad(item)
+                    ? 'Daño submarino'
+                    : esDañoCompuesto ? 'Daño (P/L)' : 'Ataque';
+                htmlInfo += `<div class="info-item"><span class="info-label">${etiquetaAtaque}:</span><span class="info-value">${escaparHtml(valorAtaque)}</span></div>`;
+            }
+        }
+        if (item.dano_submarino !== undefined) {
+            htmlInfo += `<div class="info-item"><span class="info-label">Daño submarino:</span><span class="info-value">${escaparHtml(item.dano_submarino)}</span></div>`;
         }
         if (item.defensa_p_l !== undefined || item.defensa !== undefined) {
             const valorDefensa = obtenerDefensaVisible(item);
@@ -411,15 +419,17 @@ function calcularTotales() {
                     : Number(modulo.velocidad) || 0;
                 velocidadTotal += velocidadModulo * cantidad;
 
-                ataqueTotal += obtenerAtaqueTotal(modulo) * cantidad;
                 defensaTotal += obtenerDefensaTotal(modulo) * cantidad;
                 costeTotal += parsearCoste(modulo.coste) * cantidad;
             });
         }
     });
 
+    ataqueTotal = calcularAtaqueTotal();
+
     const velocidadEl = document.getElementById('velocidad-total');
     const ataqueEl = document.getElementById('ataque-total');
+    const danoSubmarinoEl = document.getElementById('dano-submarino-total');
     const defensaEl = document.getElementById('defensa-total');
     const costeEl = document.getElementById('coste-total');
     const ataquePLEl = document.getElementById('ataque-pl-total');
@@ -428,6 +438,7 @@ function calcularTotales() {
 
     if (velocidadEl) velocidadEl.textContent = velocidadTotal;
     if (ataqueEl) ataqueEl.textContent = ataqueTotal;
+    if (danoSubmarinoEl) danoSubmarinoEl.textContent = calcularDanoSubmarinoTotal();
     if (defensaEl) defensaEl.textContent = defensaTotal;
     if (costeEl) costeEl.textContent = `${costeTotal}M`;
 
@@ -492,10 +503,70 @@ function obtenerDefensaVisible(modulo) {
     return null;
 }
 
+function esCargaProfundidad(modulo) {
+    return esNombreCargaProfundidad(modulo)
+        || (modulo && Object.prototype.hasOwnProperty.call(modulo, 'dano_submarino') && modulo.dano_submarino !== undefined);
+}
+
+function esNombreCargaProfundidad(modulo) {
+    return /cargas?\s*(?:de\s*)?profundidad/i.test(modulo?.nombre || '');
+}
+
 function obtenerAtaqueTotal(modulo) {
     if (modulo && typeof modulo.ataque === 'number') return modulo.ataque;
     if (modulo && typeof modulo.ataque === 'string' && !esValorCompuesto(modulo.ataque)) return sumarValorNumerico(modulo.ataque);
     return 0;
+}
+
+function calcularAtaqueTotal(estado = seleccionados) {
+    let ataqueTotal = 0;
+
+    ['propulsion', 'armamento', 'blindaje'].forEach(cat => {
+        if (!Array.isArray(estado[cat])) return;
+        estado[cat].forEach(modulo => {
+            if (!modulo || esCargaProfundidad(modulo)) return;
+            ataqueTotal += obtenerAtaqueTotal(modulo) * Number(modulo.cantidad || 1);
+        });
+    });
+
+    return ataqueTotal;
+}
+
+function calcularDanoSubmarinoTotal(estado = seleccionados) {
+    let danoNumerico = 0;
+    let danoP = 0;
+    let danoL = 0;
+
+    ['propulsion', 'armamento', 'blindaje'].forEach(cat => {
+        if (!Array.isArray(estado[cat])) return;
+        estado[cat].forEach(modulo => {
+            if (!esCargaProfundidad(modulo)) return;
+            const cantidad = Number(modulo.cantidad || 1);
+            const dano = obtenerDanoSubmarino(modulo);
+            if (typeof dano === 'object') {
+                const danoPL = dano;
+                danoP += danoPL.p * cantidad;
+                danoL += danoPL.l * cantidad;
+            } else {
+                danoNumerico += dano * cantidad;
+            }
+        });
+    });
+
+    const danoPL = danoP || danoL ? `${danoP}(P) ${danoL}(L)` : '';
+    if (danoNumerico && danoPL) return `${danoNumerico} + ${danoPL}`;
+    return danoPL || danoNumerico;
+}
+
+function obtenerDanoSubmarino(modulo) {
+    if (modulo?.dano_submarino !== undefined && modulo.dano_submarino !== '') {
+        if (typeof modulo.dano_submarino === 'string' && esValorCompuesto(modulo.dano_submarino)) {
+            return extraerValorPL(modulo.dano_submarino);
+        }
+        return Number(modulo.dano_submarino) || 0;
+    }
+    if (modulo?.ataque_p_l) return extraerValorPL(modulo.ataque_p_l);
+    return obtenerAtaqueTotal(modulo);
 }
 
 function obtenerDefensaTotal(modulo) {
@@ -535,7 +606,7 @@ function calcularAtaquePLTotal(estado = seleccionados) {
     ['propulsion', 'armamento', 'blindaje'].forEach(cat => {
         if (Array.isArray(estado[cat])) {
             estado[cat].forEach(modulo => {
-                if (!modulo || !modulo.nombre || !modulo.ataque_p_l) return;
+                if (!modulo || !modulo.nombre || !modulo.ataque_p_l || esCargaProfundidad(modulo)) return;
                 const cantidad = Number(modulo.cantidad || 1);
                 const { p, l } = extraerValorPL(modulo.ataque_p_l);
                 ataqueP += p * cantidad;
@@ -657,6 +728,7 @@ function crearFicha() {
         estadisticas: {
             velocidad: parseInt(document.getElementById('velocidad-total').textContent),
             ataque: parseInt(document.getElementById('ataque-total').textContent),
+            dano_submarino: calcularDanoSubmarinoTotal(seleccionados),
             ataque_pl_total: calcularAtaquePLTotal(seleccionados),
             defensa_pl_total: calcularDefensaPLTotal(seleccionados),
             tipo_defensa: seleccionados.tipo_defensa === 'L' ? 'L' : 'P',
@@ -704,6 +776,9 @@ if (typeof module !== 'undefined') {
         obtenerCantidadEnCategoria,
         calcularAtaquePLTotal,
         calcularDefensaPLTotal,
+        calcularAtaqueTotal,
+        calcularDanoSubmarinoTotal,
+        esCargaProfundidad,
         obtenerVelocidadBlindaje
     };
 }

@@ -6,6 +6,9 @@ const {
   obtenerCantidadEnCategoria,
   calcularDefensaPLTotal,
   calcularAtaquePLTotal,
+  calcularAtaqueTotal,
+  calcularDanoSubmarinoTotal,
+  esCargaProfundidad,
   obtenerVelocidadBlindaje
 } = require('../naval/constructor.js');
 
@@ -57,6 +60,34 @@ const ataquePL = {
 };
 assert.equal(calcularAtaquePLTotal(ataquePL), '30(P) 10(L)');
 assert.equal(calcularAtaquePLTotal({ ...ataquePL, tipo_defensa: 'L' }), '30(P) 10(L)');
+const cargasProfundidad = {
+  casco: null,
+  propulsion: [],
+  armamento: [
+    { nombre: 'Cargas profundidad iniciales', ataque: 20, cantidad: 2 },
+    { nombre: 'Carga de profundidad básica', ataque: 40, cantidad: 1 },
+    { nombre: 'Cañón ligero', ataque: 25, cantidad: 1 },
+    { nombre: 'Carga de profundidad P/L', ataque_p_l: '10(P) 5(L)', cantidad: 2 },
+    { nombre: 'Torpedo básico', ataque_p_l: '30(P) 10(L)', cantidad: 1 }
+  ],
+  blindaje: []
+};
+assert.equal(esCargaProfundidad(cargasProfundidad.armamento[0]), true);
+assert.equal(calcularDanoSubmarinoTotal(cargasProfundidad), '80 + 20(P) 10(L)');
+assert.equal(calcularAtaqueTotal(cargasProfundidad), 25);
+assert.equal(calcularAtaquePLTotal(cargasProfundidad), '30(P) 10(L)');
+const moduloConDanoSubmarino = {
+  casco: null,
+  propulsion: [],
+  armamento: [
+    { nombre: 'Lanzador submarino personalizado', ataque: 20, dano_submarino: 35, cantidad: 2 },
+    { nombre: 'Cañón', ataque: 15, cantidad: 1 }
+  ],
+  blindaje: []
+};
+assert.equal(esCargaProfundidad(moduloConDanoSubmarino.armamento[0]), true);
+assert.equal(calcularAtaqueTotal(moduloConDanoSubmarino), 15);
+assert.equal(calcularDanoSubmarinoTotal(moduloConDanoSubmarino), 70);
 
 const sinMotor = {
   casco: { capacidad_modulos: 3 },

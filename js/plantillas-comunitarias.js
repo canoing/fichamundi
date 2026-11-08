@@ -91,6 +91,7 @@ function humanizeKey(key) {
         costo: 'Coste',
         coste_de_produccion: 'Coste de producción',
         ataque_pl_total: 'Ataque (P/L)',
+        dano_submarino: 'Daño submarino',
         defensa_pl_total: 'Defensa (P/L)',
         capacidad_peso_total: 'Capacidad de peso',
         capacidad_piezas_total: 'Capacidad de piezas',
@@ -156,7 +157,9 @@ function calculateNavalAttackTotal(selected) {
     ['propulsion', 'armamento', 'blindaje'].forEach(category => {
         if (!Array.isArray(selected?.[category])) return;
         selected[category].forEach(module => {
-            if (typeof module?.ataque_p_l !== 'string') return;
+            if (typeof module?.ataque_p_l !== 'string'
+                || /cargas?\s*(?:de\s*)?profundidad/i.test(module?.nombre || '')
+                || module?.dano_submarino !== undefined) return;
             const quantity = Number(module.cantidad ?? 1);
             if (!Number.isFinite(quantity) || quantity <= 0) return;
 
@@ -193,6 +196,7 @@ function createModuleList(groups) {
     entries.forEach(({ module, label }) => {
         const item = createElement('li', undefined, 'modulo-item-compacto');
         const name = module.nombre || module.Nombre || module.nombre_del_arma || label;
+        const esCargaProfundidad = /cargas?\s*(?:de\s*)?profundidad/i.test(name);
         const quantity = Number(module.cantidad);
         const prefix = quantity > 0 ? `x${quantity} ` : '';
         item.append(createElement('span', `${prefix}${name}`));
@@ -202,10 +206,13 @@ function createModuleList(groups) {
                 ? `Defensa: ${module.defensa}`
                 : '';
         const attacks = [
-            module.ataque_p_l !== undefined ? `Ataque (P/L): ${module.ataque_p_l}` : '',
+            module.ataque_p_l !== undefined && !(esCargaProfundidad && module.dano_submarino !== undefined)
+                ? `${esCargaProfundidad ? 'Daño submarino (P/L)' : 'Ataque (P/L)'}: ${module.ataque_p_l}` : '',
+            module.dano_submarino !== undefined ? `Daño submarino: ${displayValue(module.dano_submarino)}` : '',
             module.ataque_naval !== undefined ? `Daño naval: ${displayValue(module.ataque_naval)}` : '',
             module.ataque_tierra !== undefined ? `Daño terrestre: ${displayValue(module.ataque_tierra)}` : '',
-            module.ataque !== undefined ? `Ataque: ${displayValue(module.ataque)}` : ''
+            module.ataque !== undefined && !(esCargaProfundidad && module.dano_submarino !== undefined)
+                ? `${esCargaProfundidad ? 'Daño submarino' : 'Ataque'}: ${displayValue(module.ataque)}` : ''
         ];
         item.append(createElement('small', [label, ...attacks, defense].filter(Boolean).join(' · ')));
         list.append(item);
