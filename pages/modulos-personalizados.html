@@ -19,6 +19,31 @@
 
         <main>
             <section class="seccion">
+                <button id="mostrar-acceso-moderacion" class="btn btn-secondary" type="button" aria-expanded="false" aria-controls="acceso-moderacion">
+                    Acceso para moderadores
+                </button>
+                <div id="acceso-moderacion" hidden>
+                    <h2>Acceso de moderadores</h2>
+                    <form id="formulario-acceso-moderacion">
+                        <div class="campo">
+                            <label for="clave-moderador-modulos">Clave de moderador</label>
+                            <input id="clave-moderador-modulos" type="password" autocomplete="off" required>
+                        </div>
+                        <div class="acciones">
+                            <button type="submit" class="btn btn-primary">Mostrar cola de revisión</button>
+                        </div>
+                    </form>
+                </div>
+                <p id="estado-moderacion" class="comprobante-modulos" role="status" aria-live="polite" hidden></p>
+                <div id="panel-moderacion-modulos" hidden>
+                    <div class="acciones">
+                        <button id="cerrar-moderacion-modulos" type="button" class="btn btn-secondary">Ocultar acciones</button>
+                    </div>
+                    <div id="lista-pendientes-modulos" class="opciones-modulo"></div>
+                </div>
+            </section>
+
+            <section class="seccion">
                 <h2>Crear o editar un módulo</h2>
                 <p class="inicio-descripcion">Los módulos enviados quedan pendientes de revisión. Los cambios a un módulo aprobado se publican como una revisión nueva y no reemplazan el original hasta ser aprobados.</p>
                 <form id="formulario-modulo">
@@ -94,30 +119,6 @@
                 </div>
             </section>
 
-            <section class="seccion">
-                <button id="mostrar-acceso-moderacion" class="btn btn-secondary" type="button" aria-expanded="false" aria-controls="acceso-moderacion">
-                    Acceso para moderadores
-                </button>
-                <div id="acceso-moderacion" hidden>
-                    <h2>Acceso de moderadores</h2>
-                    <form id="formulario-acceso-moderacion">
-                        <div class="campo">
-                            <label for="clave-moderador-modulos">Clave de moderador</label>
-                            <input id="clave-moderador-modulos" type="password" autocomplete="off" required>
-                        </div>
-                        <div class="acciones">
-                            <button type="submit" class="btn btn-primary">Mostrar cola de revisión</button>
-                        </div>
-                    </form>
-                </div>
-                <p id="estado-moderacion" class="comprobante-modulos" role="status" aria-live="polite" hidden></p>
-                <div id="panel-moderacion-modulos" hidden>
-                    <div class="acciones">
-                        <button id="cerrar-moderacion-modulos" type="button" class="btn btn-secondary">Ocultar acciones</button>
-                    </div>
-                    <div id="lista-pendientes-modulos" class="opciones-modulo"></div>
-                </div>
-            </section>
         </main>
     </div>
     <script type="module" src="../js/modulos-personalizados.js"></script>

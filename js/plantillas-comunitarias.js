@@ -10,6 +10,7 @@ const templateLists = {
     legacy: document.getElementById('lista-plantillas-viejo-valky'),
     other: document.getElementById('lista-plantillas-otras')
 };
+const countryGroupedCategories = new Set(['naval', 'aircraft', 'tank', 'infantry']);
 const listStatus = document.getElementById('estado-lista');
 const accessForm = document.getElementById('formulario-acceso');
 const accessSection = document.getElementById('acceso-moderacion');
@@ -62,6 +63,10 @@ function displayValue(value) {
 
 function isOldValky(content) {
     return content?.formato === 'viejo_valky' && typeof content.texto === 'string';
+}
+
+function normalizeCountry(country) {
+    return String(country || '').trim().toLocaleLowerCase('es');
 }
 
 function getTemplateCategory(template) {
@@ -427,7 +432,7 @@ function renderTemplates() {
     const selectedCountry = countryFilter.value;
     const selectedStatus = statusFilter.value;
     const visibleTemplates = templates.filter(template =>
-        (!selectedCountry || template.country === selectedCountry)
+        (!selectedCountry || normalizeCountry(template.country) === normalizeCountry(selectedCountry))
         && (!selectedStatus || template.status === selectedStatus)
         && (moderatorKey || template.status !== 'approved'
             || !isOldValky(template.content) || template.content.destino !== 'modulo')
@@ -440,13 +445,36 @@ function renderTemplates() {
         ? visibleTemplates.find(template => template.status === 'pending')?.id
         : undefined;
     visibleTemplates.forEach(template => {
-        const card = createTemplateCard(template);
-        card.open = Boolean(firstPendingTemplateId && template.id === firstPendingTemplateId);
-        groupedTemplates[getTemplateCategory(template)].push(card);
+        groupedTemplates[getTemplateCategory(template)].push(template);
     });
     Object.entries(templateLists).forEach(([category, list]) => {
-        list.replaceChildren(...groupedTemplates[category]);
-        if (!groupedTemplates[category].length) {
+        const categoryTemplates = groupedTemplates[category];
+        list.replaceChildren();
+        if (countryGroupedCategories.has(category)) {
+            const templatesByCountry = new Map();
+            categoryTemplates.forEach(template => {
+                const country = template.country || 'Sin país';
+                if (!templatesByCountry.has(country)) templatesByCountry.set(country, []);
+                templatesByCountry.get(country).push(template);
+            });
+            [...templatesByCountry.entries()]
+                .sort(([left], [right]) => left.localeCompare(right, 'es'))
+                .forEach(([country, countryTemplates]) => {
+                    const section = createElement('section', undefined, 'publicaciones-pais');
+                    section.append(createElement('h4', country));
+                    const cards = createElement('div', undefined, 'opciones-modulo');
+                    countryTemplates.forEach(template => {
+                        const card = createTemplateCard(template);
+                        card.open = Boolean(firstPendingTemplateId && template.id === firstPendingTemplateId);
+                        cards.append(card);
+                    });
+                    section.append(cards);
+                    list.append(section);
+                });
+        } else {
+            categoryTemplates.forEach(template => list.append(createTemplateCard(template)));
+        }
+        if (!categoryTemplates.length) {
             list.append(createElement('p', 'No hay plantillas para los filtros seleccionados.'));
         }
     });
@@ -454,13 +482,22 @@ function renderTemplates() {
 
 function renderCountryOptions() {
     const selectedCountry = countryFilter.value;
-    const countries = [...new Set(templates.map(template => template.country))]
+    const countriesByKey = new Map();
+    templates.forEach(template => {
+        const country = String(template.country || '').trim();
+        const key = normalizeCountry(country);
+        if (key && !countriesByKey.has(key)) countriesByKey.set(key, country);
+    });
+    const countries = [...countriesByKey.values()]
         .sort((left, right) => left.localeCompare(right, 'es'));
 
     countryFilter.replaceChildren(new Option('Todos los países', ''));
     countries.forEach(country => countryFilter.add(new Option(country, country)));
-    if (countries.includes(selectedCountry)) {
-        countryFilter.value = selectedCountry;
+    const selectedCountryOption = countries.find(
+        country => normalizeCountry(country) === normalizeCountry(selectedCountry)
+    );
+    if (selectedCountryOption) {
+        countryFilter.value = selectedCountryOption;
     }
 }
 

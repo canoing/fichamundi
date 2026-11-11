@@ -19,6 +19,33 @@
 
         <main>
             <section class="seccion">
+                <button id="mostrar-acceso" class="btn btn-secondary" type="button" aria-expanded="false" aria-controls="acceso-moderacion">
+                    Acceso para moderadores
+                </button>
+                <div id="acceso-moderacion" hidden>
+                    <h2>Acceso de moderadores</h2>
+                    <p class="inicio-descripcion">Ingresa la clave de moderador para mostrar las acciones de revisión en esta página.</p>
+                    <form id="formulario-acceso">
+                        <div class="campo">
+                            <label for="clave-moderador">Clave de moderador</label>
+                            <input id="clave-moderador" name="moderator_key" type="password" autocomplete="off" required>
+                        </div>
+                        <div class="acciones">
+                            <button class="btn btn-primary" type="submit">Mostrar acciones de moderación</button>
+                        </div>
+                    </form>
+                </div>
+                <p id="estado-moderador" class="comprobante-modulos" role="status" aria-live="polite" hidden></p>
+
+                <div id="panel-moderacion" hidden>
+                    <div class="acciones">
+                        <button id="cerrar-sesion" class="btn btn-secondary" type="button">Ocultar acciones</button>
+                    </div>
+                    <p class="inicio-descripcion">Las acciones para aprobar, desaprobar y comentar aparecen dentro de cada plantilla pendiente.</p>
+                </div>
+            </section>
+
+            <section class="seccion">
                 <h2>Plantillas de la comunidad</h2>
                 <div class="formulario">
                     <div class="campo">
@@ -66,33 +93,6 @@
                         <h3>Otras plantillas</h3>
                         <div id="lista-plantillas-otras" class="opciones-modulo"></div>
                     </section>
-                </div>
-            </section>
-
-            <section class="seccion">
-                <button id="mostrar-acceso" class="btn btn-secondary" type="button" aria-expanded="false" aria-controls="acceso-moderacion">
-                    Acceso para moderadores
-                </button>
-                <div id="acceso-moderacion" hidden>
-                    <h2>Acceso de moderadores</h2>
-                    <p class="inicio-descripcion">Ingresa la clave de moderador para mostrar las acciones de revisión en esta página.</p>
-                    <form id="formulario-acceso">
-                        <div class="campo">
-                            <label for="clave-moderador">Clave de moderador</label>
-                            <input id="clave-moderador" name="moderator_key" type="password" autocomplete="off" required>
-                        </div>
-                        <div class="acciones">
-                            <button class="btn btn-primary" type="submit">Mostrar acciones de moderación</button>
-                        </div>
-                    </form>
-                </div>
-                <p id="estado-moderador" class="comprobante-modulos" role="status" aria-live="polite" hidden></p>
-
-                <div id="panel-moderacion" hidden>
-                    <div class="acciones">
-                        <button id="cerrar-sesion" class="btn btn-secondary" type="button">Ocultar acciones</button>
-                    </div>
-                    <p class="inicio-descripcion">Las acciones para aprobar, desaprobar y comentar aparecen dentro de cada plantilla pendiente.</p>
                 </div>
             </section>
 

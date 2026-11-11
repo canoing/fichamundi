@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="../css/styles.css">
     <script src="../js/tema.js"></script>
 </head>
-<body>
+<body class="pagina-divisiones">
     <div class="container">
         <header class="plegable-header">
             <div class="header-barra">
@@ -15,15 +15,20 @@
                     <h1>betaWorld</h1>
                     <p>Constructor de divisiones terrestres</p>
                 </div>
+                <button class="menu-toggle" id="menu-toggle" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="nav-menu">
+                    <span class="barra"></span>
+                    <span class="barra"></span>
+                    <span class="barra"></span>
+                </button>
             </div>
-            <nav class="nav-principal">
-                <a class="nav-link" href="../index.html">Inicio</a>
-                <a class="nav-link" href="plantillas.html">Plantillas</a>
-                <a class="nav-link" href="modulos-personalizados.html?vehicle=division"">Módulos personalizados</a>
+            <nav class="nav-principal" id="nav-menu">
+                <a href="../index.html" class="nav-link">Inicio</a>
+                <a href="modulos-personalizados.html?vehicle=infantry" class="nav-link">Módulos personalizados</a>
+                <a href="plantillas.html" class="nav-link">Plantillas</a>
             </nav>
         </header>
 
-        <main>
+        <main class="constructor-divisiones">
             <p id="version-plantilla" class="inicio-descripcion">Cargando plantilla...</p>
             <div id="error-carga" class="comprobante-modulos" role="alert" style="display:none;" hidden></div>
 

@@ -445,6 +445,16 @@ main {
     gap: 10px;
 }
 
+.publicaciones-pais {
+    padding-top: 10px;
+    border-top: 1px solid #dce4ea;
+}
+
+.publicaciones-pais > h4 {
+    margin: 0 0 10px;
+    color: #1a3a52;
+}
+
 .opcion-modulo {
     background: #f8f9fa;
     padding: 10px;
@@ -1522,6 +1532,112 @@ html[data-theme="prinz"] main .modulo-categoria-lista {
 html[data-theme="prinz"] main .plantilla-categoria > h3,
 html[data-theme="prinz"] main .modulo-categoria-lista > h3 {
     color: #b9dcff;
+}
+
+html[data-theme="prinz"] main .publicaciones-pais {
+    border-color: #35404d;
+}
+
+html[data-theme="prinz"] main .publicaciones-pais > h4 {
+    color: #b9dcff;
+}
+
+.constructor-divisiones > .seccion {
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid #dce4ea;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(13, 31, 45, 0.06);
+}
+
+.constructor-divisiones .formulario,
+.constructor-divisiones .campo,
+.constructor-divisiones .opciones-modulo,
+.constructor-divisiones .opcion-modulo {
+    min-width: 0;
+}
+
+.constructor-divisiones .formulario > .inicio-descripcion {
+    grid-column: 1 / -1;
+}
+
+.constructor-divisiones .campo input,
+.constructor-divisiones .campo select,
+.constructor-divisiones .campo textarea {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.constructor-divisiones .campo select {
+    text-overflow: ellipsis;
+}
+
+.constructor-divisiones #regimientos-container,
+.constructor-divisiones #apoyos-container {
+    gap: 12px;
+}
+
+.constructor-divisiones #regimientos-container .opcion-modulo,
+.constructor-divisiones #apoyos-container .opcion-modulo {
+    border: 1px solid #dce4ea;
+    border-left: 4px solid #2d5a7b;
+    box-shadow: 0 1px 5px rgba(13, 31, 45, 0.05);
+}
+
+html[data-theme="prinz"] .constructor-divisiones > .seccion {
+    border-color: #35404d;
+    background: #141a22;
+}
+
+html[data-theme="prinz"] .constructor-divisiones #regimientos-container .opcion-modulo,
+html[data-theme="prinz"] .constructor-divisiones #apoyos-container .opcion-modulo {
+    border-color: #35404d;
+    background: #191f28;
+}
+
+@media (min-width: 768px) {
+    .constructor-divisiones .formulario {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 767px) {
+    .constructor-divisiones .modulo-topline {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .constructor-divisiones .acciones {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .pagina-divisiones {
+        padding: 6px;
+    }
+
+    .pagina-divisiones main {
+        padding: 10px;
+    }
+
+    .constructor-divisiones > .seccion {
+        padding: 12px;
+    }
+
+    .constructor-divisiones .campo input,
+    .constructor-divisiones .campo select,
+    .constructor-divisiones .campo textarea {
+        font-size: 16px;
+    }
+
+    .constructor-divisiones .modulo-topline .btn {
+        padding: 7px 10px;
+    }
 }
 
 .result-final {

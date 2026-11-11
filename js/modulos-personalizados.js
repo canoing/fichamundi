@@ -452,7 +452,7 @@ function renderApprovedModules() {
         !country || module.country.trim().toLocaleLowerCase('es') === country
     );
     const groupedModules = Object.fromEntries(
-        Object.keys(approvedLists).map(vehicle => [vehicle, []])
+        Object.keys(approvedLists).map(vehicle => [vehicle, new Map()])
     );
     filtered.forEach(module => {
         const card = document.createElement('article');
@@ -482,11 +482,28 @@ function renderApprovedModules() {
         card.append(title);
         if (description.textContent) card.append(description);
         card.append(details, copyButton);
-        groupedModules[module.vehicle]?.push(card);
+        const countryName = module.country.trim() || 'Sin país';
+        const countryModules = groupedModules[module.vehicle]?.get(countryName) || [];
+        countryModules.push(card);
+        groupedModules[module.vehicle]?.set(countryName, countryModules);
     });
     Object.entries(approvedLists).forEach(([vehicle, list]) => {
-        list.replaceChildren(...groupedModules[vehicle]);
-        if (!groupedModules[vehicle].length) {
+        const countryGroups = groupedModules[vehicle];
+        list.replaceChildren();
+        [...countryGroups.entries()]
+            .sort(([left], [right]) => left.localeCompare(right, 'es'))
+            .forEach(([country, cards]) => {
+                const section = document.createElement('section');
+                section.className = 'publicaciones-pais';
+                const heading = document.createElement('h4');
+                heading.textContent = country;
+                const countryList = document.createElement('div');
+                countryList.className = 'opciones-modulo';
+                countryList.append(...cards);
+                section.append(heading, countryList);
+                list.append(section);
+            });
+        if (!countryGroups.size) {
             list.append(Object.assign(document.createElement('p'), {
                 className: 'inicio-descripcion',
                 textContent: 'No hay módulos aprobados para este grupo y filtro.'
@@ -552,7 +569,7 @@ function renderPendingModules() {
             list.className = 'opciones-modulo';
             section.append(heading, list);
             pendingList.append(section);
-            return [vehicle, list];
+            return [vehicle, { list, countries: new Map() }];
         })
     );
 
@@ -620,16 +637,36 @@ function renderPendingModules() {
         actions.append(approve, reject);
         editor.append(actions);
         card.append(heading, details, editor);
-        groupedModules.get(module.vehicle)?.append(card);
+        const vehicleGroup = groupedModules.get(module.vehicle);
+        if (vehicleGroup) {
+            const country = module.country.trim() || 'Sin país';
+            const countryModules = vehicleGroup.countries.get(country) || [];
+            countryModules.push(card);
+            vehicleGroup.countries.set(country, countryModules);
+        }
     });
-    groupedModules.forEach(list => {
-        if (list.childElementCount) return;
-        list.append(Object.assign(document.createElement('p'), {
-            className: 'inicio-descripcion',
-            textContent: pendingModules.length
-                ? 'No hay módulos pendientes en esta categoría.'
-                : 'No hay módulos pendientes de revisión.'
-        }));
+    groupedModules.forEach(({ list, countries }) => {
+        [...countries.entries()]
+            .sort(([left], [right]) => left.localeCompare(right, 'es'))
+            .forEach(([country, cards]) => {
+                const countrySection = document.createElement('section');
+                countrySection.className = 'publicaciones-pais';
+                const countryHeading = document.createElement('h4');
+                countryHeading.textContent = country;
+                const countryList = document.createElement('div');
+                countryList.className = 'opciones-modulo';
+                countryList.append(...cards);
+                countrySection.append(countryHeading, countryList);
+                list.append(countrySection);
+            });
+        if (!countries.size) {
+            list.append(Object.assign(document.createElement('p'), {
+                className: 'inicio-descripcion',
+                textContent: pendingModules.length
+                    ? 'No hay módulos pendientes en esta categoría.'
+                    : 'No hay módulos pendientes de revisión.'
+            }));
+        }
     });
 }
 

@@ -448,6 +448,25 @@ function agregarApoyo() {
 }
 
 function inicializarEventos() {
+    const menuToggle = document.getElementById('menu-toggle');
+    const navMenu = document.getElementById('nav-menu');
+    if (menuToggle && navMenu) {
+        menuToggle.addEventListener('click', () => {
+            const abierto = navMenu.classList.toggle('abierto');
+            menuToggle.classList.toggle('open', abierto);
+            menuToggle.setAttribute('aria-expanded', String(abierto));
+            menuToggle.setAttribute('aria-label', abierto ? 'Cerrar menú' : 'Abrir menú');
+        });
+        navMenu.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                navMenu.classList.remove('abierto');
+                menuToggle.classList.remove('open');
+                menuToggle.setAttribute('aria-expanded', 'false');
+                menuToggle.setAttribute('aria-label', 'Abrir menú');
+            });
+        });
+    }
+
     document.addEventListener('division:investigaciones', evento => {
         nivelesInvestigacionDivision = evento.detail?.niveles || { medicina: null, ingenieria: null };
         estadoInvestigacionDivision = evento.detail?.mensaje || '';
