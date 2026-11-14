@@ -97,6 +97,12 @@
                 </div>
             </section>
 
+            <section id="seccion-actualizacion" class="seccion" hidden>
+                <div class="campo">
+                    <label for="cambios-actualizacion">¿Qué cambió en esta actualización?</label>
+                    <textarea id="cambios-actualizacion" rows="3" maxlength="2000" placeholder="Describe los cambios realizados..."></textarea>
+                </div>
+            </section>
             <div class="acciones">
                 <button id="btn-publicar-ficha" type="button" class="btn btn-primary">Publicar ficha</button>
                 <button id="btn-limpiar-division" type="button" class="btn btn-secondary">Limpiar</button>
@@ -104,6 +110,7 @@
             <div id="aviso-guardado" class="comprobante-modulos" role="status" aria-live="polite" style="display:none;" hidden></div>
         </main>
     </div>
+    <script src="../js/actualizacion-plantilla.js"></script>
     <script src="../js/publicar-plantilla.js"></script>
     <script src="../js/divisiones/constructor.js"></script>
     <script type="module" src="../js/divisiones/investigaciones.js"></script>

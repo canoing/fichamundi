@@ -32,6 +32,49 @@ function limpiarMarcaModulo(modulo) {
     return limpio;
 }
 
+function buscarModuloActualizado(disponibles, guardado) {
+    if (!guardado || typeof guardado !== 'object') return null;
+    return disponibles.find(item => guardado.id && String(item.id) === String(guardado.id))
+        || disponibles.find(item => item.nombre === guardado.nombre)
+        || null;
+}
+
+function restaurarCategoriaActualizada(categoria, disponibles, guardados) {
+    if (!Array.isArray(guardados)) return [];
+    return guardados.map(guardado => {
+        const modulo = buscarModuloActualizado(disponibles, guardado);
+        return modulo ? { ...modulo, cantidad: Number(guardado.cantidad ?? 1) } : null;
+    }).filter(Boolean);
+}
+
+if (typeof window !== 'undefined') {
+    window.cargarActualizacionPlantilla = function () {
+        const content = window.contextoActualizacionPlantilla?.content;
+        if (!content) return;
+        const info = content.informacion_general || {};
+        const selected = content.modulos_seleccionados || content.componentes_seleccionados || {};
+        const chasisDisponibles = [...(chasisBase.chasis || []), ...chasisAprobados];
+        seleccionados.chasis = buscarModuloActualizado(chasisDisponibles, selected.chasis);
+        seleccionados.traccion = restaurarCategoriaActualizada('traccion', chasisBase.sistemas_traccion || [], selected.traccion);
+        seleccionados.motor = restaurarCategoriaActualizada('motor', modulos.motores || [], selected.motor);
+        seleccionados.comunicacion = restaurarCategoriaActualizada('comunicacion', modulos.comunicacion || [], selected.comunicacion);
+        seleccionados.blindaje = restaurarCategoriaActualizada('blindaje', modulos.blindajes || [], selected.blindaje);
+        seleccionados.armamento = restaurarCategoriaActualizada('armamento', armamentosAprobados, selected.armamento);
+        capacidadPiezasActual = Number(seleccionados.chasis?.capacidad_piezas || 0);
+        estiloBlindajeActual = seleccionados.chasis?.tipo_blindaje === 'L' ? 'L' : 'P';
+
+        document.getElementById('nombre').value = content.titulo || info.nombre || '';
+        document.getElementById('pais').value = window.contextoActualizacionPlantilla.country || info.pais || '';
+        document.getElementById('fecha').value = content.fecha || info.fecha || '';
+        document.getElementById('tipo').value = info.tipo || '';
+        document.getElementById('descripcion').value = content.descripcion || '';
+        generarModulos();
+        actualizarUI();
+        calcularTotales();
+        actualizarCapacidadUI();
+    };
+}
+
 /* ============================================================
    HELPERS DE CATEGORÍAS Y CANTIDADES
    ============================================================ */
@@ -266,6 +309,7 @@ if (typeof document !== 'undefined') {
             actualizarUI();
             calcularTotales();
             actualizarCapacidadUI();
+            window.cargarActualizacionPlantilla();
         } else {
             alert('Error: No se pudo cargar el archivo de configuración');
         }
@@ -328,6 +372,7 @@ if (typeof window !== 'undefined') {
         actualizarUI();
         calcularTotales();
         actualizarCapacidadUI();
+        window.cargarActualizacionPlantilla();
     };
 }
 

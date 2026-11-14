@@ -1,6 +1,8 @@
 import { supabase } from './supabase.js';
+import { createCountryMenuButton, createModeratorEconomyMenu } from './economia-moderacion.js';
 
 const countryFilter = document.getElementById('filtro-pais');
+const economyMenu = createModeratorEconomyMenu(document.getElementById('menu-economia-moderacion'));
 const statusFilter = document.getElementById('filtro-estado');
 const templateLists = {
     naval: document.getElementById('lista-plantillas-buques'),
@@ -387,7 +389,16 @@ function createTemplateCard(template) {
         || template.content?.[0]?.Nombre
         || template.file_name;
     summary.append(createElement('strong', contentTitle));
-    summary.append(document.createTextNode(` · ${template.country} · ${formatDate(template.created_at)} · `));
+    summary.append(document.createTextNode(' · '));
+    if (moderatorKey) {
+        summary.append(createCountryMenuButton(template.country, () => {
+            economyMenu.show(template.country, Boolean(moderatorKey))
+                .catch(error => showStatus(listStatus, `No se pudo cargar la guía económica: ${error.message}`, true));
+        }));
+    } else {
+        summary.append(document.createTextNode(template.country));
+    }
+    summary.append(document.createTextNode(` · ${formatDate(template.created_at)} · `));
     const statuses = {
         pending: 'Pendiente',
         approved: 'Aprobada',
@@ -411,6 +422,31 @@ function createTemplateCard(template) {
     const content = document.createElement('div');
     content.className = 'plantilla-contenido';
     content.append(createTemplatePreview(template.content));
+    const updatePages = {
+        naval: 'buques.html',
+        aircraft: 'avion.html',
+        tank: 'tanque.html',
+        infantry: 'divisiones.html'
+    };
+    const updatePage = updatePages[getTemplateCategory(template)];
+    if (template.status === 'approved' && updatePage && !isOldValky(template.content)) {
+        const updateButton = createElement('button', 'Actualizar', 'btn btn-secondary');
+        updateButton.type = 'button';
+        updateButton.addEventListener('click', () => {
+            try {
+                sessionStorage.setItem('plantilla-comunitaria-actualizacion', JSON.stringify({
+                    id: template.id,
+                    country: template.country,
+                    originalTitle: contentTitle.replace(/ · Actualización$/i, ''),
+                    content: template.content
+                }));
+                window.location.assign(`${updatePage}?actualizar=${encodeURIComponent(template.id)}`);
+            } catch (error) {
+                showStatus(listStatus, `No se pudo preparar la plantilla para actualizar: ${error.message}`, true);
+            }
+        });
+        content.append(updateButton);
+    }
     if (template.review_comment) {
         const review = createElement('p', undefined, 'inicio-descripcion');
         review.append(createElement('strong', 'Comentario del moderador: '));
@@ -454,14 +490,25 @@ function renderTemplates() {
             const templatesByCountry = new Map();
             categoryTemplates.forEach(template => {
                 const country = template.country || 'Sin país';
-                if (!templatesByCountry.has(country)) templatesByCountry.set(country, []);
-                templatesByCountry.get(country).push(template);
+                const key = normalizeCountry(country);
+                if (!templatesByCountry.has(key)) templatesByCountry.set(key, { name: country, templates: [] });
+                templatesByCountry.get(key).templates.push(template);
             });
             [...templatesByCountry.entries()]
-                .sort(([left], [right]) => left.localeCompare(right, 'es'))
-                .forEach(([country, countryTemplates]) => {
+                .sort(([, left], [, right]) => left.name.localeCompare(right.name, 'es'))
+                .forEach(([, countryGroup]) => {
+                    const { name: country, templates: countryTemplates } = countryGroup;
                     const section = createElement('section', undefined, 'publicaciones-pais');
-                    section.append(createElement('h4', country));
+                    const countryHeading = createElement('h4');
+                    if (moderatorKey) {
+                        countryHeading.append(createCountryMenuButton(country, () => {
+                            economyMenu.show(country, Boolean(moderatorKey))
+                                .catch(error => showStatus(listStatus, `No se pudo cargar la guía económica: ${error.message}`, true));
+                        }));
+                    } else {
+                        countryHeading.textContent = country;
+                    }
+                    section.append(countryHeading);
                     const cards = createElement('div', undefined, 'opciones-modulo');
                     countryTemplates.forEach(template => {
                         const card = createTemplateCard(template);
@@ -765,6 +812,7 @@ document.getElementById('cerrar-sesion').addEventListener('click', () => {
     moderatorPanel.hidden = true;
     setAccessOpen(true);
     showStatus(moderatorStatus, 'Acciones de moderación ocultas.');
+    economyMenu.hide();
     renderCountryOptions();
     renderTemplates();
 });

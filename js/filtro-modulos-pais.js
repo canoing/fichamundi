@@ -12,10 +12,16 @@ if (countryFilter) {
 
     function updateCountryOptions() {
         const selectedCountry = countryFilter.value;
-        const countries = [...new Set([
+        const countriesByKey = new Map();
+        [
             ...document.querySelectorAll('#modulos-container [data-pais-modulo]'),
             ...document.querySelectorAll('#regimientos-container option[data-pais-modulo]')
-        ].map(element => element.dataset.paisModulo).filter(Boolean))]
+        ].map(element => element.dataset.paisModulo).filter(Boolean)
+            .forEach(country => {
+                const key = normalizeCountry(country);
+                if (!countriesByKey.has(key)) countriesByKey.set(key, country);
+            });
+        const countries = [...countriesByKey.values()]
             .sort((left, right) => left.localeCompare(right, 'es'));
 
         countryFilter.replaceChildren(
@@ -23,8 +29,11 @@ if (countryFilter) {
             new Option('Todos los países', '')
         );
         countries.forEach(country => countryFilter.add(new Option(country, country)));
-        if (countries.some(country => normalizeCountry(country) === normalizeCountry(selectedCountry))) {
-            countryFilter.value = selectedCountry;
+        const selectedOption = countries.find(country =>
+            normalizeCountry(country) === normalizeCountry(selectedCountry)
+        );
+        if (selectedOption) {
+            countryFilter.value = selectedOption;
         } else if (selectedCountry === '' || selectedCountry === NINGUN_PAIS) {
             countryFilter.value = selectedCountry;
         } else {

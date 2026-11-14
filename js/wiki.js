@@ -558,6 +558,11 @@ function createCountryPublicationForm(country) {
         showStatus(feedback, 'Guardando publicación...');
         try {
             const supabase = await getSupabaseClient();
+            const existingPost = await findExistingCountryPost(country, supabase);
+            if (existingPost) {
+                showStatus(feedback, `Ya existe una publicación para «${existingPost.country}». Búscala en las publicaciones de países.`);
+                return;
+            }
             const { data, error } = await supabase
                 .from('country_wiki_posts')
                 .insert({
@@ -588,6 +593,20 @@ function createCountryPublicationForm(country) {
 
 function escapeIlike(value) {
     return value.replace(/[\\%_]/g, character => `\\${character}`);
+}
+
+async function findExistingCountryPost(country, supabase) {
+    const normalizedCountry = normalizeText(country);
+    const localPost = communityPosts.find(post => normalizeText(post.country) === normalizedCountry);
+    if (localPost) return localPost;
+
+    const { data, error } = await supabase
+        .from('country_wiki_posts')
+        .select('id, country')
+        .ilike('country', escapeIlike(country))
+        .limit(1);
+    if (error) throw error;
+    return data?.[0] || null;
 }
 
 function getModuleName(module) {
@@ -745,6 +764,11 @@ publicationForm.addEventListener('submit', async event => {
     showStatus(publicationStatus, 'Recopilando información aprobada del país y publicando…');
     try {
         const supabase = await getSupabaseClient();
+        const existingPost = await findExistingCountryPost(country, supabase);
+        if (existingPost) {
+            showStatus(publicationStatus, `Ya existe una publicación para «${existingPost.country}». Búscala en las publicaciones de países.`, true);
+            return;
+        }
         const snapshot = await collectCountryData(country, supabase);
         const economy = readEconomy(publicationForm);
         const { data, error } = await supabase

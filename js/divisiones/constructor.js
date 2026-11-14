@@ -94,6 +94,58 @@ function extraerArmasDivision(datos) {
     return armas;
 }
 
+function resolverTipoDivision(guardado, tipos) {
+    const tipoGuardado = String(guardado || '');
+    return Object.entries(tipos).find(([id, tipo]) =>
+        id === tipoGuardado || tipo.nombre === tipoGuardado
+    )?.[0] || tipoGuardado;
+}
+
+function resolverArmaDivision(guardado) {
+    if (!guardado || typeof guardado !== 'object') return null;
+    return armasDivision.find(arma =>
+        (guardado.id_arma && arma.id_arma === guardado.id_arma)
+        || (guardado.id && arma.id_arma === guardado.id)
+        || (guardado.nombre && arma.nombre === guardado.nombre)
+    ) || null;
+}
+
+if (typeof window !== 'undefined') {
+    window.cargarActualizacionPlantilla = function () {
+        const content = window.contextoActualizacionPlantilla?.content;
+        const ficha = content?.ficha_unidad;
+        if (!ficha || !catalogoDivisiones) return;
+
+        const info = ficha.informacion_general || {};
+        document.getElementById('nombre-unidad').value = info.nombre_unidad || content.titulo || '';
+        document.getElementById('pais-operador').value = window.contextoActualizacionPlantilla.country || info.pais_operador || '';
+        document.getElementById('tipo-unidad').value = info.tipo_unidad || '';
+        const description = document.getElementById('descripcion');
+        if (description) description.value = content.descripcion || '';
+
+        regimientosDivision = (ficha.regimientos_principales || []).map(regimiento => {
+            const tipo = resolverTipoDivision(regimiento.tipo_regimiento, catalogoDivisiones.regimientos_principales);
+            const arma = resolverArmaDivision(regimiento.arma_equipada);
+            return {
+                tipo_regimiento: tipo,
+                arma_equipada: arma,
+                vehiculo_id: regimiento.vehiculo?.plantilla_id || null,
+                mov_arma: numeroSeguro(regimiento.mov_arma ?? arma?.mov_propio),
+                sup_arma: numeroSeguro(regimiento.sup_arma ?? arma?.sup_costo)
+            };
+        });
+        apoyosDivision = (ficha.batallones_apoyo || []).map(apoyo => ({
+            ...apoyo,
+            tipo_apoyo: resolverTipoDivision(apoyo.tipo_apoyo, catalogoDivisiones.batallones_apoyo)
+        }));
+        if (!regimientosDivision.length) agregarRegimiento();
+        renderizarConstructor();
+        document.dispatchEvent(new CustomEvent('division:buscar-investigaciones', {
+            detail: { pais: document.getElementById('pais-operador').value }
+        }));
+    };
+}
+
 function calcularEstadisticasDivision(regimientos, apoyos, catalogo) {
     const tiposRegimiento = catalogo.regimientos_principales || {};
     const tiposApoyo = catalogo.batallones_apoyo || {};
@@ -608,6 +660,7 @@ if (typeof window !== 'undefined') {
         if (catalogoDivisiones) {
             renderizarRegimientos();
             actualizarEstadisticas();
+            window.cargarActualizacionPlantilla();
         }
     };
 
@@ -622,6 +675,7 @@ if (typeof window !== 'undefined') {
         if (catalogoDivisiones) {
             armasDivision = [...armasPersonalizadasAprobadas];
             renderizarConstructor();
+            window.cargarActualizacionPlantilla();
         }
     };
 }
@@ -631,6 +685,7 @@ if (typeof document !== 'undefined') {
         inicializarEventos();
         try {
             await cargarCatalogoDivision();
+            window.cargarActualizacionPlantilla();
         } catch (error) {
             document.getElementById('error-carga').textContent = error.message;
             document.getElementById('error-carga').hidden = false;

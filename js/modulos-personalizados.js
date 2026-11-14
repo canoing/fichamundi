@@ -1,4 +1,5 @@
 import { supabase } from './supabase.js';
+import { createCountryMenuButton, createModeratorEconomyMenu } from './economia-moderacion.js';
 
 const vehicleTypes = {
     tank: [
@@ -39,6 +40,7 @@ const typeSelect = document.getElementById('tipo-modulo');
 const sourceSelect = document.getElementById('modulo-base');
 const countryInput = document.getElementById('pais-modulo');
 const countryFilter = document.getElementById('filtro-pais-modulos');
+const economyMenu = createModeratorEconomyMenu(document.getElementById('menu-economia-moderacion'));
 const moduleForm = document.getElementById('formulario-modulo');
 const fieldsContainer = document.getElementById('campos-modulo');
 const approvedLists = {
@@ -66,6 +68,10 @@ function setStatus(element, message, isError = false) {
     element.hidden = !message;
     element.style.display = message ? 'flex' : 'none';
     element.setAttribute('role', isError ? 'alert' : 'status');
+}
+
+function normalizeCountry(country) {
+    return String(country || '').trim().toLocaleLowerCase('es');
 }
 
 function vehicleTypeOptions(vehicle) {
@@ -432,24 +438,31 @@ function esArmamentoTanque(vehicle, type) {
 }
 
 function refreshCountryOptions() {
-    const countries = [...new Set([
-        ...approvedModules.map(module => module.country.trim()),
-        ...approvedLegacyModules.map(module => module.country.trim())
-    ].filter(Boolean))]
+    const countriesByKey = new Map();
+    [
+        ...approvedModules.map(module => module.country),
+        ...approvedLegacyModules.map(module => module.country)
+    ].forEach(value => {
+        const country = String(value || '').trim();
+        const key = normalizeCountry(country);
+        if (key && !countriesByKey.has(key)) countriesByKey.set(key, country);
+    });
+    const countries = [...countriesByKey.values()]
         .sort((left, right) => left.localeCompare(right, 'es'));
     const selected = countryFilter.value;
     countryFilter.replaceChildren(new Option('Todos los países', ''));
     countries.forEach(country => countryFilter.add(new Option(country, country)));
-    if (countries.includes(selected)) countryFilter.value = selected;
+    const selectedOption = countries.find(country => normalizeCountry(country) === normalizeCountry(selected));
+    if (selectedOption) countryFilter.value = selectedOption;
 }
 
 function renderApprovedModules() {
-    const country = countryFilter.value.toLocaleLowerCase('es');
+    const country = normalizeCountry(countryFilter.value);
     const filtered = approvedModules.filter(module =>
-        !country || module.country.trim().toLocaleLowerCase('es') === country
+        !country || normalizeCountry(module.country) === country
     );
     const filteredLegacy = approvedLegacyModules.filter(module =>
-        !country || module.country.trim().toLocaleLowerCase('es') === country
+        !country || normalizeCountry(module.country) === country
     );
     const groupedModules = Object.fromEntries(
         Object.keys(approvedLists).map(vehicle => [vehicle, new Map()])
@@ -482,17 +495,19 @@ function renderApprovedModules() {
         card.append(title);
         if (description.textContent) card.append(description);
         card.append(details, copyButton);
-        const countryName = module.country.trim() || 'Sin país';
-        const countryModules = groupedModules[module.vehicle]?.get(countryName) || [];
+        const countryName = String(module.country || '').trim() || 'Sin país';
+        const countryKey = normalizeCountry(countryName);
+        const countryGroup = groupedModules[module.vehicle]?.get(countryKey) || { name: countryName, cards: [] };
+        const countryModules = countryGroup.cards;
         countryModules.push(card);
-        groupedModules[module.vehicle]?.set(countryName, countryModules);
+        groupedModules[module.vehicle]?.set(countryKey, countryGroup);
     });
     Object.entries(approvedLists).forEach(([vehicle, list]) => {
         const countryGroups = groupedModules[vehicle];
         list.replaceChildren();
-        [...countryGroups.entries()]
-            .sort(([left], [right]) => left.localeCompare(right, 'es'))
-            .forEach(([country, cards]) => {
+        [...countryGroups.values()]
+            .sort((left, right) => left.name.localeCompare(right.name, 'es'))
+            .forEach(({ name: country, cards }) => {
                 const section = document.createElement('section');
                 section.className = 'publicaciones-pais';
                 const heading = document.createElement('h4');
@@ -639,20 +654,25 @@ function renderPendingModules() {
         card.append(heading, details, editor);
         const vehicleGroup = groupedModules.get(module.vehicle);
         if (vehicleGroup) {
-            const country = module.country.trim() || 'Sin país';
-            const countryModules = vehicleGroup.countries.get(country) || [];
+            const country = String(module.country || '').trim() || 'Sin país';
+            const countryKey = normalizeCountry(country);
+            const countryGroup = vehicleGroup.countries.get(countryKey) || { name: country, cards: [] };
+            const countryModules = countryGroup.cards;
             countryModules.push(card);
-            vehicleGroup.countries.set(country, countryModules);
+            vehicleGroup.countries.set(countryKey, countryGroup);
         }
     });
     groupedModules.forEach(({ list, countries }) => {
-        [...countries.entries()]
-            .sort(([left], [right]) => left.localeCompare(right, 'es'))
-            .forEach(([country, cards]) => {
+        [...countries.values()]
+            .sort((left, right) => left.name.localeCompare(right.name, 'es'))
+            .forEach(({ name: country, cards }) => {
                 const countrySection = document.createElement('section');
                 countrySection.className = 'publicaciones-pais';
                 const countryHeading = document.createElement('h4');
-                countryHeading.textContent = country;
+                countryHeading.append(createCountryMenuButton(country, () => {
+                    economyMenu.show(country, Boolean(moderatorKey))
+                        .catch(error => setStatus(moderationStatus, `No se pudo cargar la guía económica: ${error.message}`, true));
+                }));
                 const countryList = document.createElement('div');
                 countryList.className = 'opciones-modulo';
                 countryList.append(...cards);
@@ -810,6 +830,7 @@ document.getElementById('cerrar-moderacion-modulos').addEventListener('click', (
     moderationPanel.hidden = true;
     document.getElementById('clave-moderador-modulos').value = '';
     setStatus(moderationStatus, 'Acciones de moderación ocultas.');
+    economyMenu.hide();
 });
 
 const params = new URLSearchParams(window.location.search);

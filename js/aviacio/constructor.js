@@ -35,6 +35,46 @@ function limpiarMarcaModulo(item) {
     return modulo;
 }
 
+function buscarModuloActualizado(disponibles, guardado) {
+    if (!guardado || typeof guardado !== 'object') return null;
+    return disponibles.find(item => guardado.id && String(item.id) === String(guardado.id))
+        || disponibles.find(item => item.nombre === guardado.nombre)
+        || null;
+}
+
+function restaurarCategoriaActualizada(disponibles, guardados) {
+    if (!Array.isArray(guardados)) return [];
+    return guardados.map(guardado => {
+        const modulo = buscarModuloActualizado(disponibles, guardado);
+        return modulo ? { ...modulo, cantidad: Number(guardado.cantidad ?? 1) } : null;
+    }).filter(Boolean);
+}
+
+if (typeof window !== 'undefined') {
+    window.cargarActualizacionPlantilla = function () {
+        const content = window.contextoActualizacionPlantilla?.content;
+        if (!content) return;
+        const info = content.informacion_general || {};
+        const selected = content.componentes_seleccionados || content.modulos_seleccionados || {};
+        seleccionados.fuselaje = buscarModuloActualizado(fuselajes, selected.fuselaje);
+        seleccionados.motores = restaurarCategoriaActualizada(modulosAviacion.motores || [], selected.motores);
+        seleccionados.armamento = restaurarCategoriaActualizada(modulosAviacion.armamento || [], selected.armamento);
+        seleccionados.bombas = restaurarCategoriaActualizada(modulosAviacion.bombas || [], selected.bombas);
+        seleccionados.torpedos = restaurarCategoriaActualizada(modulosAviacion.torpedos || [], selected.torpedos);
+        seleccionados.alas = restaurarCategoriaActualizada(modulosAviacion.alas || [], selected.alas);
+        capacidadPiezasActual = Number(seleccionados.fuselaje?.capacidad_piezas || 0);
+        tipoAvion = info.tipo || content.tipo || 'polivalente';
+
+        document.getElementById('nombre').value = content.titulo || info.nombre || '';
+        document.getElementById('pais').value = window.contextoActualizacionPlantilla.country || info.pais || '';
+        document.getElementById('anio').value = info.anio || content.anio || '';
+        document.getElementById('descripcion').value = content.descripcion || '';
+        generarModulos();
+        actualizarCapacidadUI();
+        calcularTotales();
+    };
+}
+
 // --------------------------------------------------------------------------
 // Utilidades de acceso a estado
 // --------------------------------------------------------------------------
@@ -210,6 +250,7 @@ if (typeof document !== 'undefined') {
             agregarEventListeners();
             actualizarCapacidadUI();
             calcularTotales();
+            window.cargarActualizacionPlantilla();
         } else {
             alert('Error: No se pudo cargar la configuración de aviación');
         }
@@ -248,6 +289,7 @@ if (typeof window !== 'undefined') {
         generarModulos();
         actualizarCapacidadUI();
         calcularTotales();
+        window.cargarActualizacionPlantilla();
     };
 }
 

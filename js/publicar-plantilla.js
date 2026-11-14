@@ -1,4 +1,12 @@
 window.publicarPlantilla = async function ({ country, filePrefix, content, button, status }) {
+    if (window.actualizacionPlantillaInvalida) {
+        status.textContent = 'No se pudo cargar la plantilla original. Vuelve a Plantillas y pulsa «Actualizar» otra vez.';
+        status.hidden = false;
+        status.style.display = 'flex';
+        status.setAttribute('role', 'alert');
+        return;
+    }
+
     const pais = country.trim();
     if (!pais || pais.length > 100) {
         status.textContent = 'Indica el país (máximo 100 caracteres) para publicar la ficha.';
@@ -7,6 +15,25 @@ window.publicarPlantilla = async function ({ country, filePrefix, content, butto
         status.setAttribute('role', 'alert');
         return;
     }
+
+    const updateContext = window.contextoActualizacionPlantilla;
+    if (updateContext) {
+        const changesInput = document.getElementById('cambios-actualizacion');
+        if (!changesInput) {
+            status.textContent = 'No se encontró el campo para describir los cambios de esta actualización.';
+            status.hidden = false;
+            status.style.display = 'flex';
+            status.setAttribute('role', 'alert');
+            return;
+        }
+        if (!changesInput.value.trim()) {
+            changesInput.setCustomValidity('Describe qué cambió en esta actualización.');
+            changesInput.reportValidity();
+            changesInput.setCustomValidity('');
+            return;
+        }
+    }
+    if (updateContext) content = window.prepararActualizacionPlantilla(content);
 
     const titulo = content.titulo
         || content.ficha_unidad?.informacion_general?.nombre_unidad
@@ -35,7 +62,12 @@ window.publicarPlantilla = async function ({ country, filePrefix, content, butto
             return;
         }
 
-        status.textContent = 'Ficha publicada y enviada a revisión. Ya aparece en Plantillas comunitarias como pendiente.';
+        if (updateContext) {
+            status.textContent = `La actualización de «${content.actualizacion.nombre_original}» fue enviada a revisión. Cambios realizados: ${content.actualizacion.cambios}`;
+            window.finalizarActualizacionPlantilla();
+        } else {
+            status.textContent = 'Ficha publicada y enviada a revisión. Ya aparece en Plantillas comunitarias como pendiente.';
+        }
     } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         status.textContent = `No se pudo publicar la ficha: ${message}`;

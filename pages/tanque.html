@@ -93,6 +93,12 @@
                 </div>
             </section>
 
+            <section id="seccion-actualizacion" class="seccion" hidden>
+                <div class="campo">
+                    <label for="cambios-actualizacion">¿Qué cambió en esta actualización?</label>
+                    <textarea id="cambios-actualizacion" rows="3" maxlength="2000" placeholder="Describe los cambios realizados..."></textarea>
+                </div>
+            </section>
             <div class="acciones">
                 <button id="btn-publicar-ficha" class="btn btn-primary" type="button">Publicar ficha</button>
                 <button id="btn-limpiar" class="btn btn-secondary" type="button">Limpiar todo</button>
@@ -108,6 +114,7 @@
             menuToggle.classList.toggle('open');
         });
     </script>
+    <script src="../js/actualizacion-plantilla.js"></script>
     <script src="../js/publicar-plantilla.js"></script>
     <script src="../js/tanque/constructor.js"></script>
     <script type="module" src="../js/tanque/catalogo-modulos.js"></script>

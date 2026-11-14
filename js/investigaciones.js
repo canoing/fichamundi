@@ -33,6 +33,7 @@ const INFANTRY_HIDDEN_KEYS = new Set([
 
 const branchForm = document.getElementById('formulario-rama');
 const countryInput = document.getElementById('nombre-pais');
+const countrySearch = document.getElementById('buscar-rama');
 const branchStatus = document.getElementById('estado-rama');
 const listStatus = document.getElementById('estado-investigaciones');
 const branchList = document.getElementById('lista-ramas');
@@ -55,6 +56,23 @@ function showStatus(element, message, isError = false) {
     element.hidden = !message;
     element.dataset.error = String(isError);
     element.setAttribute('role', isError ? 'alert' : 'status');
+}
+
+function normalizeCountry(country) {
+    return String(country || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLocaleLowerCase('es')
+        .trim();
+}
+
+function filterCountryBranches() {
+    const query = normalizeCountry(countrySearch.value);
+    branchList.querySelectorAll('.research-publication[data-country-name]').forEach(branch => {
+        const matches = normalizeCountry(branch.dataset.countryName).includes(query);
+        branch.hidden = !matches;
+        branch.style.display = matches ? '' : 'none';
+    });
 }
 
 // Corrige tildes en etiquetas generadas a partir de claves sin acentos.
@@ -317,6 +335,7 @@ function renderTechnologyNode(country, node, drafts, nodes, counter) {
 function renderCountry(country) {
     const countryDetails = createElement('details', undefined, 'research-publication');
     countryDetails.dataset.countryId = country.id;
+    countryDetails.dataset.countryName = country.country;
     countryDetails.open = openCountryIds.has(country.id) || country.id === openCountryAfterRefresh;
 
     const summary = document.createElement('summary');
@@ -407,6 +426,7 @@ function renderCountries() {
         return;
     }
     countries.forEach(country => branchList.append(renderCountry(country)));
+    filterCountryBranches();
     openCountryAfterRefresh = '';
 }
 
@@ -460,6 +480,17 @@ branchForm.addEventListener('submit', async event => {
         showStatus(branchStatus, 'Escribe un nombre de país de hasta 100 caracteres.', true);
         return;
     }
+    const existingCountry = countries.find(item => normalizeCountry(item.country) === normalizeCountry(country));
+    if (existingCountry) {
+        showStatus(branchStatus, `Ya existe una rama para «${existingCountry.country}».`);
+        [...branchList.querySelectorAll('.research-publication[data-country-id]')]
+            .find(branch => branch.dataset.countryId === existingCountry.id)
+            ?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+        return;
+    }
 
     const submitButton = document.getElementById('anadir-rama');
     submitButton.disabled = true;
@@ -494,6 +525,7 @@ branchForm.addEventListener('submit', async event => {
 });
 
 document.getElementById('actualizar-investigaciones').addEventListener('click', refreshCountries);
+countrySearch.addEventListener('input', filterCountryBranches);
 
 try {
     const response = await fetch('../data/investigacion/tree.json');

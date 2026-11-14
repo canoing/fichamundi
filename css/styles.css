@@ -208,6 +208,80 @@ header p,
     color: #69430c;
 }
 
+.moderator-economy-menu {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 20;
+}
+
+.moderator-economy-toggle {
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.3);
+}
+
+.moderator-economy-panel {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + 8px);
+    width: min(360px, calc(100vw - 32px));
+    max-height: min(70vh, 560px);
+    overflow-y: auto;
+    padding: 14px;
+    border: 1px solid #9db8ce;
+    border-radius: 8px;
+    background: #fff;
+    color: #333;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.3);
+}
+
+.moderator-economy-panel[hidden] {
+    display: none;
+}
+
+.moderator-economy-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.moderator-economy-header h2 {
+    font-size: 1.1em;
+}
+
+.moderator-economy-content {
+    margin-bottom: 10px;
+}
+
+.moderator-economy-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px 12px;
+}
+
+.moderator-economy-grid dt {
+    font-weight: 600;
+}
+
+.moderator-economy-grid dd {
+    text-align: right;
+    overflow-wrap: anywhere;
+}
+
+.moderator-country-button {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #2d5a7b;
+    font: inherit;
+    font-weight: 700;
+    text-align: left;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+}
+
 .legacy-valky-text {
     margin: 0;
     padding: 12px;
@@ -1410,6 +1484,16 @@ html[data-theme="prinz"] .wiki-research-count {
 
 html[data-theme="prinz"] .wiki-research-item {
     border-color: #3c4a5a;
+}
+
+html[data-theme="prinz"] .moderator-economy-panel {
+    border-color: #3c4a5a;
+    background: #191f28;
+    color: #f1f5f9;
+}
+
+html[data-theme="prinz"] .moderator-country-button {
+    color: #9dc9f2;
 }
 
 html[data-theme="prinz"] .wiki-research-status {

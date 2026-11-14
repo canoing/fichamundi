@@ -129,6 +129,12 @@
                 </div>
             </section>
 
+            <section id="seccion-actualizacion" class="seccion" hidden>
+                <div class="campo">
+                    <label for="cambios-actualizacion">¿Qué cambió en esta actualización?</label>
+                    <textarea id="cambios-actualizacion" rows="3" maxlength="2000" placeholder="Describe los cambios realizados..."></textarea>
+                </div>
+            </section>
             <!-- BOTONES DE ACCIÓN -->
             <div class="acciones">
                 <button id="btn-publicar-ficha" class="btn btn-primary" type="button">Publicar ficha</button>
@@ -156,6 +162,7 @@
             });
         });
     </script>
+    <script src="../js/actualizacion-plantilla.js"></script>
     <script src="../js/publicar-plantilla.js"></script>
     <script src="../js/aviacio/constructor.js"></script>
     <script type="module" src="../js/aviacio/catalogo-modulos.js"></script>

@@ -24,6 +24,49 @@ function limpiarMarcaModulo(item) {
     return modulo;
 }
 
+function buscarModuloActualizado(disponibles, guardado) {
+    if (!guardado || typeof guardado !== 'object') return null;
+    return disponibles.find(item => guardado.id && String(item.id) === String(guardado.id))
+        || disponibles.find(item => item.nombre === guardado.nombre)
+        || null;
+}
+
+function restaurarCategoriaActualizada(disponibles, guardados) {
+    if (!Array.isArray(guardados)) return [];
+    return guardados.map(guardado => {
+        const modulo = buscarModuloActualizado(disponibles, guardado);
+        return modulo ? { ...modulo, cantidad: Number(guardado.cantidad ?? 1) } : null;
+    }).filter(Boolean);
+}
+
+if (typeof window !== 'undefined') {
+    window.cargarActualizacionPlantilla = function () {
+        const content = window.contextoActualizacionPlantilla?.content;
+        if (!content) return;
+        const info = content.informacion_general || {};
+        const selected = content.modulos_seleccionados || content.componentes_seleccionados || {};
+        const cascosDisponibles = Object.values(cascos).flatMap(items => Array.isArray(items) ? items : []);
+        seleccionados.casco = buscarModuloActualizado(cascosDisponibles, selected.casco);
+        seleccionados.propulsion = restaurarCategoriaActualizada(modulos.propulsion || [], selected.propulsion);
+        seleccionados.armamento = restaurarCategoriaActualizada(modulos.armamento || [], selected.armamento);
+        seleccionados.blindaje = restaurarCategoriaActualizada(modulos.blindaje || [], selected.blindaje);
+        seleccionados.tipo_defensa = content.estadisticas?.tipo_defensa === 'L' ? 'L' : 'P';
+        seleccionados = asegurarMotorBase(seleccionados, modulos.propulsion || []);
+        capacidadModulosActual = Number(seleccionados.casco?.capacidad_modulos || 0);
+
+        document.getElementById('nombre').value = content.titulo || info.nombre || '';
+        document.getElementById('pais').value = window.contextoActualizacionPlantilla.country || info.pais || '';
+        document.getElementById('fecha').value = content.fecha || info.fecha || '';
+        document.getElementById('tipo').value = info.tipo || '';
+        document.getElementById('descripcion').value = content.descripcion || '';
+        const defenseSelect = document.getElementById('tipo-defensa');
+        if (defenseSelect) defenseSelect.value = seleccionados.tipo_defensa;
+        generarModulos();
+        actualizarCapacidadUI();
+        calcularTotales();
+    };
+}
+
 function obtenerCantidadEnCategoria(estado, categoria, nombreModulo) {
     if (!estado || !Array.isArray(estado[categoria])) return 0;
     const modulo = estado[categoria].find(item => item && item.nombre === nombreModulo);
@@ -118,6 +161,7 @@ if (typeof document !== 'undefined') {
             agregarEventListeners();
             actualizarCapacidadUI();
             calcularTotales();
+            window.cargarActualizacionPlantilla();
         } else {
             alert('Error: No se pudo cargar el archivo de configuración');
         }
@@ -161,6 +205,7 @@ if (typeof window !== 'undefined') {
         generarModulos();
         actualizarCapacidadUI();
         calcularTotales();
+        window.cargarActualizacionPlantilla();
     };
 }
 
