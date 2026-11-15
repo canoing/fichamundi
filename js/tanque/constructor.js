@@ -15,6 +15,8 @@ let seleccionados = {};
 let estiloBlindajeActual = 'P';      // 'P' (Grande) o 'L' (Chico), según el chasis
 let categoriaAbierta = {};
 let capacidadPiezasActual = 0;       // Capacidad de piezas del chasis seleccionado
+let catalogoModulosPersonalizadosListo = false;
+let modulosAprobadosPendientes = null;
 
 function escaparHtml(valor) {
     return String(valor ?? '').replace(/[&<>"']/g, caracter => ({
@@ -30,6 +32,21 @@ function limpiarMarcaModulo(modulo) {
     if (!modulo || typeof modulo !== 'object') return modulo;
     const { modulo_personalizado, ...limpio } = modulo;
     return limpio;
+}
+
+function adaptarModuloPersonalizado(module, fields) {
+    const content = module?.content;
+    if (!content || typeof content !== 'object' || Array.isArray(content)) return null;
+    const modulo = Object.fromEntries(fields
+        .filter(field => field !== 'id' && Object.hasOwn(content, field))
+        .map(field => [field, content[field]]));
+    return {
+        ...modulo,
+        id: module.id,
+        modulo_personalizado: true,
+        pais_modulo: module.country,
+        coste: module.price != null ? Number(module.price) : Number(content.coste) || 0
+    };
 }
 
 function buscarModuloActualizado(disponibles, guardado) {
@@ -310,6 +327,11 @@ if (typeof document !== 'undefined') {
             calcularTotales();
             actualizarCapacidadUI();
             window.cargarActualizacionPlantilla();
+            catalogoModulosPersonalizadosListo = true;
+            if (modulosAprobadosPendientes) {
+                window.aplicarModulosPersonalizadosTanque(modulosAprobadosPendientes);
+                modulosAprobadosPendientes = null;
+            }
         } else {
             alert('Error: No se pudo cargar el archivo de configuración');
         }
@@ -318,31 +340,30 @@ if (typeof document !== 'undefined') {
 
 if (typeof window !== 'undefined') {
     window.aplicarModulosPersonalizadosTanque = (customModules) => {
+        if (!catalogoModulosPersonalizadosListo) {
+            modulosAprobadosPendientes = customModules;
+            return;
+        }
         const byType = new Map();
         customModules.forEach(module => {
-            const list = byType.get(module.module_type) || [];
-            list.push({
-                id: module.id,
-                modulo_personalizado: true,
-                ...module.content,
-                pais_modulo: module.country,
-                // Un módulo aprobado siempre lleva `price`, pero el armamento de
-                // tanque convertido desde un arma de división también puede traer
-                // un `coste` editable en su contenido; se respeta ese coste si el
-                // moderador no fijó precio.
-                coste: module.price != null ? Number(module.price) : Number(module.content?.coste) || 0
-            });
-            byType.set(module.module_type, list);
+            const type = module.module_type;
+            const base = {
+                chassis: chasisBaseCatalogo.chasis,
+                traccion: chasisBaseCatalogo.sistemas_traccion,
+                motor: modulosBaseCatalogo.motores,
+                comunicacion: modulosBaseCatalogo.comunicacion,
+                blindaje: modulosBaseCatalogo.blindajes,
+                armamento: [{ nombre: '', tipo: '', ataque: 0, peso: 0, espacios_piezas: 0, coste: 0 }]
+            }[type];
+            if (!Array.isArray(base)) return;
+            const fields = [...new Set(base.flatMap(item => Object.keys(item || {})))];
+            const adapted = adaptarModuloPersonalizado(module, fields);
+            if (!adapted?.nombre) return;
+            const list = byType.get(type) || [];
+            list.push(adapted);
+            byType.set(type, list);
         });
-        chasisAprobados = customModules
-            .filter(module => module.module_type === 'chassis')
-            .map(module => ({
-                id: module.id,
-                modulo_personalizado: true,
-                ...module.content,
-                pais_modulo: module.country,
-                coste: module.price != null ? Number(module.price) : Number(module.content?.coste) || 0
-            }));
+        chasisAprobados = byType.get('chassis') || [];
         armamentosAprobados = byType.get('armamento') || [];
         chasisBase = {
             ...chasisBaseCatalogo,

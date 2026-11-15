@@ -11,6 +11,8 @@ let modulosBase = {};
 let seleccionados = {};
 let capacidadModulosActual = 0;
 let categoriaAbierta = {};
+let catalogoModulosPersonalizadosListo = false;
+let modulosAprobadosPendientes = null;
 
 function escaparHtml(valor) {
     return String(valor ?? '').replace(/[&<>"']/g, caracter => ({
@@ -22,6 +24,21 @@ function limpiarMarcaModulo(item) {
     if (!item || typeof item !== 'object') return item;
     const { modulo_personalizado, ...modulo } = item;
     return modulo;
+}
+
+function adaptarModuloPersonalizado(module, fields) {
+    const content = module?.content;
+    if (!content || typeof content !== 'object' || Array.isArray(content)) return null;
+    const modulo = Object.fromEntries(fields
+        .filter(field => field !== 'id' && Object.hasOwn(content, field))
+        .map(field => [field, content[field]]));
+    return {
+        ...modulo,
+        id: module.id,
+        modulo_personalizado: true,
+        pais_modulo: module.country,
+        coste: `${Number(module.price)}M`
+    };
 }
 
 function buscarModuloActualizado(disponibles, guardado) {
@@ -162,6 +179,11 @@ if (typeof document !== 'undefined') {
             actualizarCapacidadUI();
             calcularTotales();
             window.cargarActualizacionPlantilla();
+            catalogoModulosPersonalizadosListo = true;
+            if (modulosAprobadosPendientes) {
+                window.aplicarModulosAprobadosNavales(modulosAprobadosPendientes);
+                modulosAprobadosPendientes = null;
+            }
         } else {
             alert('Error: No se pudo cargar el archivo de configuración');
         }
@@ -170,17 +192,23 @@ if (typeof document !== 'undefined') {
 
 if (typeof window !== 'undefined') {
     window.aplicarModulosAprobadosNavales = (modules) => {
+        if (!catalogoModulosPersonalizadosListo) {
+            modulosAprobadosPendientes = modules;
+            return;
+        }
         const byType = new Map();
         modules.forEach(module => {
             const type = module.module_type;
+            const base = typeof type === 'string' && type.startsWith('hull_')
+                ? cascosBase[type.slice(5)]
+                : modulosBase[type];
+            if (!Array.isArray(base)) return;
+            const fields = [...new Set(base.flatMap(item => Object.keys(item || {})))];
+            if (type === 'armamento') fields.push('dano_submarino');
+            const adapted = adaptarModuloPersonalizado(module, fields);
+            if (!adapted?.nombre) return;
             const list = byType.get(type) || [];
-            list.push({
-                id: module.id,
-                modulo_personalizado: true,
-                ...module.content,
-                pais_modulo: module.country,
-                coste: `${Number(module.price)}M`
-            });
+            list.push(adapted);
             byType.set(type, list);
         });
         cascos = Object.fromEntries(Object.entries(cascosBase).map(([group, items]) => [
@@ -374,9 +402,9 @@ function generarCategoriaMultiple(categoria, titulo, container, items = []) {
         }
         if (item.ataque_p_l !== undefined || item.ataque !== undefined) {
             const valorAtaque = obtenerAtaqueVisible(item);
-            const esDañoCompuesto = typeof valorAtaque === 'string' && esValorCompuesto(valorAtaque);
             const tieneDanoSubmarino = item.dano_submarino !== undefined;
-            if (!(tieneDanoSubmarino && esNombreCargaProfundidad(item))) {
+            if (tieneValorNoVacio(valorAtaque) && !(tieneDanoSubmarino && esNombreCargaProfundidad(item))) {
+                const esDañoCompuesto = typeof valorAtaque === 'string' && esValorCompuesto(valorAtaque);
                 const etiquetaAtaque = esNombreCargaProfundidad(item)
                     ? 'Daño submarino'
                     : esDañoCompuesto ? 'Daño (P/L)' : 'Ataque';
@@ -537,20 +565,29 @@ function sumarValorNumerico(valor) {
 }
 
 function obtenerAtaqueVisible(modulo) {
-    if (modulo && modulo.ataque_p_l !== undefined) return modulo.ataque_p_l;
-    if (modulo && modulo.ataque !== undefined) return modulo.ataque;
+    if (tieneValorNoVacio(modulo?.ataque_p_l)) return modulo.ataque_p_l;
+    if (tieneValorNoVacio(modulo?.ataque)) return modulo.ataque;
     return null;
 }
 
+function tieneValorNoVacio(valor) {
+    if (typeof valor === 'number') return Number.isFinite(valor) && valor !== 0;
+    if (typeof valor !== 'string') return Boolean(valor);
+    const texto = valor.trim();
+    if (!texto) return false;
+    const numeros = texto.match(/-?\d+(?:[.,]\d+)?/g);
+    return !numeros || numeros.some(numero => Number(numero.replace(',', '.')) !== 0);
+}
+
 function obtenerDefensaVisible(modulo) {
-    if (modulo && modulo.defensa_p_l !== undefined) return modulo.defensa_p_l;
-    if (modulo && modulo.defensa !== undefined) return modulo.defensa;
+    if (tieneValorNoVacio(modulo?.defensa_p_l)) return modulo.defensa_p_l;
+    if (tieneValorNoVacio(modulo?.defensa)) return modulo.defensa;
     return null;
 }
 
 function esCargaProfundidad(modulo) {
     return esNombreCargaProfundidad(modulo)
-        || (modulo && Object.prototype.hasOwnProperty.call(modulo, 'dano_submarino') && modulo.dano_submarino !== undefined);
+    || tieneValorNoVacio(modulo?.dano_submarino);
 }
 
 function esNombreCargaProfundidad(modulo) {

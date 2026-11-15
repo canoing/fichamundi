@@ -665,13 +665,22 @@ if (typeof window !== 'undefined') {
     };
 
     window.establecerArmasDivisionAprobadas = (modules) => {
-        armasPersonalizadasAprobadas = modules.map(module => ({
-            id_arma: module.id,
-            tipo_ficha: 'Arma personalizada aprobada',
-            ...module.content,
-            pais_modulo: module.country,
-            precio: numeroSeguro(module.price)
-        }));
+        const fields = ['nombre', 'tipo', 'hp_a_regimiento', 'ataque', 'defensa', 'nivel_tech_tree', 'mov_propio', 'sup_costo'];
+        armasPersonalizadasAprobadas = modules
+            .filter(module => module?.content && typeof module.content === 'object' && !Array.isArray(module.content))
+            .map(module => {
+                const content = Object.fromEntries(fields
+                    .filter(field => Object.hasOwn(module.content, field))
+                    .map(field => [field, module.content[field]]));
+                return {
+                    ...content,
+                    id_arma: module.id,
+                    tipo_ficha: 'Arma personalizada aprobada',
+                    pais_modulo: module.country,
+                    precio: numeroSeguro(module.price)
+                };
+            })
+            .filter(module => module.nombre);
         if (catalogoDivisiones) {
             armasDivision = [...armasPersonalizadasAprobadas];
             renderizarConstructor();

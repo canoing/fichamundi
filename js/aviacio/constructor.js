@@ -17,6 +17,8 @@ let seleccionados = {
 };
 let capacidadPiezasActual = 0;
 let categoriaAbierta = {};
+let catalogoModulosPersonalizadosListo = false;
+let modulosAprobadosPendientes = null;
 
 // Rol del avión: 'caza', 'bombardero' o 'polivalente'.
 // Según este valor se decide si la Maniobrabilidad suma al ataque aéreo
@@ -33,6 +35,21 @@ function limpiarMarcaModulo(item) {
     if (!item || typeof item !== 'object') return item;
     const { modulo_personalizado, ...modulo } = item;
     return modulo;
+}
+
+function adaptarModuloPersonalizado(module, fields) {
+    const content = module?.content;
+    if (!content || typeof content !== 'object' || Array.isArray(content)) return null;
+    const modulo = Object.fromEntries(fields
+        .filter(field => field !== 'id' && Object.hasOwn(content, field))
+        .map(field => [field, content[field]]));
+    return {
+        ...modulo,
+        id: module.id,
+        modulo_personalizado: true,
+        pais_modulo: module.country,
+        coste: Number(module.price)
+    };
 }
 
 function buscarModuloActualizado(disponibles, guardado) {
@@ -251,6 +268,11 @@ if (typeof document !== 'undefined') {
             actualizarCapacidadUI();
             calcularTotales();
             window.cargarActualizacionPlantilla();
+            catalogoModulosPersonalizadosListo = true;
+            if (modulosAprobadosPendientes) {
+                window.aplicarModulosAprobadosAvion(modulosAprobadosPendientes);
+                modulosAprobadosPendientes = null;
+            }
         } else {
             alert('Error: No se pudo cargar la configuración de aviación');
         }
@@ -259,17 +281,20 @@ if (typeof document !== 'undefined') {
 
 if (typeof window !== 'undefined') {
     window.aplicarModulosAprobadosAvion = (modules) => {
+        if (!catalogoModulosPersonalizadosListo) {
+            modulosAprobadosPendientes = modules;
+            return;
+        }
         const byType = new Map();
         modules.forEach(module => {
             const type = module.module_type;
+            const base = type === 'fuselaje' ? fuselajesBase : modulosAviacionBase[type];
+            if (!Array.isArray(base)) return;
+            const fields = [...new Set(base.flatMap(item => Object.keys(item || {})))];
+            const adapted = adaptarModuloPersonalizado(module, fields);
+            if (!adapted?.nombre) return;
             const list = byType.get(type) || [];
-            list.push({
-                id: module.id,
-                modulo_personalizado: true,
-                ...module.content,
-                pais_modulo: module.country,
-                coste: Number(module.price)
-            });
+            list.push(adapted);
             byType.set(type, list);
         });
         fuselajes = [...fuselajesBase, ...(byType.get('fuselaje') || [])];
