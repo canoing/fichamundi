@@ -597,6 +597,23 @@ function renderRejectedModules() {
             : 'No se añadió un motivo de rechazo.';
         card.append(review);
 
+        const editButton = document.createElement('button');
+        editButton.type = 'button';
+        editButton.className = 'btn btn-secondary';
+        editButton.textContent = 'Editar y reenviar';
+        editButton.addEventListener('click', () => {
+            vehicleSelect.value = module.vehicle;
+            countryInput.value = module.country;
+            updateModuleTypes();
+            typeSelect.value = module.module_type;
+            sourceSelect.value = '';
+            renderFields(fieldsContainer, module.vehicle, module.module_type, module.content);
+            moduleForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            fieldsContainer.querySelector('[name="nombre"]')?.focus();
+            setStatus(submitStatus, `Edita «${module.content.nombre || 'Módulo sin nombre'}» y envíalo de nuevo a revisión.`);
+        });
+        card.append(editButton);
+
         const countryName = String(module.country || '').trim() || 'Sin país';
         const countryKey = normalizeCountry(countryName);
         const countryGroup = groupedModules[module.vehicle]?.get(countryKey) || { name: countryName, cards: [] };
