@@ -49,7 +49,14 @@ const approvedLists = {
     tank: document.getElementById('lista-modulos-tanques'),
     infantry: document.getElementById('lista-modulos-divisiones')
 };
+const rejectedLists = {
+    naval: document.getElementById('lista-rechazados-navales'),
+    aircraft: document.getElementById('lista-rechazados-aviones'),
+    tank: document.getElementById('lista-rechazados-tanques'),
+    infantry: document.getElementById('lista-rechazados-divisiones')
+};
 const catalogStatus = document.getElementById('estado-catalogo');
+const rejectedCatalogStatus = document.getElementById('estado-catalogo-rechazados');
 const legacyModulesList = document.getElementById('lista-modulos-viejo-valky');
 const legacyModulesStatus = document.getElementById('estado-modulos-viejo-valky');
 const submitStatus = document.getElementById('estado-envio-modulo');
@@ -58,6 +65,7 @@ const moderationPanel = document.getElementById('panel-moderacion-modulos');
 const pendingList = document.getElementById('lista-pendientes-modulos');
 
 let approvedModules = [];
+let rejectedModules = [];
 let approvedLegacyModules = [];
 let sourcesByKey = new Map();
 let moderatorKey = '';
@@ -441,6 +449,7 @@ function refreshCountryOptions() {
     const countriesByKey = new Map();
     [
         ...approvedModules.map(module => module.country),
+        ...rejectedModules.map(module => module.country),
         ...approvedLegacyModules.map(module => module.country)
     ].forEach(value => {
         const country = String(value || '').trim();
@@ -542,6 +551,85 @@ function renderApprovedModules() {
     setStatus(legacyModulesStatus, filteredLegacy.length ? '' : 'No hay módulos antiguos aprobados para este filtro.');
 }
 
+function renderRejectedModules() {
+    const country = normalizeCountry(countryFilter.value);
+    const filtered = rejectedModules.filter(module =>
+        !country || normalizeCountry(module.country) === country
+    );
+    const groupedModules = Object.fromEntries(
+        Object.keys(rejectedLists).map(vehicle => [vehicle, new Map()])
+    );
+
+    filtered.forEach(module => {
+        const card = document.createElement('article');
+        card.className = 'opcion-modulo';
+        const title = document.createElement('h3');
+        title.textContent = module.content.nombre || 'Módulo sin nombre';
+        const details = document.createElement('p');
+        details.className = 'inicio-descripcion';
+        details.textContent = `${module.country} · ${typeLabel(module.vehicle, module.module_type)} · Rechazado · ${new Date(module.reviewed_at || module.created_at).toLocaleDateString('es')}`;
+        card.append(title, details);
+
+        Object.entries(module.content).forEach(([key, value]) => {
+            if (['nombre', 'descripcion'].includes(key) || value === null || value === '') return;
+            const field = document.createElement('p');
+            field.className = 'inicio-descripcion';
+            const displayValue = typeof value === 'object'
+                ? JSON.stringify(value)
+                : typeof value === 'boolean'
+                    ? (value ? 'Sí' : 'No')
+                    : String(value);
+            field.textContent = `${key.replace(/_/g, ' ')}: ${displayValue}`;
+            card.append(field);
+        });
+
+        if (module.content.descripcion) {
+            const description = document.createElement('p');
+            description.className = 'inicio-descripcion';
+            description.textContent = module.content.descripcion;
+            card.append(description);
+        }
+
+        const review = document.createElement('p');
+        review.className = 'inicio-descripcion';
+        review.textContent = module.review_comment
+            ? `Motivo del rechazo: ${module.review_comment}`
+            : 'No se añadió un motivo de rechazo.';
+        card.append(review);
+
+        const countryName = String(module.country || '').trim() || 'Sin país';
+        const countryKey = normalizeCountry(countryName);
+        const countryGroup = groupedModules[module.vehicle]?.get(countryKey) || { name: countryName, cards: [] };
+        countryGroup.cards.push(card);
+        groupedModules[module.vehicle]?.set(countryKey, countryGroup);
+    });
+
+    Object.entries(rejectedLists).forEach(([vehicle, list]) => {
+        const countryGroups = groupedModules[vehicle];
+        list.replaceChildren();
+        [...countryGroups.values()]
+            .sort((left, right) => left.name.localeCompare(right.name, 'es'))
+            .forEach(({ name, cards }) => {
+                const section = document.createElement('section');
+                section.className = 'publicaciones-pais';
+                const heading = document.createElement('h4');
+                heading.textContent = name;
+                const countryList = document.createElement('div');
+                countryList.className = 'opciones-modulo';
+                countryList.append(...cards);
+                section.append(heading, countryList);
+                list.append(section);
+            });
+        if (!countryGroups.size) {
+            list.append(Object.assign(document.createElement('p'), {
+                className: 'inicio-descripcion',
+                textContent: 'No hay módulos rechazados para este grupo y filtro.'
+            }));
+        }
+    });
+    setStatus(rejectedCatalogStatus, filtered.length ? '' : 'No hay módulos rechazados para este filtro.');
+}
+
 function renderReviewFields(container, module) {
     const contentContainer = document.createElement('div');
     contentContainer.className = 'formulario';
@@ -630,6 +718,7 @@ function renderPendingModules() {
                 setStatus(moderationStatus, 'Revisión guardada.');
                 await loadPendingModules();
                 await loadApprovedModules();
+                await loadRejectedModules();
             } catch (error) {
                 setStatus(moderationStatus, `No se pudo guardar la revisión: ${error.message}`, true);
             } finally {
@@ -705,6 +794,23 @@ async function loadApprovedModules() {
     await refreshSources();
 }
 
+async function loadRejectedModules() {
+    setStatus(rejectedCatalogStatus, 'Cargando módulos rechazados...');
+    const { data, error } = await supabase
+        .from('custom_modules')
+        .select('id, vehicle, module_type, country, content, price, status, is_current, created_at, reviewed_at, review_comment')
+        .eq('status', 'rejected')
+        .order('reviewed_at', { ascending: false });
+    if (error) {
+        setStatus(rejectedCatalogStatus, `No se pudieron cargar los módulos rechazados: ${error.message}`, true);
+        throw error;
+    }
+    rejectedModules = data || [];
+    refreshCountryOptions();
+    renderRejectedModules();
+    renderApprovedModules();
+}
+
 async function loadApprovedLegacyModules() {
     const { data, error } = await supabase
         .from('templates')
@@ -739,7 +845,10 @@ typeSelect.addEventListener('change', () => {
 countryInput.addEventListener('change', () => {
     refreshSources().catch(error => setStatus(submitStatus, error.message, true));
 });
-countryFilter.addEventListener('change', renderApprovedModules);
+countryFilter.addEventListener('change', () => {
+    renderApprovedModules();
+    renderRejectedModules();
+});
 sourceSelect.addEventListener('change', () => {
     const source = sourcesByKey.get(sourceSelect.value);
     // Al copiar un arma de división se vuelve a mapear al shape de armamento de
@@ -794,7 +903,7 @@ document.getElementById('limpiar-modulo').addEventListener('click', () => {
     });
 });
 document.getElementById('actualizar-catalogo').addEventListener('click', () => {
-    Promise.all([loadApprovedModules(), loadApprovedLegacyModules()])
+    Promise.all([loadApprovedModules(), loadApprovedLegacyModules(), loadRejectedModules()])
         .catch(error => setStatus(catalogStatus, `No se pudo actualizar el catálogo: ${error.message}`, true));
 });
 
@@ -842,6 +951,6 @@ if (vehicleTypeOptions(vehicleSelect.value).some(([type]) => type === params.get
     typeSelect.value = params.get('type');
 }
 
-Promise.all([loadBuiltInSources(), loadApprovedModules(), loadApprovedLegacyModules()])
+Promise.all([loadBuiltInSources(), loadApprovedModules(), loadApprovedLegacyModules(), loadRejectedModules()])
     .then(() => refreshSources())
     .catch(error => setStatus(catalogStatus, `No se pudo cargar el catálogo de módulos: ${error.message}`, true));

@@ -39,20 +39,33 @@ window.prepararActualizacionPlantilla = function (content) {
         || content.ficha_unidad?.informacion_general?.nombre_unidad
         || content.informacion_general?.nombre
         || originalTitle;
-    const suffix = ' · Actualización';
-    const title = currentTitle.endsWith(suffix) ? currentTitle : `${currentTitle}${suffix}`;
+    const isCorrection = updateContext.mode === 'correction';
+    const suffix = isCorrection ? ' corregida' : ' · Actualización';
+    const baseTitle = isCorrection
+        ? currentTitle.replace(/(?: · Actualización| corregida)$/i, '')
+        : currentTitle;
+    const title = baseTitle.endsWith(suffix) ? baseTitle : `${baseTitle}${suffix}`;
     content.titulo = title;
     if (content.informacion_general) content.informacion_general.nombre = title;
     if (content.ficha_unidad?.informacion_general) {
         content.ficha_unidad.informacion_general.nombre_unidad = title;
     }
-    content.actualizacion = {
-        plantilla_original_id: updateContext.id,
-        nombre_original: originalTitle,
-        cambios: changes
-    };
+    if (isCorrection) {
+        content.correccion = {
+            plantilla_original_id: updateContext.id,
+            nombre_original: originalTitle,
+            cambios: changes
+        };
+    } else {
+        content.actualizacion = {
+            plantilla_original_id: updateContext.id,
+            nombre_original: originalTitle,
+            cambios: changes
+        };
+    }
     const description = String(content.descripcion || '').trim();
-    content.descripcion = [description, `Cambios realizados: ${changes}`].filter(Boolean).join('\n\n');
+    const changeLabel = isCorrection ? 'Correcciones realizadas' : 'Cambios realizados';
+    content.descripcion = [description, `${changeLabel}: ${changes}`].filter(Boolean).join('\n\n');
     return content;
 };
 
@@ -69,4 +82,9 @@ window.addEventListener('DOMContentLoaded', () => {
     if (!section || !changesInput) return;
     section.hidden = !updateContext;
     changesInput.required = Boolean(updateContext);
+    if (updateContext?.mode === 'correction') {
+        const label = section.querySelector('label[for="cambios-actualizacion"]');
+        if (label) label.textContent = '¿Qué corregiste?';
+        changesInput.placeholder = 'Describe las correcciones realizadas...';
+    }
 });

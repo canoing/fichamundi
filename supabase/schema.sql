@@ -242,9 +242,10 @@ create unique index if not exists custom_modules_one_pending_revision_idx
 alter table public.custom_modules enable row level security;
 revoke all on public.custom_modules from public, anon, authenticated;
 drop policy if exists "Anyone can read current approved custom modules" on public.custom_modules;
-create policy "Anyone can read current approved custom modules"
+drop policy if exists "Anyone can read approved and rejected custom modules" on public.custom_modules;
+create policy "Anyone can read approved and rejected custom modules"
     on public.custom_modules for select to anon, authenticated
-    using (status = 'approved' and is_current);
+    using ((status = 'approved' and is_current) or status = 'rejected');
 drop policy if exists "Anyone can submit custom modules for review" on public.custom_modules;
 create policy "Anyone can submit custom modules for review"
     on public.custom_modules for insert to anon, authenticated

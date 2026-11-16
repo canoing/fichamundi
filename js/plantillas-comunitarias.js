@@ -24,6 +24,7 @@ const legacyStatus = document.getElementById('estado-viejo-valky');
 
 let templates = [];
 let commentsByTemplate = new Map();
+let refutationsByTemplate = new Map();
 let moderatorKey = '';
 
 function showStatus(element, message, isError = false) {
@@ -65,6 +66,33 @@ function displayValue(value) {
 
 function isOldValky(content) {
     return content?.formato === 'viejo_valky' && typeof content.texto === 'string';
+}
+
+function isTemplateRefutation(template) {
+    return template?.content?.formato === 'refutacion_plantilla'
+        && typeof template.content.plantilla_refutada_id === 'string'
+        && typeof template.content.razon === 'string';
+}
+
+function getTemplateRefutationInfo(template) {
+    const refutation = Array.isArray(template?.content)
+        ? [...template.content].reverse().find(item => item?.formato === 'refutacion_plantilla')
+        : template?.content?.refutacion_plantilla;
+    if (!refutation
+        || typeof refutation.plantilla_refutada_id !== 'string'
+        || typeof refutation.razon !== 'string') return null;
+    return refutation;
+}
+
+function getTemplateTitle(template) {
+    const refutation = getTemplateRefutationInfo(template);
+    return template.content?.titulo
+        || template.content?.ficha_unidad?.informacion_general?.nombre_unidad
+        || template.content?.informacion_general?.nombre
+        || template.content?.informacion_general?.nombre_unidad
+        || refutation?.titulo
+        || template.content?.[0]?.Nombre
+        || template.file_name;
 }
 
 function normalizeCountry(country) {
@@ -337,9 +365,9 @@ function createTemplatePreview(content) {
             }
         }
 
-        if (Array.isArray(content) && content.length > 1) {
+        if (Array.isArray(content)) {
             const list = createElement('ul');
-            content.forEach(entry => {
+            content.filter(entry => entry?.formato !== 'refutacion_plantilla').forEach(entry => {
                 const name = entry?.Nombre || entry?.nombre || entry?.nombre_del_arma;
                 if (name) list.append(createElement('li', name, 'modulo-item-compacto'));
             });
@@ -377,17 +405,29 @@ function addTemplateComments(container, templateId) {
     container.append(details);
 }
 
+function addTemplateRefutations(container, templateId) {
+    const refutations = refutationsByTemplate.get(templateId) || [];
+    if (!refutations.length) return;
+
+    const details = document.createElement('details');
+    details.className = 'plantilla-comentarios';
+    details.append(createElement('summary', `Razones de refutación (${refutations.length})`));
+    const list = createElement('ul');
+    refutations.forEach(refutation => {
+        const item = createElement('li');
+        item.append(document.createTextNode(refutation.reason));
+        list.append(item);
+    });
+    details.append(list);
+    container.append(details);
+}
+
 function createTemplateCard(template) {
     const card = createElement('details', undefined, 'opcion-modulo');
     const summary = document.createElement('summary');
     const contentTitle = isOldValky(template.content)
         ? `El viejo Valky · ${template.content.destino === 'modulo' ? 'Módulo antiguo' : 'Plantilla antigua'}`
-        : template.content?.titulo
-        || template.content?.ficha_unidad?.informacion_general?.nombre_unidad
-        || template.content?.informacion_general?.nombre
-        || template.content?.informacion_general?.nombre_unidad
-        || template.content?.[0]?.Nombre
-        || template.file_name;
+        : getTemplateTitle(template);
     summary.append(createElement('strong', contentTitle));
     summary.append(document.createTextNode(' · '));
     if (moderatorKey) {
@@ -422,6 +462,13 @@ function createTemplateCard(template) {
     const content = document.createElement('div');
     content.className = 'plantilla-contenido';
     content.append(createTemplatePreview(template.content));
+    const refutationInfo = getTemplateRefutationInfo(template);
+    if (refutationInfo) {
+        const reason = createElement('p', undefined, 'inicio-descripcion');
+        reason.append(createElement('strong', 'Razón de refutación: '));
+        reason.append(document.createTextNode(refutationInfo.razon));
+        content.append(reason);
+    }
     const updatePages = {
         naval: 'buques.html',
         aircraft: 'avion.html',
@@ -429,16 +476,19 @@ function createTemplateCard(template) {
         infantry: 'divisiones.html'
     };
     const updatePage = updatePages[getTemplateCategory(template)];
-    if (template.status === 'approved' && updatePage && !isOldValky(template.content)) {
-        const updateButton = createElement('button', 'Actualizar', 'btn btn-secondary');
+    if ((template.status === 'approved' || template.status === 'rejected')
+        && updatePage && !isOldValky(template.content)) {
+        const isCorrection = template.status === 'rejected';
+        const updateButton = createElement('button', isCorrection ? 'Editar' : 'Actualizar', 'btn btn-secondary');
         updateButton.type = 'button';
         updateButton.addEventListener('click', () => {
             try {
                 sessionStorage.setItem('plantilla-comunitaria-actualizacion', JSON.stringify({
                     id: template.id,
                     country: template.country,
-                    originalTitle: contentTitle.replace(/ · Actualización$/i, ''),
-                    content: template.content
+                    originalTitle: contentTitle.replace(/(?: · Actualización| · Refutación| corregida)$/i, ''),
+                    content: template.content,
+                    mode: isCorrection ? 'correction' : 'update'
                 }));
                 window.location.assign(`${updatePage}?actualizar=${encodeURIComponent(template.id)}`);
             } catch (error) {
@@ -446,6 +496,83 @@ function createTemplateCard(template) {
             }
         });
         content.append(updateButton);
+    }
+    if (template.status === 'rejected') {
+        const refutationForm = document.createElement('form');
+        refutationForm.className = 'formulario';
+        const reasonField = createElement('div', undefined, 'campo');
+        const reasonId = `razon-refutacion-${template.id}`;
+        const reasonLabel = createElement('label', 'Razón para refutar el rechazo');
+        reasonLabel.htmlFor = reasonId;
+        const reasonInput = document.createElement('textarea');
+        reasonInput.id = reasonId;
+        reasonInput.name = 'reason';
+        reasonInput.rows = 3;
+        reasonInput.maxLength = 5000;
+        reasonInput.required = true;
+        reasonInput.placeholder = 'Explica por qué consideras que esta plantilla no debió ser rechazada.';
+        reasonField.append(reasonLabel, reasonInput);
+        const refuteButton = createElement('button', 'Enviar refutación', 'btn btn-secondary');
+        refuteButton.type = 'submit';
+        const refutationStatus = createElement('p', undefined, 'comprobante-modulos');
+        refutationStatus.setAttribute('role', 'status');
+        refutationStatus.hidden = true;
+        refutationForm.append(reasonField, refuteButton, refutationStatus);
+        refutationForm.addEventListener('submit', async event => {
+            event.preventDefault();
+            if (!refutationForm.reportValidity()) return;
+            const reason = reasonInput.value.trim();
+            if (!reason) {
+                reasonInput.setCustomValidity('Escribe la razón de la refutación.');
+                reasonInput.reportValidity();
+                reasonInput.setCustomValidity('');
+                return;
+            }
+
+            refuteButton.disabled = true;
+            showStatus(refutationStatus, 'Enviando refutación...');
+            let submitted = false;
+            try {
+                const refutationTitle = `${getTemplateTitle(template).replace(/ · Refutación$/i, '')} · Refutación`;
+                const refutation = {
+                    formato: 'refutacion_plantilla',
+                    plantilla_refutada_id: template.id,
+                    razon: reason,
+                    titulo: refutationTitle
+                };
+                const content = JSON.parse(JSON.stringify(template.content));
+                if (Array.isArray(content)) content.push(refutation);
+                else {
+                    content.titulo = refutationTitle;
+                    content.refutacion_plantilla = refutation;
+                }
+                if (content.informacion_general) content.informacion_general.nombre = refutationTitle;
+                if (content.ficha_unidad?.informacion_general) {
+                    content.ficha_unidad.informacion_general.nombre_unidad = refutationTitle;
+                }
+                const { error } = await supabase.from('templates').insert({
+                    country: template.country,
+                    file_name: template.file_name,
+                    content
+                });
+                if (error) throw error;
+                submitted = true;
+                refutationForm.reset();
+                if (!await refreshTemplates()) throw new Error('no se pudo actualizar la lista.');
+                showStatus(listStatus, 'La plantilla y la razón de refutación fueron enviadas a revisión pendiente.');
+            } catch (error) {
+                showStatus(
+                    submitted ? listStatus : refutationStatus,
+                    submitted
+                        ? `La razón de refutación se envió, pero ${error.message}`
+                        : `No se pudo enviar la refutación: ${error.message}`,
+                    true
+                );
+            } finally {
+                refuteButton.disabled = false;
+            }
+        });
+        content.append(refutationForm);
     }
     if (template.review_comment) {
         const review = createElement('p', undefined, 'inicio-descripcion');
@@ -455,6 +582,7 @@ function createTemplateCard(template) {
     }
 
     addTemplateComments(content, template.id);
+    addTemplateRefutations(content, template.id);
 
     if (template.status === 'pending' && moderatorKey) {
         content.append(createModeratorTools(template));
@@ -554,13 +682,28 @@ async function refreshTemplates() {
         .from('templates')
         .select('id, country, file_name, content, status, created_at, review_comment')
         .order('created_at', { ascending: false })
-        .limit(100);
+        .limit(500);
 
     if (templatesResult.error) {
         showStatus(listStatus, `No se pudieron cargar las plantillas: ${templatesResult.error.message}`, true);
         return false;
     }
-    templates = templatesResult.data;
+    const loadedTemplates = templatesResult.data;
+    refutationsByTemplate = new Map();
+    loadedTemplates.filter(isTemplateRefutation).forEach(refutation => {
+        const templateId = refutation.content.plantilla_refutada_id;
+        const refutations = refutationsByTemplate.get(templateId) || [];
+        refutations.push({ reason: refutation.content.razon });
+        refutationsByTemplate.set(templateId, refutations);
+    });
+    const supersededTemplateIds = new Set(loadedTemplates
+        .map(getTemplateRefutationInfo)
+        .filter(Boolean)
+        .map(refutation => refutation.plantilla_refutada_id));
+    templates = loadedTemplates
+        .filter(template => !isTemplateRefutation(template)
+            && !(template.status === 'rejected' && supersededTemplateIds.has(template.id)))
+        .slice(0, 100);
 
     const templateIds = templates.map(template => template.id);
     commentsByTemplate = new Map();
@@ -580,6 +723,7 @@ async function refreshTemplates() {
             comments.push(comment);
             commentsByTemplate.set(comment.template_id, comments);
         });
+
     }
 
     renderCountryOptions();
