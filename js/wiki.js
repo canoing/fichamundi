@@ -1,3 +1,5 @@
+import { loadResearchNames } from './investigation-names.js';
+
 const menuToggle = document.getElementById('menu-toggle');
 const navMenu = document.getElementById('nav-menu');
 const searchInput = document.getElementById('buscar-pais');
@@ -702,52 +704,6 @@ async function collectCountryData(country, supabase) {
     };
 }
 
-async function loadResearchNames() {
-    const response = await fetch('../data/investigacion/tree.json');
-    if (!response.ok) throw new Error(`No se pudo cargar tree.json (HTTP ${response.status}).`);
-    const treeData = await response.json();
-    const trees = treeData?.arboles_tecnologicos_CM;
-    if (!trees || typeof trees !== 'object') {
-        throw new Error('tree.json no contiene arboles_tecnologicos_CM.');
-    }
-    const escapePathPart = value => value.replaceAll('~', '~0').replaceAll('/', '~1');
-
-    Object.entries(trees).forEach(([treeKey, branch]) => {
-        function visit(value, path = []) {
-            if (Array.isArray(value)) {
-                value.forEach((item, index) => visit(item, [...path, String(index)]));
-                return;
-            }
-            if (!value || typeof value !== 'object') return;
-            if (typeof value.nombre === 'string') {
-                researchNames.set([treeKey, ...path].map(escapePathPart).join('/'), value.nombre);
-            }
-            Object.entries(value).forEach(([key, child]) => visit(child, [...path, key]));
-        }
-        visit(branch);
-    });
-
-    // El árbol de infantería es una clave hermana de arboles_tecnologicos_CM.
-    const infantryTree = treeData?.arbol_infanteria_1910_1920;
-    if (infantryTree && typeof infantryTree === 'object') {
-        function visitInfantry(value, path = []) {
-            if (Array.isArray(value)) {
-                value.forEach((item, index) => visitInfantry(item, [...path, String(index)]));
-                return;
-            }
-            if (!value || typeof value !== 'object') return;
-            if (typeof value.nombre === 'string') {
-                researchNames.set(
-                    ['arbol_infanteria_1910_1920', ...path].map(escapePathPart).join('/'),
-                    value.nombre
-                );
-            }
-            Object.entries(value).forEach(([key, child]) => visitInfantry(child, [...path, key]));
-        }
-        visitInfantry(infantryTree);
-    }
-}
-
 publicationForm.addEventListener('submit', async event => {
     event.preventDefault();
     if (!publicationForm.reportValidity()) return;
@@ -797,7 +753,9 @@ publicationForm.addEventListener('submit', async event => {
 
 searchInput.addEventListener('input', filterCountries);
 
-loadResearchNames().catch(error => {
+loadResearchNames().then(names => {
+    names.forEach((name, nodeId) => researchNames.set(nodeId, name));
+}).catch(error => {
     console.error('No se pudieron cargar los nombres de investigaciones:', error);
     return error;
 }).then(researchError => {

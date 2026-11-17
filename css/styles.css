@@ -254,6 +254,67 @@ header p,
     margin-bottom: 10px;
 }
 
+.moderator-template-research h3 {
+    margin: 0 0 8px;
+    font-size: 1em;
+}
+
+.moderator-template-module-list {
+    margin: 0;
+    padding: 8px;
+    border: 1px solid #dce4ea;
+    border-radius: 7px;
+    list-style: none;
+}
+
+.moderator-template-module-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 6px 12px;
+    padding: 7px 9px;
+    border-bottom: 1px solid #e1e8ee;
+}
+
+.moderator-template-module-list li > span:first-child {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.moderator-template-module-list li:last-child {
+    border-bottom: 0;
+}
+
+.moderator-research-status {
+    flex: 0 0 auto;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: #fff2d6;
+    color: #765113;
+    font-size: 0.78em;
+    font-weight: 700;
+}
+
+.moderator-research-status-completed {
+    background: #e4f3e7;
+    color: #286238;
+}
+
+.moderator-research-status-not-completed {
+    background: #f9e3e3;
+    color: #8a3030;
+}
+
+.moderator-research-empty {
+    margin: 0;
+    padding: 10px;
+    border: 1px dashed #9aabb8;
+    border-radius: 6px;
+    background: #f8fbff;
+    color: #555;
+}
+
 .moderator-economy-grid {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
@@ -1524,6 +1585,35 @@ html[data-theme="prinz"] .moderator-economy-panel {
     color: #f1f5f9;
 }
 
+html[data-theme="prinz"] .moderator-template-module-list li {
+    border-color: #3c4a5a;
+}
+
+html[data-theme="prinz"] .moderator-template-module-list {
+    border-color: #3c4a5a;
+}
+
+html[data-theme="prinz"] .moderator-research-status {
+    background: #493919;
+    color: #ffe0a1;
+}
+
+html[data-theme="prinz"] .moderator-research-status-completed {
+    background: #1d402b;
+    color: #b9ebc2;
+}
+
+html[data-theme="prinz"] .moderator-research-status-not-completed {
+    background: #512e33;
+    color: #ffd2d6;
+}
+
+html[data-theme="prinz"] .moderator-research-empty {
+    border-color: #3c4a5a;
+    background: #202c39;
+    color: #b8c4d1;
+}
+
 html[data-theme="prinz"] .moderator-country-button {
     color: #9dc9f2;
 }
@@ -1618,6 +1708,11 @@ html[data-theme="prinz"] main .inicio-estado-pending {
 }
 
 html[data-theme="prinz"] main .inicio-estado-approved {
+    background: #1d402b;
+    color: #b9ebc2;
+}
+
+html[data-theme="prinz"] .moderator-economy-panel .inicio-estado-approved {
     background: #1d402b;
     color: #b9ebc2;
 }

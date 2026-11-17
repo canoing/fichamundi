@@ -99,6 +99,14 @@ function normalizeCountry(country) {
     return String(country || '').trim().toLocaleLowerCase('es');
 }
 
+function getModuleOriginLabel(module, country) {
+    const origin = module?.pais_modulo || module?.country || module?.pais;
+    if (typeof origin !== 'string' || !origin.trim()) return '';
+    return normalizeCountry(origin) === normalizeCountry(country)
+        ? 'Nacional'
+        : `Extranjero · origen: ${origin.trim()}`;
+}
+
 function getTemplateCategory(template) {
     if (isOldValky(template.content)) return 'legacy';
     const fileName = String(template.file_name || '').toLocaleLowerCase('es');
@@ -208,7 +216,7 @@ function calculateNavalAttackTotal(selected) {
     return attackP || attackL ? `${attackP}(P) ${attackL}(L)` : null;
 }
 
-function createModuleList(groups) {
+function createModuleList(groups, country) {
     const entries = [];
     groups.forEach(([key, label, isSingle]) => {
         const modules = isSingle ? [key] : key;
@@ -249,13 +257,14 @@ function createModuleList(groups) {
             module.ataque !== undefined && !(esCargaProfundidad && module.dano_submarino !== undefined)
                 ? `${esCargaProfundidad ? 'Daño submarino' : 'Ataque'}: ${displayValue(module.ataque)}` : ''
         ];
-        item.append(createElement('small', [label, ...attacks, defense].filter(Boolean).join(' · ')));
+        const origin = getModuleOriginLabel(module, country);
+        item.append(createElement('small', [label, ...attacks, defense, origin].filter(Boolean).join(' · ')));
         list.append(item);
     });
     return list;
 }
 
-function createDivisionLists(unidad) {
+function createDivisionLists(unidad, country) {
     const sections = [];
     const lists = [
         ['regimientos_principales', 'Regimientos principales'],
@@ -275,7 +284,19 @@ function createDivisionLists(unidad) {
             if (entry.slot !== undefined) details.push(`Slot ${entry.slot}`);
             const weapon = entry.arma_equipada;
             if (weapon) {
-                details.push(`${weapon.nombre || weapon.nombre_del_arma || 'Arma'} · ATK ${weapon.ataque ?? 0}`);
+                const weaponOrigin = getModuleOriginLabel(weapon, country);
+                details.push([
+                    `${weapon.nombre || weapon.nombre_del_arma || 'Arma'} · ATK ${weapon.ataque ?? 0}`,
+                    weaponOrigin
+                ].filter(Boolean).join(' · '));
+            }
+            const vehicle = entry.vehiculo;
+            if (vehicle) {
+                const vehicleOrigin = getModuleOriginLabel(vehicle, country);
+                details.push([
+                    vehicle.nombre || 'Vehículo',
+                    vehicleOrigin
+                ].filter(Boolean).join(' · '));
             }
             if (entry.hp_bonus_tecnologico !== undefined) details.push(`HP tecnológico ${entry.hp_bonus_tecnologico}`);
             item.append(createElement('small', details.join(' · ')));
@@ -287,7 +308,7 @@ function createDivisionLists(unidad) {
     return sections;
 }
 
-function createTemplatePreview(content) {
+function createTemplatePreview(content, country) {
     const preview = createElement('div', undefined, 'ficha-compacta active');
     if (isOldValky(content)) {
         preview.append(createElement('pre', content.texto, 'legacy-valky-text'));
@@ -323,7 +344,7 @@ function createTemplatePreview(content) {
     if (statsGrid) preview.append(statsGrid);
 
     if (division) {
-        createDivisionLists(division).forEach(section => preview.append(section));
+        createDivisionLists(division, country).forEach(section => preview.append(section));
         const abilities = stats?.habilidades_especiales;
         if (Array.isArray(abilities) && abilities.length) {
             const section = createElement('section', undefined, 'seccion');
@@ -356,7 +377,7 @@ function createTemplatePreview(content) {
                 if (Array.isArray(value)) groups.push([value, label, false]);
                 else if (value && typeof value === 'object') groups.push([value, label, true]);
             });
-            const moduleList = createModuleList(groups);
+            const moduleList = createModuleList(groups, country);
             if (moduleList) {
                 const section = createElement('section', undefined, 'seccion');
                 section.append(createElement('h4', 'Componentes instalados'));
@@ -432,7 +453,7 @@ function createTemplateCard(template) {
     summary.append(document.createTextNode(' · '));
     if (moderatorKey) {
         summary.append(createCountryMenuButton(template.country, () => {
-            economyMenu.show(template.country, Boolean(moderatorKey))
+            economyMenu.show(template.country, Boolean(moderatorKey), template.content)
                 .catch(error => showStatus(listStatus, `No se pudo cargar la guía económica: ${error.message}`, true));
         }));
     } else {
@@ -461,7 +482,7 @@ function createTemplateCard(template) {
 
     const content = document.createElement('div');
     content.className = 'plantilla-contenido';
-    content.append(createTemplatePreview(template.content));
+    content.append(createTemplatePreview(template.content, template.country));
     const refutationInfo = getTemplateRefutationInfo(template);
     if (refutationInfo) {
         const reason = createElement('p', undefined, 'inicio-descripcion');
