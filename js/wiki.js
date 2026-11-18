@@ -166,14 +166,20 @@ function renderLiveResearch(article, country) {
     article.append(section);
 }
 
-function readEconomy(form) {
-    return Object.fromEntries(economyFields.map(([key]) => {
-        const input = form.elements.namedItem(key);
-        const value = input?.dataset.edited === 'true'
-            ? input.value
-            : input?.dataset.originalValue ?? input?.value ?? '';
-        return [key, String(value).trim()];
-    }));
+function readEconomy(form, existingEconomy = {}) {
+    const existing = existingEconomy && typeof existingEconomy === 'object' && !Array.isArray(existingEconomy)
+        ? existingEconomy
+        : {};
+    return {
+        ...existing,
+        ...Object.fromEntries(economyFields.map(([key]) => {
+            const input = form.elements.namedItem(key);
+            const value = input?.dataset.edited === 'true'
+                ? input.value
+                : input?.dataset.originalValue ?? input?.value ?? '';
+            return [key, String(value).trim()];
+        }))
+    };
 }
 
 function renderEconomyFields(form, economy = {}) {
@@ -285,7 +291,7 @@ function createEditForm(post, article) {
                 .from('country_wiki_posts')
                 .update({
                     content: textarea.value.trim(),
-                    economy: readEconomy(form)
+                    economy: readEconomy(form, post.economy)
                 })
                 .eq('id', post.id)
                 .select('id, country, content, economy, weapons, approved_modules, investigations, created_at')
@@ -337,13 +343,17 @@ function renderCommunityPost(post) {
     const modules = approvedModulesLoaded
         ? approvedModulesByCountry.get(countryKey) || []
         : storedModules;
+    const countryTemplates = approvedTemplatesLoaded
+        ? approvedTemplatesByCountry.get(countryKey) || []
+        : [];
     const templateNames = approvedTemplatesLoaded
-        ? (approvedTemplatesByCountry.get(countryKey) || []).map(template => template.name)
+        ? [...new Set(countryTemplates.map(template => template.name))]
         : (Array.isArray(post.weapons) ? post.weapons : []);
     const catalog = createElement('div', undefined, 'wiki-catalog-grid');
     renderSnapshotList(catalog, 'Armamento aprobado', templateNames, item => item);
     renderSnapshotList(catalog, 'Módulos aprobados', modules, getModuleName);
     content.append(catalog);
+    renderArmamentInventory(content, post, countryTemplates);
     renderLiveResearch(content, post.country);
 
     const editButton = createElement('button', 'Editar información');
@@ -359,6 +369,216 @@ function renderCommunityPost(post) {
     content.append(editButton, form);
     article.append(content);
     countryArticles.append(article);
+}
+
+function formatMillions(value) {
+    return `${new Intl.NumberFormat('es', { maximumFractionDigits: 3 }).format(value)} M USD`;
+}
+
+function parseTemplatePrice(value) {
+    if (typeof value === 'number') return Number.isFinite(value) && value >= 0 ? value : null;
+    if (typeof value !== 'string' || !value.trim()) return null;
+    const match = value.trim().replace(',', '.').match(/\d+(?:\.\d+)?/);
+    if (!match) return null;
+    const price = Number(match[0]);
+    return Number.isFinite(price) && price >= 0 ? price : null;
+}
+
+function isVehicleOrTankTemplate(template) {
+    const fileName = normalizeText(template.file_name || '').replace(/[^a-z0-9]+/g, '-');
+    const content = template.content || {};
+    const selected = content.modulos_seleccionados
+        || content.componentes_seleccionados
+        || {};
+    const type = normalizeText([
+        content.tipo,
+        content.tipo_ficha,
+        content.categoria,
+        content.vehicle,
+        content.category
+    ].filter(value => typeof value === 'string').join(' '));
+    return /^(tanque|vehiculo|vehicle)(-|$)/.test(fileName)
+        || Boolean(selected.chasis)
+        || /\b(tanque|tanques|vehiculo|vehiculos|vehicle|vehicles)\b/.test(type);
+}
+
+function getTemplatePrice(template) {
+    const content = template.content;
+    const stats = content?.ficha_unidad?.estadisticas_acumuladas
+        || content?.estadisticas_acumuladas
+        || content?.estadisticas
+        || content?.stats;
+    const candidates = [
+        stats?.coste,
+        stats?.costo,
+        stats?.precio,
+        stats?.price,
+        content?.coste,
+        content?.costo,
+        content?.precio,
+        content?.price,
+        Array.isArray(content) ? content[0]?.coste ?? content[0]?.costo ?? content[0]?.precio : null
+    ];
+    for (const candidate of candidates) {
+        const price = parseTemplatePrice(candidate);
+        if (price !== null) return price;
+    }
+    return null;
+}
+
+function renderArmamentInventory(parent, post, templates) {
+    const inventoryTemplates = templates.filter(template => !isVehicleOrTankTemplate(template));
+    const section = createElement('section', undefined, 'wiki-publication-section wiki-armament-section');
+    section.append(createElement('h3', 'Armamento en servicio y presupuesto'));
+    section.append(createElement(
+        'p',
+        'Indica las unidades que posee el país. El mantenimiento anual se estima en el 10% del precio original y se compara con el gasto militar anual.',
+        'wiki-empty'
+    ));
+
+    const form = createElement('form');
+    form.className = 'wiki-armament-inventory-form';
+    const inventory = post.economy?.armament_inventory;
+    const storedQuantities = inventory && typeof inventory === 'object' && !Array.isArray(inventory)
+        ? inventory
+        : {};
+    const quantityInputs = [];
+
+    if (!approvedTemplatesLoaded) {
+        form.append(createElement('p', 'No se pudo cargar el catálogo de armamento aprobado.', 'wiki-empty'));
+    } else if (!inventoryTemplates.length) {
+        form.append(createElement('p', 'No hay armamento aprobado para este país.', 'wiki-empty'));
+    } else {
+        const list = createElement('div', undefined, 'wiki-armament-list');
+        inventoryTemplates.forEach(template => {
+            const row = createElement('div', undefined, 'wiki-armament-row');
+            const details = createElement('div');
+            details.append(createElement('strong', template.name));
+            details.append(createElement(
+                'small',
+                template.price === null ? 'Precio original no disponible' : `Precio unitario: ${formatMillions(template.price)}`
+            ));
+
+            const label = createElement('label', 'Unidades');
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.min = '0';
+            input.step = '1';
+            input.required = true;
+            input.value = String(Math.max(0, Math.floor(Number(storedQuantities[template.id]) || 0)));
+            input.setAttribute('aria-label', `Unidades de ${template.name}`);
+            label.append(input);
+            row.append(details, label);
+            list.append(row);
+            quantityInputs.push({ input, template });
+        });
+        form.append(list);
+    }
+
+    const totals = createElement('dl', undefined, 'wiki-economy-grid wiki-armament-totals');
+    const totalPrice = createElement('dd', '0 M USD');
+    const annualMaintenance = createElement('dd', '0 M USD');
+    const militaryBudget = createElement('dd', 'No calculable');
+    [
+        ['Valor total del armamento', totalPrice],
+        ['Mantenimiento anual (10%)', annualMaintenance],
+        ['Gasto militar anual disponible', militaryBudget]
+    ].forEach(([label, value]) => totals.append(createElement('dt', label), value));
+    section.append(totals);
+
+    const comparison = createElement('p', undefined, 'wiki-budget-comparison');
+    comparison.setAttribute('role', 'status');
+    section.append(comparison);
+    const actions = createElement('div', undefined, 'acciones');
+    const saveButton = createElement('button', 'Guardar inventario');
+    saveButton.type = 'submit';
+    saveButton.className = 'btn btn-primary';
+    saveButton.disabled = !approvedTemplatesLoaded || !inventoryTemplates.length;
+    actions.append(saveButton);
+    form.append(actions);
+    const feedback = createElement('p', undefined, 'comprobante-modulos');
+    feedback.setAttribute('role', 'status');
+    form.append(feedback);
+    section.append(form);
+
+    const refreshTotals = () => {
+        let priceTotal = 0;
+        let unpricedCount = 0;
+        quantityInputs.forEach(({ input, template }) => {
+            const quantity = Math.max(0, Math.floor(Number(input.value) || 0));
+            if (quantity && template.price === null) unpricedCount += quantity;
+            if (template.price !== null) priceTotal += quantity * template.price;
+        });
+        const maintenance = priceTotal * 0.1;
+        totalPrice.textContent = formatMillions(priceTotal);
+        annualMaintenance.textContent = formatMillions(maintenance);
+
+        const economy = post.economy || {};
+        const gdp = Number(economy.gdp_latest);
+        const spendingPercent = Number(economy.military_spending);
+        const hasBudget = String(economy.gdp_latest ?? '').trim() !== ''
+            && String(economy.military_spending ?? '').trim() !== ''
+            && Number.isFinite(gdp)
+            && Number.isFinite(spendingPercent);
+        if (hasBudget) {
+            const budget = gdp * 1000 * (spendingPercent / 100);
+            militaryBudget.textContent = formatMillions(budget);
+            if (unpricedCount) {
+                showStatus(comparison, `${unpricedCount} unidades no tienen precio registrado; no se puede confirmar si el mantenimiento total cabe en el presupuesto.`, false);
+            } else if (maintenance <= budget) {
+                showStatus(comparison, `Concuerda con el gasto militar: quedan ${formatMillions(budget - maintenance)} después del mantenimiento anual.`, false);
+            } else {
+                showStatus(comparison, `Supera el gasto militar anual disponible por ${formatMillions(maintenance - budget)}.`, true);
+            }
+        } else {
+            militaryBudget.textContent = 'No calculable';
+            const missingPriceMessage = unpricedCount
+                ? ` Además, ${unpricedCount} unidades no tienen precio registrado.`
+                : '';
+            showStatus(comparison, `Añade el PIB y el porcentaje de gasto militar en «Editar información» para comparar el presupuesto.${missingPriceMessage}`, false);
+        }
+    };
+    quantityInputs.forEach(({ input }) => input.addEventListener('input', refreshTotals));
+    refreshTotals();
+
+    form.addEventListener('submit', async event => {
+        event.preventDefault();
+        if (!form.reportValidity()) return;
+        saveButton.disabled = true;
+        showStatus(feedback, 'Guardando inventario...');
+        try {
+            const updatedInventory = Object.fromEntries([
+                ...Object.entries(storedQuantities),
+                ...quantityInputs.map(({ input, template }) => [
+                    template.id,
+                    Math.floor(Number(input.value))
+                ])
+            ]);
+            const { data, error } = await (await getSupabaseClient())
+                .from('country_wiki_posts')
+                .update({
+                    economy: {
+                        ...(post.economy && typeof post.economy === 'object' ? post.economy : {}),
+                        armament_inventory: updatedInventory
+                    }
+                })
+                .eq('id', post.id)
+                .select('id, country, content, economy, weapons, approved_modules, investigations, created_at')
+                .maybeSingle();
+            if (error) throw error;
+            if (!data) throw new Error('No se encontró la publicación para confirmar el inventario.');
+            communityPosts = communityPosts.map(item => item.id === data.id ? data : item);
+            renderCommunityPosts();
+            filterCountries();
+            showStatus(publicationStatus, `Se guardó el inventario de ${post.country}.`);
+        } catch (error) {
+            showStatus(feedback, `No se pudo guardar el inventario: ${error.message}`, true);
+        } finally {
+            saveButton.disabled = false;
+        }
+    });
+
+    parent.append(section);
 }
 
 function updateWikiStatus() {
@@ -424,7 +644,7 @@ async function loadCommunityPosts() {
             .eq('is_current', true),
         supabase
             .from('templates')
-            .select('country, file_name, content')
+            .select('id, country, file_name, content')
             .eq('status', 'approved')
             .order('created_at', { ascending: false })
     ]);
@@ -445,12 +665,19 @@ async function loadCommunityPosts() {
     if (approvedTemplatesLoaded) {
         (templatesResult.data || []).forEach(template => {
             const countryKey = normalizeText(template.country.trim());
-            const names = approvedTemplatesByCountry.get(countryKey) || [];
+            const templates = approvedTemplatesByCountry.get(countryKey) || [];
             const name = getTemplateName(template);
-            if (name && !names.some(item => item.name === name)) {
-                names.push({ name, country: template.country });
+            if (name && !templates.some(item => item.id === template.id)) {
+                templates.push({
+                    id: template.id,
+                    name,
+                    country: template.country,
+                    file_name: template.file_name,
+                    content: template.content,
+                    price: getTemplatePrice(template)
+                });
             }
-            approvedTemplatesByCountry.set(countryKey, names);
+            approvedTemplatesByCountry.set(countryKey, templates);
         });
     }
     renderCommunityPosts();
@@ -479,7 +706,7 @@ function renderCommunityPosts() {
         const modules = approvedModulesByCountry.get(countryKey) || [];
         const templates = approvedTemplatesByCountry.get(countryKey) || [];
         const country = modules[0]?.country || templates[0]?.country || countryKey;
-        renderApprovedCatalogCountry(country, templates.map(template => template.name), modules);
+        renderApprovedCatalogCountry(country, [...new Set(templates.map(template => template.name))], modules);
     });
 }
 

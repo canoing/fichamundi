@@ -27,7 +27,8 @@
       "hp_base": 12,
       "atk_base": 2,
       "def_base": 2,
-      "descripcion": "Alta movilidad con mayor consumo de suministros."
+      "permite_vehiculo": true,
+      "descripcion": "Alta movilidad con mayor consumo de suministros. Puede equiparse con un tanque o vehículo aprobado además de su arma."
     },
     "carros_blindados": {
       "nombre": "Carros Blindados",

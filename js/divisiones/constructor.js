@@ -7,14 +7,13 @@ let nivelesInvestigacionDivision = { medicina: null, ingenieria: null };
 let estadoInvestigacionDivision = '';
 const MAX_APOYOS_DIVISION = 4;
 // Plantillas de tanques aprobadas en plantillas.html, disponibles como
-// "módulo" para los regimientos blindados.
+// vehículos para los regimientos motorizados y blindados.
 let vehiculosAprobados = [];
 
 /* ============================================================
    VEHÍCULOS (PLANTILLAS DE TANQUE APROBADAS)
-   Un regimiento blindado no monta módulos uno a uno: elige un
-   tanque ya creado y aprobado en plantillas.html y usa sus
-   estadísticas ya calculadas.
+   Los regimientos compatibles pueden elegir un vehículo aprobado en
+   plantillas.html y usar sus estadísticas ya calculadas.
    ============================================================ */
 
 // Detecta si una plantilla es un tanque y devuelve sus estadísticas.
@@ -44,6 +43,10 @@ function extraerVehiculoPlantilla(template) {
 function buscarVehiculoAprobado(id) {
     if (!id) return null;
     return vehiculosAprobados.find(vehiculo => vehiculo.id === id) || null;
+}
+
+function tipoPermiteVehiculo(tipo) {
+    return Boolean(tipo?.permite_chasis || tipo?.permite_vehiculo);
 }
 
 function numeroSeguro(valor) {
@@ -167,9 +170,9 @@ function calcularEstadisticasDivision(regimientos, apoyos, catalogo) {
             ? {}
             : armaSeleccionada;
 
-        // Regimiento blindado con un tanque aprobado: arma y vehículo se
-        // suman. Las estadísticas del tanque vienen ya calculadas.
-        const vehiculo = tipo.permite_chasis ? buscarVehiculoAprobado(regimiento.vehiculo_id) : null;
+        // Los regimientos con vehículo aprobado suman sus estadísticas a las
+        // del tipo de regimiento.
+        const vehiculo = tipoPermiteVehiculo(tipo) ? buscarVehiculoAprobado(regimiento.vehiculo_id) : null;
 
         const penalizacionHpArma = regimiento.arma_equipada && arma === armaSeleccionada
             && tipo.arma_permitida === 'fusil'
@@ -308,7 +311,7 @@ function crearFichaDivision(informacion, regimientos, apoyos, catalogo) {
             },
             regimientos_principales: regimientos.map((regimiento, indice) => {
                 const tipo = catalogo.regimientos_principales[regimiento.tipo_regimiento];
-                const vehiculo = tipo?.permite_chasis ? buscarVehiculoAprobado(regimiento.vehiculo_id) : null;
+                const vehiculo = tipoPermiteVehiculo(tipo) ? buscarVehiculoAprobado(regimiento.vehiculo_id) : null;
                 return {
                     slot: indice + 1,
                     tipo_regimiento: tipo?.nombre || regimiento.tipo_regimiento,
@@ -390,7 +393,7 @@ function opcionesTiposRegimiento(seleccionado) {
 
 function opcionesVehiculos(seleccionado) {
     if (!vehiculosAprobados.length) {
-        return '<option value="">No hay tanques aprobados</option>';
+        return '<option value="">No hay vehículos aprobados</option>';
     }
     return '<option value="">Sin vehículo</option>' + vehiculosAprobados.map(vehiculo =>
         `<option value="${escaparHtml(vehiculo.id)}" ${vehiculo.pais ? `data-pais-modulo="${escaparHtml(vehiculo.pais)}"` : ''} ${vehiculo.id === seleccionado ? 'selected' : ''}>${escaparHtml(vehiculo.nombre)}${vehiculo.pais ? ` · ${escaparHtml(vehiculo.pais)}` : ''} · HP ${vehiculo.hp}, ATK ${vehiculo.ataque}, DEF ${vehiculo.defensa}, MOV ${vehiculo.velocidad} · ${vehiculo.coste} M</option>`
@@ -405,7 +408,8 @@ function renderizarRegimientos() {
     const contenedor = document.getElementById('regimientos-container');
     contenedor.innerHTML = regimientosDivision.map((regimiento, indice) => {
         const tipo = catalogoDivisiones.regimientos_principales[regimiento.tipo_regimiento];
-        const permiteVehiculo = Boolean(tipo.permite_chasis);
+        const permiteVehiculo = tipoPermiteVehiculo(tipo);
+        const vehiculoReemplazaArma = Boolean(tipo.permite_chasis);
         const armasDisponibles = tipo.arma_permitida === 'fusil'
             ? armasDivision.filter(armaEsFusil)
             : armasDivision;
@@ -414,17 +418,19 @@ function renderizarRegimientos() {
         ).join('');
         return `<article class="opcion-modulo">
             <div class="modulo-topline"><strong>Regimiento ${indice + 1}</strong>
+                <button type="button" class="btn btn-secondary" data-duplicar-regimiento="${indice}" ${regimientosDivision.length >= 16 ? 'disabled' : ''} aria-label="Duplicar configuración del regimiento ${indice + 1}">Duplicar configuración</button>
                 <button type="button" class="btn btn-secondary" data-quitar-regimiento="${indice}" ${regimientosDivision.length <= 1 ? 'disabled' : ''} aria-label="Quitar regimiento ${indice + 1}">Quitar</button>
             </div>
             <div class="formulario">
                 <div class="campo"><label for="tipo-regimiento-${indice}">Tipo de regimiento</label>
                     <select id="tipo-regimiento-${indice}" data-regimiento="${indice}" data-campo="tipo_regimiento">${opcionesTiposRegimiento(regimiento.tipo_regimiento)}</select>
                 </div>
-                ${permiteVehiculo ? `<div class="campo"><label for="vehiculo-regimiento-${indice}">Vehículo (tanque aprobado)</label>
-                    <select id="vehiculo-regimiento-${indice}" data-regimiento="${indice}" data-campo="vehiculo_id">${opcionesVehiculos(regimiento.vehiculo_id)}</select>
-                </div>` : `<div class="campo"><label for="arma-regimiento-${indice}">Arma equipada</label>
+                ${!vehiculoReemplazaArma ? `<div class="campo"><label for="arma-regimiento-${indice}">Arma equipada</label>
                     <select id="arma-regimiento-${indice}" data-regimiento="${indice}" data-campo="arma_equipada">${opcionesArmas}</select>
-                </div>`}
+                </div>` : ''}
+                ${permiteVehiculo ? `<div class="campo"><label for="vehiculo-regimiento-${indice}">Tanque o vehículo aprobado</label>
+                    <select id="vehiculo-regimiento-${indice}" data-regimiento="${indice}" data-campo="vehiculo_id">${opcionesVehiculos(regimiento.vehiculo_id)}</select>
+                </div>` : ''}
                 <p class="inicio-descripcion">Base: ${tipo.sup_base ?? 'SUP por arma'} SUP · ${tipo.mov_base ?? 'MOV por arma'} MOV · ${tipo.hp_base} HP · ${tipo.atk_base || 0} ATK · ${tipo.def_base || 0} DEF</p>
             </div>
         </article>`;
@@ -489,6 +495,16 @@ function agregarRegimiento() {
     regimientosDivision.push({ tipo_regimiento: 'infanteria', arma_equipada: null, vehiculo_id: null, mov_arma: 1, sup_arma: 0 });
 }
 
+function duplicarRegimiento(indice) {
+    if (regimientosDivision.length >= 16 || !regimientosDivision[indice]) return;
+    const original = regimientosDivision[indice];
+    const copia = {
+        ...original,
+        arma_equipada: original.arma_equipada ? { ...original.arma_equipada } : null
+    };
+    regimientosDivision.splice(indice + 1, 0, copia);
+}
+
 function agregarApoyo() {
     if (apoyosDivision.length >= MAX_APOYOS_DIVISION) return;
     apoyosDivision.push({
@@ -534,6 +550,12 @@ function inicializarEventos() {
     });
 
     document.getElementById('regimientos-container').addEventListener('click', evento => {
+        const botonDuplicar = evento.target.closest('[data-duplicar-regimiento]');
+        if (botonDuplicar) {
+            duplicarRegimiento(Number(botonDuplicar.dataset.duplicarRegimiento));
+            renderizarConstructor();
+            return;
+        }
         const boton = evento.target.closest('[data-quitar-regimiento]');
         if (!boton || regimientosDivision.length <= 1) return;
         regimientosDivision.splice(Number(boton.dataset.quitarRegimiento), 1);
@@ -562,9 +584,11 @@ function inicializarEventos() {
         } else if (campo === 'tipo_regimiento') {
             regimiento.tipo_regimiento = control.value;
             // Los regimientos blindados usan vehículo en lugar de arma.
-            if (catalogoDivisiones.regimientos_principales[control.value]?.permite_chasis) {
+            const nuevoTipo = catalogoDivisiones.regimientos_principales[control.value];
+            if (nuevoTipo?.permite_chasis) {
                 regimiento.arma_equipada = null;
-            } else {
+            }
+            if (!tipoPermiteVehiculo(nuevoTipo)) {
                 regimiento.vehiculo_id = null;
             }
             if (catalogoDivisiones.regimientos_principales[control.value]?.arma_permitida === 'fusil'
@@ -646,12 +670,12 @@ function inicializarEventos() {
 
 if (typeof window !== 'undefined') {
     // Recibe las plantillas de tanques aprobadas en plantillas.html y las
-    // expone como vehículos disponibles para los regimientos blindados.
+    // expone como vehículos disponibles para los regimientos motorizados y blindados.
     window.establecerVehiculosDivisionAprobados = (templates) => {
         vehiculosAprobados = (templates || [])
             .map(extraerVehiculoPlantilla)
             .filter(Boolean);
-        // Si un régimiento apuntaba a un tanque que ya no está aprobado, se limpia.
+        // Si un regimiento apuntaba a un vehículo que ya no está aprobado, se limpia.
         regimientosDivision.forEach(regimiento => {
             if (regimiento.vehiculo_id && !buscarVehiculoAprobado(regimiento.vehiculo_id)) {
                 regimiento.vehiculo_id = null;

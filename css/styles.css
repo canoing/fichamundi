@@ -1570,6 +1570,34 @@ html[data-theme="prinz"] .wiki-research-category > summary {
     background: #202c39;
 }
 
+html[data-theme="prinz"] .wiki-armament-row {
+    border-color: #3c4a5a;
+    background: #202c39;
+    color: #f1f5f9;
+}
+
+html[data-theme="prinz"] .wiki-armament-row small {
+    color: #b8c4d1;
+}
+
+html[data-theme="prinz"] .wiki-armament-row input {
+    border-color: #596778;
+    background: #090d12;
+    color: #f1f5f9;
+}
+
+html[data-theme="prinz"] .wiki-budget-comparison {
+    border: 1px solid #496987;
+    background: #172432;
+    color: #f1f5f9;
+}
+
+html[data-theme="prinz"] .wiki-budget-comparison[role="alert"] {
+    border-color: #8b3c48;
+    background: #3a1d24;
+    color: #ffe4e8;
+}
+
 html[data-theme="prinz"] .wiki-economy-grid dt,
 html[data-theme="prinz"] .wiki-research-count {
     color: #b8c4d1;

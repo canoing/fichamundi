@@ -1,5 +1,6 @@
 const assert = require('assert');
 const catalogo = require('../../data/referencias/divi/unida.json');
+global.window = {};
 const {
   calcularEstadisticasDivision,
   calcularBonusTecnologico,
@@ -81,6 +82,53 @@ const fichaConPrecio = crearFichaDivision(
   catalogo
 );
 assert.equal(fichaConPrecio.estadisticas_acumuladas.coste, 5);
+
+window.establecerVehiculosDivisionAprobados([{
+  id: 'vehiculo-prueba',
+  country: 'Boreostia',
+  file_name: 'vehiculo-prueba.json',
+  content: {
+    titulo: 'Vehículo de prueba',
+    componentes_seleccionados: { chasis: { nombre: 'Chasis de prueba' } },
+    estadisticas: { hp: 20, ataque: 5, defensa: 4, velocidad: 7, coste: 3 }
+  }
+}]);
+const motorizadaConVehiculo = calcularEstadisticasDivision([
+  {
+    tipo_regimiento: 'motorizada',
+    vehiculo_id: 'vehiculo-prueba',
+    arma_equipada: { hp_a_regimiento: 2, ataque: 1, defensa: 1, precio: 0.5 }
+  }
+], [], catalogo);
+assert.deepEqual(
+  {
+    HP: motorizadaConVehiculo.HP,
+    ATK: motorizadaConVehiculo.ATK,
+    DEF: motorizadaConVehiculo.DEF,
+    MOV: motorizadaConVehiculo.MOV,
+    SUP: motorizadaConVehiculo.SUP,
+    coste: motorizadaConVehiculo.coste
+  },
+  { HP: 34, ATK: 8, DEF: 7, MOV: 7, SUP: 3, coste: 3.5 }
+);
+const fichaMotorizadaConVehiculo = crearFichaDivision(
+  { nombre_unidad: 'Infantería motorizada', pais_operador: 'Boreostia', tipo_unidad: 'Motorizada' },
+  [{
+    tipo_regimiento: 'motorizada',
+    vehiculo_id: 'vehiculo-prueba',
+    arma_equipada: { nombre: 'Fusil de prueba', precio: 0.5 }
+  }],
+  [],
+  catalogo
+);
+assert.equal(
+  fichaMotorizadaConVehiculo.ficha_unidad.regimientos_principales[0].vehiculo.plantilla_id,
+  'vehiculo-prueba'
+);
+assert.equal(
+  fichaMotorizadaConVehiculo.ficha_unidad.regimientos_principales[0].arma_equipada.nombre,
+  'Fusil de prueba'
+);
 
 assert.equal(MAX_APOYOS_DIVISION, 4);
 assert.deepEqual([0, 1, 2, 3].map(calcularBonusTecnologico), [0, 20, 40, 80]);
