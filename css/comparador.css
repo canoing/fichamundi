@@ -1,0 +1,141 @@
+.pagina-comparador .comparador-seccion {
+    padding: clamp(14px, 3vw, 24px);
+    border: 1px solid #dce4ea;
+    border-radius: 10px;
+    background: #fbfdff;
+}
+
+.pagina-comparador .comparador-vehiculos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin: 18px 0;
+}
+
+.pagina-comparador .comparador-vehiculos .campo {
+    min-width: 0;
+    padding: 12px;
+    border: 1px solid #dce4ea;
+    border-radius: 8px;
+    background: #f5f9fc;
+}
+
+.pagina-comparador .comparador-vehiculos .campo select {
+    min-height: 44px;
+}
+
+.pagina-comparador .comparador-chart-card {
+    margin-top: 16px;
+}
+
+.pagina-comparador .comparador-chart-svg {
+    display: block;
+}
+
+.pagina-comparador .comparador-chart-viewport {
+    max-width: 100%;
+}
+
+.pagina-comparador .comparador-chart-metric {
+    fill: #1a3a52;
+}
+
+.pagina-comparador .comparador-chart-value {
+    fill: #333;
+}
+
+.pagina-comparador .comparador-chart-missing {
+    fill: #666;
+}
+
+.pagina-comparador .comparador-chart-axis {
+    stroke: #c7d2dc;
+}
+
+.pagina-comparador .comparador-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.pagina-comparador .comparador-legend-item {
+    padding: 7px 10px;
+    border: 1px solid #dce4ea;
+    border-radius: 999px;
+    background: #f5f9fc;
+}
+
+html[data-theme="prinz"] .pagina-comparador .comparador-seccion {
+    border-color: #35485c;
+    background: linear-gradient(145deg, #121b26, #10151c);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+}
+
+html[data-theme="prinz"] .pagina-comparador .comparador-vehiculos .campo {
+    border-color: #35485c;
+    background: #17212c;
+}
+
+html[data-theme="prinz"] .pagina-comparador .comparador-vehiculos .campo label {
+    color: #d8eaff;
+}
+
+html[data-theme="prinz"] .pagina-comparador .comparador-vehiculos .campo select {
+    border-color: #50677f;
+    background: #0c131b;
+    color: #f1f5f9;
+}
+
+html[data-theme="prinz"] .pagina-comparador .comparador-vehiculos .campo select:focus-visible {
+    border-color: #8fc7f5;
+    outline: 2px solid rgba(143, 199, 245, 0.45);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(91, 157, 211, 0.14);
+}
+
+html[data-theme="prinz"] .pagina-comparador .comparador-chart-card {
+    border-color: #35485c;
+    background: #151e28;
+}
+
+html[data-theme="prinz"] .pagina-comparador .comparador-chart-metric {
+    fill: #c5e2ff;
+}
+
+html[data-theme="prinz"] .pagina-comparador .comparador-chart-value {
+    fill: #f1f5f9;
+}
+
+html[data-theme="prinz"] .pagina-comparador .comparador-chart-missing {
+    fill: #afbdca;
+}
+
+html[data-theme="prinz"] .pagina-comparador .comparador-chart-axis {
+    stroke: #62758a;
+}
+
+html[data-theme="prinz"] .pagina-comparador .comparador-legend-item {
+    border-color: #3a4c5f;
+    background: #1b2632;
+    color: #e6eef7;
+}
+
+@media (max-width: 640px) {
+    .pagina-comparador .comparador-vehiculos {
+        grid-template-columns: 1fr;
+    }
+
+    .pagina-comparador .comparador-chart-viewport {
+        overflow-x: hidden;
+    }
+}
+
+@media (max-width: 480px) {
+    .pagina-comparador .comparador-seccion {
+        padding: 12px;
+    }
+
+    .pagina-comparador .comparador-vehiculos .campo select {
+        font-size: 16px;
+    }
+}
