@@ -139,7 +139,8 @@ if (typeof window !== 'undefined') {
         });
         apoyosDivision = (ficha.batallones_apoyo || []).map(apoyo => ({
             ...apoyo,
-            tipo_apoyo: resolverTipoDivision(apoyo.tipo_apoyo, catalogoDivisiones.batallones_apoyo)
+            tipo_apoyo: resolverTipoDivision(apoyo.tipo_apoyo, catalogoDivisiones.batallones_apoyo),
+            arma_antitanque: resolverArmaDivision(apoyo.arma_o_equipo_asignado)
         }));
         if (!regimientosDivision.length) agregarRegimiento();
         renderizarConstructor();
@@ -193,13 +194,14 @@ function calcularEstadisticasDivision(regimientos, apoyos, catalogo) {
         if (tipo.sup_depende_de_arma) suministros += numeroSeguro(regimiento.sup_arma);
         else suministros += numeroSeguro(tipo.sup_base);
 
-        // MOV: si hay vehículo usa su velocidad; si no, el MOV del arma / base.
-        if (vehiculo) movimientos.push(vehiculo.velocidad);
-        else if (tipo.mov_depende_de_arma) movimientos.push(numeroSeguro(regimiento.mov_arma));
-        else if (tipo.mov_base !== null && tipo.mov_base !== undefined) movimientos.push(numeroSeguro(tipo.mov_base));
+        if (tipo.mov_depende_de_arma) {
+            movimientos.push(vehiculo ? vehiculo.velocidad : numeroSeguro(regimiento.mov_arma));
+        } else if (tipo.mov_base !== null && tipo.mov_base !== undefined) {
+            movimientos.push(numeroSeguro(tipo.mov_base));
+        }
 
         if (regimiento.tipo_regimiento === 'montanistas') cantidadMontanistas += 1;
-        if (tipo.habilidad_pasiva?.ignora_def_ametralladoras && (vehiculo || defensa > 0)) {
+        if (tipo.habilidad_pasiva?.ignora_def_ametralladoras) {
             habilidades.push('Ignora la defensa otorgada por ametralladoras enemigas');
         }
     });
@@ -211,13 +213,16 @@ function calcularEstadisticasDivision(regimientos, apoyos, catalogo) {
         const buffs = tipo.buffs || {};
         hp += numeroSeguro(tipo.hp_base);
         ataque += numeroSeguro(buffs.atk_bonus) + numeroSeguro(buffs.atk);
+        if (apoyo.tipo_apoyo === 'antitanque') {
+            ataque += numeroSeguro(apoyo.arma_antitanque?.ataque);
+        }
         defensa += numeroSeguro(buffs.def_bonus);
         defensa += numeroSeguro(tipo.def_base);
         if (tipo.mov_base !== null && tipo.mov_base !== undefined) {
             movimientos.push(numeroSeguro(tipo.mov_base));
         }
         if (apoyo.tipo_apoyo === 'logistica') {
-            suministros -= Math.max(1, numeroSeguro(apoyo.reduccion_sup) || numeroSeguro(buffs.reduccion_sup) || 1);
+            suministros -= calcularReduccionLogistica(apoyo);
         } else {
             suministros += numeroSeguro(tipo.sup_costo);
         }
@@ -270,12 +275,11 @@ function calcularEstadisticasDivision(regimientos, apoyos, catalogo) {
         }
     });
 
+    if (regimientos?.length > 0 && cantidadMontanistas / regimientos.length >= 0.5) {
+        habilidades.push('Ignora penalizadores de MOV en montaña y colinas (50% o más de Montañistas)');
+    }
+
     if (movimientos.length) {
-        const esReconocimiento = (apoyos || []).some(apoyo => apoyo.tipo_apoyo === 'reconocimiento');
-        const cantidadRegimientos = (regimientos || []).length;
-        if (cantidadRegimientos > 0 && cantidadMontanistas / cantidadRegimientos >= 0.5) {
-            habilidades.push('Ignora penalizadores de MOV en montaña y colinas (50% o más de Montañistas)');
-        }
         return {
             HP: hp,
             ATK: ataque,
@@ -337,8 +341,8 @@ function crearFichaDivision(informacion, regimientos, apoyos, catalogo) {
             batallones_apoyo: apoyos.map((apoyo, indice) => ({
                 slot: indice + 1,
                 tipo_apoyo: catalogo.batallones_apoyo[apoyo.tipo_apoyo]?.nombre || apoyo.tipo_apoyo,
-                arma_o_equipo_asignado: null,
-                ...(apoyo.tipo_apoyo === 'logistica' ? { reduccion_sup_tecnologica: Math.max(1, numeroSeguro(apoyo.reduccion_sup) || 1) } : {}),
+                arma_o_equipo_asignado: apoyo.tipo_apoyo === 'antitanque' ? apoyo.arma_antitanque || null : null,
+                ...(apoyo.tipo_apoyo === 'logistica' ? { reduccion_sup_tecnologica: calcularReduccionLogistica(apoyo) } : {}),
                 ...(['hospital_campana', 'mantenimiento'].includes(apoyo.tipo_apoyo)
                     ? {
                         nivel_tecnologico: obtenerNivelTecnologico(apoyo, apoyo.tipo_apoyo === 'hospital_campana' ? 'medicina' : 'ingenieria').nivel,
@@ -369,6 +373,13 @@ function obtenerNivelTecnologico(apoyo, tecnologia) {
     const campoManual = tecnologia === 'medicina' ? 'nivel_medicina_manual' : 'nivel_ingenieria_manual';
     const nivel = automatico ? nivelInvestigado : numeroSeguro(apoyo[campoManual]);
     return { nivel: Math.max(0, Math.min(3, Math.floor(nivel))), automatico };
+}
+
+function calcularReduccionLogistica(apoyo, nivelInvestigado = nivelesInvestigacionDivision.ingenieria) {
+    if (Number.isInteger(nivelInvestigado)) {
+        return Math.max(1, 1 + Math.max(0, Math.min(3, nivelInvestigado)));
+    }
+    return Math.max(1, numeroSeguro(apoyo.reduccion_sup ?? apoyo.reduccion_sup_tecnologica) || 1);
 }
 
 async function cargarCatalogoDivision() {
@@ -443,7 +454,12 @@ function renderizarApoyos() {
         const tipo = catalogoDivisiones.batallones_apoyo[apoyo.tipo_apoyo];
         let extra = '';
         if (apoyo.tipo_apoyo === 'logistica') {
-            extra = `<div class="campo"><label for="logistica-${indice}">Reducción total de SUP</label><input id="logistica-${indice}" type="number" min="1" step="1" value="${numeroSeguro(apoyo.reduccion_sup) || 1}" data-apoyo="${indice}" data-campo="reduccion_sup"></div>`;
+            const nivelIngenieria = nivelesInvestigacionDivision.ingenieria;
+            const reduccion = calcularReduccionLogistica(apoyo);
+            extra = `<div class="campo"><label for="logistica-${indice}">Reducción total de SUP</label>
+                <input id="logistica-${indice}" type="number" min="1" step="1" value="${reduccion}" data-apoyo="${indice}" data-campo="reduccion_sup" ${Number.isInteger(nivelIngenieria) ? 'disabled' : ''}>
+                <small>${Number.isInteger(nivelIngenieria) ? `Ingeniería ${nivelIngenieria}: reduce ${reduccion} SUP.` : 'Sin nivel de Ingeniería investigado; ajuste manual (base: 1 SUP).'}</small>
+            </div>`;
         } else if (['hospital_campana', 'mantenimiento'].includes(apoyo.tipo_apoyo)) {
             const tecnologia = apoyo.tipo_apoyo === 'hospital_campana' ? 'medicina' : 'ingenieria';
             const nombreTecnologia = tecnologia === 'medicina' ? 'Medicina moderna' : 'Ingeniería';
@@ -451,6 +467,13 @@ function renderizarApoyos() {
             extra = `<div class="campo"><label for="nivel-apoyo-${indice}">Nivel manual de ${nombreTecnologia} (0-3)</label>
                 <input id="nivel-apoyo-${indice}" type="number" min="0" max="3" step="1" value="${numeroSeguro(apoyo[`nivel_${tecnologia}_manual`])}" data-apoyo="${indice}" data-campo="nivel_${tecnologia}_manual" ${nivel.automatico ? 'disabled' : ''}>
                 <small>${nivel.automatico ? `Aplicando automáticamente nivel ${nivel.nivel} según las investigaciones del país.` : 'No hay nivel investigado disponible; se usa el nivel manual.'}</small>
+            </div>`;
+        } else if (apoyo.tipo_apoyo === 'antitanque') {
+            extra = `<div class="campo"><label for="arma-antitanque-${indice}">Arma antitanque asignada</label>
+                <select id="arma-antitanque-${indice}" data-apoyo="${indice}" data-campo="arma_antitanque">
+                    <option value="">Sin arma asignada</option>
+                    ${armasDivision.map(arma => `<option value="${escaparHtml(arma.id_arma)}" ${apoyo.arma_antitanque?.id_arma === arma.id_arma ? 'selected' : ''}>${escaparHtml(arma.nombre)}${arma.pais_modulo ? ` · ${escaparHtml(arma.pais_modulo)}` : ''} · ATK ${numeroSeguro(arma.ataque)}</option>`).join('')}
+                </select>
             </div>`;
         }
         return `<article class="opcion-modulo">
@@ -618,6 +641,11 @@ function inicializarEventos() {
             renderizarConstructor();
             return;
         }
+        if (control.dataset.campo === 'arma_antitanque') {
+            apoyo.arma_antitanque = armasDivision.find(arma => arma.id_arma === control.value) || null;
+            actualizarEstadisticas();
+            return;
+        }
         apoyo[control.dataset.campo] = numeroSeguro(control.value);
         actualizarEstadisticas();
     });
@@ -631,6 +659,14 @@ function inicializarEventos() {
     document.getElementById('btn-publicar-ficha').addEventListener('click', () => {
         const formulario = document.getElementById('informacion-division');
         if (!formulario.reportValidity()) return;
+        if (apoyosDivision.length > MAX_APOYOS_DIVISION) {
+            const aviso = document.getElementById('aviso-guardado');
+            aviso.textContent = `Una división puede tener como máximo ${MAX_APOYOS_DIVISION} batallones de apoyo. Quita los sobrantes antes de publicar.`;
+            aviso.hidden = false;
+            aviso.style.display = 'flex';
+            aviso.setAttribute('role', 'alert');
+            return;
+        }
         if (!catalogoDivisiones) {
             const aviso = document.getElementById('aviso-guardado');
             aviso.textContent = 'No se puede publicar hasta que termine de cargar la plantilla de divisiones.';
@@ -731,6 +767,7 @@ if (typeof module !== 'undefined') {
     module.exports = {
         calcularEstadisticasDivision,
         calcularBonusTecnologico,
+        calcularReduccionLogistica,
         crearFichaDivision,
         extraerArmasDivision,
         MAX_APOYOS_DIVISION

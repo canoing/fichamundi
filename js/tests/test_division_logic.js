@@ -4,6 +4,7 @@ global.window = {};
 const {
   calcularEstadisticasDivision,
   calcularBonusTecnologico,
+  calcularReduccionLogistica,
   crearFichaDivision,
   extraerArmasDivision,
   MAX_APOYOS_DIVISION
@@ -109,7 +110,7 @@ assert.deepEqual(
     SUP: motorizadaConVehiculo.SUP,
     coste: motorizadaConVehiculo.coste
   },
-  { HP: 34, ATK: 8, DEF: 7, MOV: 7, SUP: 3, coste: 3.5 }
+  { HP: 14, ATK: 3, DEF: 3, MOV: 4, SUP: 3, coste: 0.5 }
 );
 const fichaMotorizadaConVehiculo = crearFichaDivision(
   { nombre_unidad: 'Infantería motorizada', pais_operador: 'Boreostia', tipo_unidad: 'Motorizada' },
@@ -121,10 +122,7 @@ const fichaMotorizadaConVehiculo = crearFichaDivision(
   [],
   catalogo
 );
-assert.equal(
-  fichaMotorizadaConVehiculo.ficha_unidad.regimientos_principales[0].vehiculo.plantilla_id,
-  'vehiculo-prueba'
-);
+assert(!('vehiculo' in fichaMotorizadaConVehiculo.ficha_unidad.regimientos_principales[0]));
 assert.equal(
   fichaMotorizadaConVehiculo.ficha_unidad.regimientos_principales[0].arma_equipada.nombre,
   'Fusil de prueba'
@@ -132,6 +130,90 @@ assert.equal(
 
 assert.equal(MAX_APOYOS_DIVISION, 4);
 assert.deepEqual([0, 1, 2, 3].map(calcularBonusTecnologico), [0, 20, 40, 80]);
+assert.deepEqual(
+  [null, 0, 1, 2, 3].map(level => calcularReduccionLogistica({ reduccion_sup: 1 }, level)),
+  [1, 1, 2, 3, 4]
+);
+assert.equal(calcularReduccionLogistica({ reduccion_sup_tecnologica: 3 }, null), 3);
+
+const infanteriaBase = calcularEstadisticasDivision([{ tipo_regimiento: 'infanteria' }], [], catalogo);
+assert.equal(infanteriaBase.SUP, 1);
+assert.equal(infanteriaBase.MOV, 2);
+const caballeriaBase = calcularEstadisticasDivision([{ tipo_regimiento: 'caballeria' }], [], catalogo);
+assert.equal(caballeriaBase.SUP, 2);
+assert.equal(caballeriaBase.MOV, 3);
+const motorizadaBase = calcularEstadisticasDivision([
+  { tipo_regimiento: 'motorizada', vehiculo_id: 'vehiculo-prueba' }
+], [], catalogo);
+assert.equal(motorizadaBase.SUP, 3);
+assert.equal(motorizadaBase.MOV, 4);
+const carrosBlindados = calcularEstadisticasDivision([
+  { tipo_regimiento: 'carros_blindados', mov_arma: 6 }
+], [], catalogo);
+assert.equal(carrosBlindados.SUP, 4);
+assert.equal(carrosBlindados.MOV, 6);
+const carrosBlindadosConVehiculo = calcularEstadisticasDivision([
+  { tipo_regimiento: 'carros_blindados', vehiculo_id: 'vehiculo-prueba', mov_arma: 6 }
+], [], catalogo);
+assert.equal(carrosBlindadosConVehiculo.MOV, 7);
+const carrosDeCombate = calcularEstadisticasDivision([
+  { tipo_regimiento: 'carros_de_combate', mov_arma: 5 }
+], [], catalogo);
+assert.equal(carrosDeCombate.SUP, 6);
+assert.equal(carrosDeCombate.MOV, 5);
+assert(carrosDeCombate.habilidades_especiales.includes('Ignora la defensa otorgada por ametralladoras enemigas'));
+const carrosDeCombateConVehiculo = calcularEstadisticasDivision([
+  { tipo_regimiento: 'carros_de_combate', vehiculo_id: 'vehiculo-prueba', mov_arma: 5 }
+], [], catalogo);
+assert.equal(carrosDeCombateConVehiculo.MOV, 7);
+
+const logisticaTecnologica = calcularEstadisticasDivision([
+  { tipo_regimiento: 'infanteria' }
+], [{ tipo_apoyo: 'logistica', reduccion_sup: 1 }], catalogo);
+assert.equal(logisticaTecnologica.SUP, 0);
+
+const companiaAntitanque = calcularEstadisticasDivision([
+  { tipo_regimiento: 'infanteria' }
+], [{
+  tipo_apoyo: 'antitanque',
+  arma_antitanque: { ataque: 18 }
+}], catalogo);
+assert.equal(companiaAntitanque.ATK, 19);
+assert.equal(companiaAntitanque.DEF, 2);
+assert.equal(companiaAntitanque.SUP, 2);
+const fichaAntitanque = crearFichaDivision(
+  { nombre_unidad: 'División antitanque', pais_operador: 'Boreostia', tipo_unidad: 'Infantería' },
+  [{ tipo_regimiento: 'infanteria' }],
+  [{ tipo_apoyo: 'antitanque', arma_antitanque: { nombre: 'Cañón AT', ataque: 18 } }],
+  catalogo
+);
+assert.equal(fichaAntitanque.ficha_unidad.batallones_apoyo[0].arma_o_equipo_asignado.ataque, 18);
+const fichaLogistica = crearFichaDivision(
+  { nombre_unidad: 'División logística', pais_operador: 'Boreostia', tipo_unidad: 'Infantería' },
+  [{ tipo_regimiento: 'infanteria' }],
+  [{ tipo_apoyo: 'logistica', reduccion_sup: 3 }],
+  catalogo
+);
+assert.equal(fichaLogistica.ficha_unidad.batallones_apoyo[0].reduccion_sup_tecnologica, 3);
+
+const ingenieros = calcularEstadisticasDivision([
+  { tipo_regimiento: 'infanteria' }
+], [{ tipo_apoyo: 'ingenieros' }], catalogo);
+assert.equal(ingenieros.DEF, 3);
+assert.equal(ingenieros.SUP, 2);
+assert(ingenieros.habilidades_especiales.includes('Ingenieros: ignora penalizadores de MOV en bosque, selva, rio, pantano'));
+
+const montanistasMayoria = calcularEstadisticasDivision([
+  { tipo_regimiento: 'montanistas' },
+  { tipo_regimiento: 'infanteria' }
+], [], catalogo);
+assert(montanistasMayoria.habilidades_especiales.includes('Ignora penalizadores de MOV en montaña y colinas (50% o más de Montañistas)'));
+const montanistasMinoria = calcularEstadisticasDivision([
+  { tipo_regimiento: 'montanistas' },
+  { tipo_regimiento: 'infanteria' },
+  { tipo_regimiento: 'infanteria' }
+], [], catalogo);
+assert(!montanistasMinoria.habilidades_especiales.includes('Ignora penalizadores de MOV en montaña y colinas (50% o más de Montañistas)'));
 
 const granadero = calcularEstadisticasDivision([
   {

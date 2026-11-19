@@ -27,8 +27,7 @@
       "hp_base": 12,
       "atk_base": 2,
       "def_base": 2,
-      "permite_vehiculo": true,
-      "descripcion": "Alta movilidad con mayor consumo de suministros. Puede equiparse con un tanque o vehículo aprobado además de su arma."
+      "descripcion": "Alta movilidad con mayor consumo de suministros."
     },
     "carros_blindados": {
       "nombre": "Carros Blindados",
@@ -112,8 +111,7 @@
       "nombre": "Compañía Antitanque",
       "sup_costo": 1,
       "buffs": {
-        "atk_antitanque": "Según el arma AT asignada",
-        "def_bonus": 1
+        "atk_antitanque": "Según el arma AT asignada"
       },
       "descripcion": "Especializada en neutralizar blindados enemigos."
     },
@@ -134,8 +132,8 @@
       "buffs": {
         "reduccion_sup": 1
       },
-      "mejora_tecnologica": "Aumenta la reducción de SUP según el nivel técnico investigado.",
-      "descripcion": "Optimiza la cadena de suministros, reduciendo el consumo global de la unidad."
+      "mejora_tecnologica": "Reduce 1 SUP base, más 1 SUP por cada nivel de Ingeniería investigado.",
+      "descripcion": "Reduce 1 SUP base, más 1 SUP por cada nivel de Ingeniería investigado; sin tecnología, puede ajustarse manualmente."
     },
     "reconocimiento": {
       "nombre": "Compañía de Reconocimiento",
