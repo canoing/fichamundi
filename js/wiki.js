@@ -462,12 +462,27 @@ function getTemplatePrice(template) {
 }
 
 function renderArmamentInventory(parent, post, templates) {
-    const inventoryTemplates = templates.filter(template => getTemplateCategory(template) !== 'tank');
+    const countryKey = normalizeText(post.country);
+    const foreignTemplates = [...approvedTemplatesByCountry.entries()]
+        .filter(([templateCountry]) => templateCountry !== countryKey)
+        .flatMap(([, countryTemplates]) => countryTemplates)
+        .filter(template => ['naval', 'aircraft'].includes(getTemplateCategory(template)));
+    const foreignTemplatesById = new Map(foreignTemplates.map(template => [template.id, template]));
+    const storedForeignIds = Array.isArray(post.economy?.foreign_armament_template_ids)
+        ? [...new Set(post.economy.foreign_armament_template_ids.filter(id => typeof id === 'string'))]
+        : [];
+    const selectedForeignTemplates = storedForeignIds
+        .map(id => foreignTemplatesById.get(id))
+        .filter(Boolean);
+    const inventoryTemplates = [
+        ...templates.filter(template => getTemplateCategory(template) !== 'tank'),
+        ...selectedForeignTemplates
+    ];
     const section = createElement('section', undefined, 'wiki-publication-section wiki-armament-section');
     section.append(createElement('h3', 'Armamento en servicio y presupuesto'));
     section.append(createElement(
         'p',
-        'Indica las unidades que posee el país. El mantenimiento anual se estima en el 10% del precio original y se compara con el gasto militar anual.',
+        'Indica las unidades que posee el país. Puedes comprar barcos y aviones aprobados de otros países; aparecerán aquí, sin agregarse a «Armamento aprobado». No se incluyen tanques ni plantillas de divisiones. El mantenimiento anual se estima en el 10% del precio original.',
         'wiki-empty'
     ));
 
@@ -478,43 +493,107 @@ function renderArmamentInventory(parent, post, templates) {
         ? inventory
         : {};
     const quantityInputs = [];
+    const categoryGroups = new Map();
+    let refreshTotals = () => {};
 
     if (!approvedTemplatesLoaded) {
         form.append(createElement('p', 'No se pudo cargar el catálogo de armamento aprobado.', 'wiki-empty'));
-    } else if (!inventoryTemplates.length) {
+    } else if (!inventoryTemplates.length && !foreignTemplates.length) {
         form.append(createElement('p', 'No hay armamento aprobado para este país.', 'wiki-empty'));
     } else {
-        armamentCategories.filter(([category]) => category !== 'tank').forEach(([category, categoryLabel]) => {
-            const categoryTemplates = inventoryTemplates.filter(template => getTemplateCategory(template) === category);
-            if (!categoryTemplates.length) return;
-            const group = createElement('section', undefined, 'wiki-armament-category');
-            group.append(createElement('h4', categoryLabel));
-            const list = createElement('div', undefined, 'wiki-armament-list');
-            categoryTemplates.forEach(template => {
-                const row = createElement('div', undefined, 'wiki-armament-row');
-                const details = createElement('div');
-                details.append(createElement('strong', template.name));
-                details.append(createElement(
-                    'small',
-                    template.price === null ? 'Precio original no disponible' : `Precio unitario: ${formatMillions(template.price)}`
-                ));
+        const selectableForeignTemplates = foreignTemplates.filter(template => !storedForeignIds.includes(template.id));
+        if (selectableForeignTemplates.length) {
+            const purchaseSection = createElement('div', undefined, 'campo');
+            const search = document.createElement('input');
+            search.type = 'search';
+            search.placeholder = 'Buscar por país o nombre';
+            const searchLabel = createElement('label', 'Buscar plantilla aprobada');
+            searchLabel.append(search);
+            purchaseSection.append(searchLabel);
 
-                const label = createElement('label', 'Unidades');
-                const input = document.createElement('input');
-                input.type = 'number';
-                input.min = '0';
-                input.step = '1';
-                input.required = true;
-                input.value = String(Math.max(0, Math.floor(Number(storedQuantities[template.id]) || 0)));
-                input.setAttribute('aria-label', `Unidades de ${template.name}`);
-                label.append(input);
-                row.append(details, label);
-                list.append(row);
-                quantityInputs.push({ input, template });
+            const select = document.createElement('select');
+            const placeholder = createElement('option', 'Selecciona un barco o avión aprobado');
+            placeholder.value = '';
+            select.append(placeholder);
+            selectableForeignTemplates.forEach(template => {
+                const categoryLabel = getTemplateCategory(template) === 'naval' ? 'Barco' : 'Avión';
+                const option = createElement('option', `${template.country} — ${categoryLabel}: ${template.name}`);
+                option.value = template.id;
+                select.append(option);
             });
-            group.append(list);
-            form.append(group);
-        });
+            const label = createElement('label', 'Plantilla extranjera');
+            label.append(select);
+            const addButton = createElement('button', 'Agregar al inventario');
+            addButton.type = 'button';
+            addButton.className = 'btn btn-secondary';
+            addButton.disabled = true;
+            search.addEventListener('input', () => {
+                const query = normalizeText(search.value.trim());
+                [...select.options].slice(1).forEach(option => {
+                    option.hidden = Boolean(query) && !normalizeText(option.textContent).includes(query);
+                });
+            });
+            select.addEventListener('change', () => {
+                addButton.disabled = !select.value;
+            });
+            addButton.addEventListener('click', () => {
+                const template = foreignTemplatesById.get(select.value);
+                if (!template || storedForeignIds.includes(template.id)) return;
+                storedForeignIds.push(template.id);
+                addInventoryTemplate(template);
+                [...select.options].find(option => option.value === template.id)?.remove();
+                select.value = '';
+                addButton.disabled = true;
+                if (select.options.length === 1) purchaseSection.remove();
+                refreshTotals();
+            });
+            purchaseSection.append(label, addButton);
+            form.append(purchaseSection);
+        }
+
+        const inventoryList = createElement('div');
+        form.append(inventoryList);
+        function addInventoryTemplate(template) {
+            const category = getTemplateCategory(template);
+            let categoryGroup = categoryGroups.get(category);
+            if (!categoryGroup) {
+                const group = createElement('section', undefined, 'wiki-armament-category');
+                const categoryLabel = armamentCategories.find(([key]) => key === category)?.[1] || 'Otros';
+                group.append(createElement('h4', categoryLabel));
+                const list = createElement('div', undefined, 'wiki-armament-list');
+                group.append(list);
+                categoryGroup = { group, list };
+                categoryGroups.set(category, categoryGroup);
+                inventoryList.append(group);
+            }
+
+            const row = createElement('div', undefined, 'wiki-armament-row');
+            const details = createElement('div');
+            details.append(createElement('strong', template.name));
+            const detailsText = normalizeText(template.country) !== countryKey
+                ? `Plantilla aprobada de ${template.country} · `
+                : '';
+            details.append(createElement(
+                'small',
+                `${detailsText}${template.price === null ? 'Precio original no disponible' : `Precio unitario: ${formatMillions(template.price)}`}`
+            ));
+
+            const label = createElement('label', 'Unidades');
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.min = '0';
+            input.step = '1';
+            input.required = true;
+            input.value = String(Math.max(0, Math.floor(Number(storedQuantities[template.id]) || 0)));
+            input.setAttribute('aria-label', `Unidades de ${template.name}`);
+            label.append(input);
+            row.append(details, label);
+            categoryGroup.list.append(row);
+            quantityInputs.push({ input, template });
+            input.addEventListener('input', () => refreshTotals());
+        }
+
+        inventoryTemplates.forEach(addInventoryTemplate);
     }
 
     const totals = createElement('dl', undefined, 'wiki-economy-grid wiki-armament-totals');
@@ -535,7 +614,7 @@ function renderArmamentInventory(parent, post, templates) {
     const saveButton = createElement('button', 'Guardar inventario');
     saveButton.type = 'submit';
     saveButton.className = 'btn btn-primary';
-    saveButton.disabled = !approvedTemplatesLoaded || !inventoryTemplates.length;
+    saveButton.disabled = !approvedTemplatesLoaded || (!inventoryTemplates.length && !foreignTemplates.length);
     actions.append(saveButton);
     form.append(actions);
     const feedback = createElement('p', undefined, 'comprobante-modulos');
@@ -543,7 +622,7 @@ function renderArmamentInventory(parent, post, templates) {
     form.append(feedback);
     section.append(form);
 
-    const refreshTotals = () => {
+    refreshTotals = () => {
         let priceTotal = 0;
         let unpricedCount = 0;
         quantityInputs.forEach(({ input, template }) => {
@@ -580,7 +659,6 @@ function renderArmamentInventory(parent, post, templates) {
             showStatus(comparison, `Añade el PIB y el porcentaje de gasto militar en «Editar información» para comparar el presupuesto.${missingPriceMessage}`, false);
         }
     };
-    quantityInputs.forEach(({ input }) => input.addEventListener('input', refreshTotals));
     refreshTotals();
 
     form.addEventListener('submit', async event => {
@@ -601,7 +679,8 @@ function renderArmamentInventory(parent, post, templates) {
                 .update({
                     economy: {
                         ...(post.economy && typeof post.economy === 'object' ? post.economy : {}),
-                        armament_inventory: updatedInventory
+                        armament_inventory: updatedInventory,
+                        foreign_armament_template_ids: storedForeignIds
                     }
                 })
                 .eq('id', post.id)
