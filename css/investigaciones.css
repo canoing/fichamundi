@@ -90,6 +90,21 @@
     gap: 8px;
 }
 
+.wiki-armament-category {
+    display: grid;
+    gap: 8px;
+}
+
+.wiki-armament-category > h4 {
+    margin: 4px 0 0;
+    color: #536779;
+    font-size: 0.95rem;
+}
+
+.wiki-armament-category > .wiki-name-list {
+    padding-left: 0;
+}
+
 .wiki-armament-row {
     display: flex;
     align-items: center;

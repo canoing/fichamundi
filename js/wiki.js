@@ -85,6 +85,59 @@ function renderSnapshotList(article, title, items, formatItem) {
     article.append(section);
 }
 
+const armamentCategories = [
+    ['naval', 'Barcos'],
+    ['tank', 'Tanques'],
+    ['aircraft', 'Aviones'],
+    ['infantry', 'Divisiones'],
+    ['other', 'Otros']
+];
+
+function getTemplateCategory(template) {
+    const fileName = normalizeText(template.file_name || '');
+    const content = template.content || {};
+    const selected = content.modulos_seleccionados
+        || content.componentes_seleccionados
+        || {};
+    const type = normalizeText([
+        content.tipo,
+        content.tipo_ficha,
+        content.categoria,
+        content.vehicle,
+        content.category
+    ].filter(value => typeof value === 'string').join(' '));
+
+    if (fileName.startsWith('buque-') || selected.casco) return 'naval';
+    if (fileName.startsWith('avion-') || selected.fuselaje || selected.motores) return 'aircraft';
+    if (fileName.startsWith('tanque-') || selected.chasis || selected.traccion
+        || /\b(tanque|tanques|vehiculo|vehiculos|vehicle|vehicles)\b/.test(type)) return 'tank';
+    if (fileName.startsWith('division-') || content.ficha_unidad) return 'infantry';
+    return 'other';
+}
+
+function renderArmamentCatalog(parent, templates, fallbackNames = []) {
+    const section = createElement('section', undefined, 'wiki-publication-section wiki-armament-catalog');
+    section.append(createElement('h3', 'Armamento aprobado'));
+    const groups = new Map(armamentCategories.map(([category]) => [category, []]));
+    templates.forEach(template => groups.get(getTemplateCategory(template)).push(template.name));
+    if (!templates.length) groups.get('other').push(...fallbackNames);
+
+    let hasEntries = false;
+    armamentCategories.forEach(([category, label]) => {
+        const names = groups.get(category);
+        if (!names.length) return;
+        hasEntries = true;
+        const group = createElement('section', undefined, 'wiki-armament-category');
+        group.append(createElement('h4', label));
+        const list = createElement('ul', undefined, 'wiki-name-list');
+        names.forEach(name => list.append(createElement('li', name, 'wiki-name-item')));
+        group.append(list);
+        section.append(group);
+    });
+    if (!hasEntries) section.append(createElement('p', 'No hay datos disponibles.', 'wiki-empty'));
+    parent.append(section);
+}
+
 function renderEconomy(article, economy) {
     const section = createElement('section', undefined, 'wiki-publication-section');
     section.append(createElement('h3', 'Datos económicos'));
@@ -350,7 +403,7 @@ function renderCommunityPost(post) {
         ? [...new Set(countryTemplates.map(template => template.name))]
         : (Array.isArray(post.weapons) ? post.weapons : []);
     const catalog = createElement('div', undefined, 'wiki-catalog-grid');
-    renderSnapshotList(catalog, 'Armamento aprobado', templateNames, item => item);
+    renderArmamentCatalog(catalog, countryTemplates, templateNames);
     renderSnapshotList(catalog, 'Módulos aprobados', modules, getModuleName);
     content.append(catalog);
     renderArmamentInventory(content, post, countryTemplates);
@@ -384,24 +437,6 @@ function parseTemplatePrice(value) {
     return Number.isFinite(price) && price >= 0 ? price : null;
 }
 
-function isVehicleOrTankTemplate(template) {
-    const fileName = normalizeText(template.file_name || '').replace(/[^a-z0-9]+/g, '-');
-    const content = template.content || {};
-    const selected = content.modulos_seleccionados
-        || content.componentes_seleccionados
-        || {};
-    const type = normalizeText([
-        content.tipo,
-        content.tipo_ficha,
-        content.categoria,
-        content.vehicle,
-        content.category
-    ].filter(value => typeof value === 'string').join(' '));
-    return /^(tanque|vehiculo|vehicle)(-|$)/.test(fileName)
-        || Boolean(selected.chasis)
-        || /\b(tanque|tanques|vehiculo|vehiculos|vehicle|vehicles)\b/.test(type);
-}
-
 function getTemplatePrice(template) {
     const content = template.content;
     const stats = content?.ficha_unidad?.estadisticas_acumuladas
@@ -427,7 +462,7 @@ function getTemplatePrice(template) {
 }
 
 function renderArmamentInventory(parent, post, templates) {
-    const inventoryTemplates = templates.filter(template => !isVehicleOrTankTemplate(template));
+    const inventoryTemplates = templates.filter(template => getTemplateCategory(template) !== 'tank');
     const section = createElement('section', undefined, 'wiki-publication-section wiki-armament-section');
     section.append(createElement('h3', 'Armamento en servicio y presupuesto'));
     section.append(createElement(
@@ -449,30 +484,37 @@ function renderArmamentInventory(parent, post, templates) {
     } else if (!inventoryTemplates.length) {
         form.append(createElement('p', 'No hay armamento aprobado para este país.', 'wiki-empty'));
     } else {
-        const list = createElement('div', undefined, 'wiki-armament-list');
-        inventoryTemplates.forEach(template => {
-            const row = createElement('div', undefined, 'wiki-armament-row');
-            const details = createElement('div');
-            details.append(createElement('strong', template.name));
-            details.append(createElement(
-                'small',
-                template.price === null ? 'Precio original no disponible' : `Precio unitario: ${formatMillions(template.price)}`
-            ));
+        armamentCategories.filter(([category]) => category !== 'tank').forEach(([category, categoryLabel]) => {
+            const categoryTemplates = inventoryTemplates.filter(template => getTemplateCategory(template) === category);
+            if (!categoryTemplates.length) return;
+            const group = createElement('section', undefined, 'wiki-armament-category');
+            group.append(createElement('h4', categoryLabel));
+            const list = createElement('div', undefined, 'wiki-armament-list');
+            categoryTemplates.forEach(template => {
+                const row = createElement('div', undefined, 'wiki-armament-row');
+                const details = createElement('div');
+                details.append(createElement('strong', template.name));
+                details.append(createElement(
+                    'small',
+                    template.price === null ? 'Precio original no disponible' : `Precio unitario: ${formatMillions(template.price)}`
+                ));
 
-            const label = createElement('label', 'Unidades');
-            const input = document.createElement('input');
-            input.type = 'number';
-            input.min = '0';
-            input.step = '1';
-            input.required = true;
-            input.value = String(Math.max(0, Math.floor(Number(storedQuantities[template.id]) || 0)));
-            input.setAttribute('aria-label', `Unidades de ${template.name}`);
-            label.append(input);
-            row.append(details, label);
-            list.append(row);
-            quantityInputs.push({ input, template });
+                const label = createElement('label', 'Unidades');
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.min = '0';
+                input.step = '1';
+                input.required = true;
+                input.value = String(Math.max(0, Math.floor(Number(storedQuantities[template.id]) || 0)));
+                input.setAttribute('aria-label', `Unidades de ${template.name}`);
+                label.append(input);
+                row.append(details, label);
+                list.append(row);
+                quantityInputs.push({ input, template });
+            });
+            group.append(list);
+            form.append(group);
         });
-        form.append(list);
     }
 
     const totals = createElement('dl', undefined, 'wiki-economy-grid wiki-armament-totals');
@@ -706,13 +748,13 @@ function renderCommunityPosts() {
         const modules = approvedModulesByCountry.get(countryKey) || [];
         const templates = approvedTemplatesByCountry.get(countryKey) || [];
         const country = modules[0]?.country || templates[0]?.country || countryKey;
-        renderApprovedCatalogCountry(country, [...new Set(templates.map(template => template.name))], modules);
+        renderApprovedCatalogCountry(country, templates, modules);
     });
 }
 
-function renderApprovedCatalogCountry(country, templateNames, modules) {
+function renderApprovedCatalogCountry(country, templates, modules) {
     const article = createElement('details', undefined, 'research-publication');
-    article.dataset.searchText = normalizeText(`${country} ${templateNames.join(' ')} ${modules.map(getModuleName).join(' ')}`);
+    article.dataset.searchText = normalizeText(`${country} ${templates.map(template => template.name).join(' ')} ${modules.map(getModuleName).join(' ')}`);
 
     const summary = createElement('summary');
     summary.append(createElement('strong', country));
@@ -721,7 +763,7 @@ function renderApprovedCatalogCountry(country, templateNames, modules) {
 
     const content = createElement('div', undefined, 'research-publication-content');
     const catalog = createElement('div', undefined, 'wiki-catalog-grid');
-    renderSnapshotList(catalog, 'Armamento aprobado', templateNames, item => item);
+    renderArmamentCatalog(catalog, templates);
     renderSnapshotList(catalog, 'Módulos aprobados', modules, getModuleName);
     content.append(catalog);
     renderLiveResearch(content, country);
