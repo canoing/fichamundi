@@ -173,6 +173,13 @@ function calcularAtaqueAereoBase(estado = seleccionados) {
     return sumarPorCategoria(estado, 'armamento', 'ataque');
 }
 
+function calcularAtaqueAereo(estado = seleccionados) {
+    const maniobrabilidadEnAtaque = tipoAvion === 'bombardero'
+        ? 0
+        : calcularManiobrabilidad(estado);
+    return calcularAtaqueAereoBase(estado) + maniobrabilidadEnAtaque;
+}
+
 function calcularAtaqueTierra(estado = seleccionados) {
     return sumarPorCategoria(estado, 'bombas', 'ataque_tierra');
 }
@@ -186,9 +193,7 @@ function calcularAtaqueNaval(estado = seleccionados) {
 // suma al ataque aéreo (pasa a ser defensa). Más bombas ('AT') y torpedos ('AN').
 // Formato: "10A/14AT"
 function calcularAtaqueTotal(estado = seleccionados) {
-    const esBombardero = tipoAvion === 'bombardero';
-    const manoAtaque = esBombardero ? 0 : calcularManiobrabilidad(estado);
-    const ataqueA = calcularAtaqueAereoBase(estado) + manoAtaque;
+    const ataqueA = calcularAtaqueAereo(estado);
     const ataqueT = calcularAtaqueTierra(estado);
     const ataqueN = calcularAtaqueNaval(estado);
 
@@ -745,6 +750,9 @@ function crearFicha() {
             altitud: calcularAltitud(),
             maniobrabilidad: calcularManiobrabilidad(),
             ataque: calcularAtaqueTotal(),
+            ataque_aereo: calcularAtaqueAereo(),
+            ataque_tierra: calcularAtaqueTierra(),
+            ataque_naval: calcularAtaqueNaval(),
             defensa: calcularDefensaTotal(),
             vida: calcularVidaTotal(),
             coste: calcularCosteTotal(),

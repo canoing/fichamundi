@@ -101,6 +101,40 @@
     font-size: 0.95rem;
 }
 
+.wiki-armament-statistics {
+    display: grid;
+    gap: 4px;
+    margin-top: 5px;
+}
+
+.wiki-armament-statistics .wiki-economy-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 125px), 1fr));
+    gap: 3px 7px;
+    font-size: 0.78em;
+}
+
+.wiki-armament-purchase,
+.wiki-armament-purchase label,
+.wiki-armament-template-select {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.wiki-armament-purchase label,
+.wiki-armament-template-select {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.wiki-armament-template-select {
+    display: block;
+}
+
+.wiki-armament-category-totals {
+    padding-top: 8px;
+    border-top: 1px solid #dce4ea;
+}
+
 .wiki-armament-category > .wiki-name-list {
     padding-left: 0;
 }
@@ -110,8 +144,8 @@
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
-    gap: 8px 16px;
-    padding: 10px;
+    gap: 6px 12px;
+    padding: 7px;
     border: 1px solid #e1e8ee;
     border-radius: 6px;
     background: #f7fafc;

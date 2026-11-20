@@ -437,6 +437,130 @@ function parseTemplatePrice(value) {
     return Number.isFinite(price) && price >= 0 ? price : null;
 }
 
+const armamentStatisticFields = [
+    ['Ataque', ['ataque', 'ATK', 'atk', 'attack']],
+    ['Ataque aéreo', ['ataque_aereo', 'ataque_aéreo', 'ataque_aereo_total', 'air_attack']],
+    ['Ataque terrestre', ['ataque_tierra', 'ataque_terrestre', 'ground_attack']],
+    ['Ataque naval', ['ataque_naval', 'naval_attack']],
+    ['Daño P/L', ['ataque_pl_total', 'damage_pl']],
+    ['Daño submarino', ['dano_submarino', 'daño_submarino', 'submarine_damage']],
+    ['Defensa', ['defensa', 'DEF', 'defense']],
+    ['Defensa P/L', ['defensa_pl_total', 'defense_pl']],
+    ['HP', ['hp', 'HP', 'Hp', 'vida', 'Vida', 'vida_total', 'health']]
+];
+
+function getTemplateStatistics(template) {
+    const content = template.content || {};
+    const stats = content.ficha_unidad?.estadisticas_acumuladas
+        || content.estadisticas_acumuladas
+        || content.estadisticas
+        || content.comprobante_modulos
+        || content.stats
+        || (Array.isArray(content) ? content[0] : content)
+        || {};
+    const statistics = armamentStatisticFields
+        .map(([label, keys]) => {
+            const key = keys.find(candidate => stats[candidate] !== null
+                && stats[candidate] !== undefined
+                && String(stats[candidate]).trim() !== '');
+            return key ? { label, value: stats[key] } : null;
+        })
+        .filter(Boolean);
+
+    const attackTypes = [
+        ['Ataque aéreo', ['ataque_aereo', 'ataque_aéreo', 'ataque_aereo_total', 'air_attack'], 'A'],
+        ['Ataque terrestre', ['ataque_tierra', 'ataque_terrestre', 'ground_attack'], 'AT'],
+        ['Ataque naval', ['ataque_naval', 'naval_attack'], 'AN']
+    ];
+    const attackByType = parseAircraftAttack(stats.ataque);
+    attackTypes.forEach(([label, keys, suffix]) => {
+        const alreadyStored = keys.some(key => stats[key] !== null
+            && stats[key] !== undefined
+            && String(stats[key]).trim() !== '');
+        if (alreadyStored || statistics.some(statistic => statistic.label === label)) return;
+        const value = attackByType?.get(suffix);
+        if (value !== undefined) statistics.push({ label, value });
+    });
+
+    return statistics.filter(entry => hasNonZeroStatistic(entry.value));
+}
+
+function hasNonZeroStatistic(value) {
+    const aircraftAttack = parseAircraftAttack(value);
+    if (aircraftAttack) return [...aircraftAttack.values()].some(amount => amount !== 0);
+    const channels = parseDamageChannels(value);
+    if (channels) return Object.values(channels).some(amount => amount !== 0);
+    if (typeof value === 'string' && value.trim() === '') return false;
+    const number = typeof value === 'number'
+        ? value
+        : typeof value === 'string' && value.trim() !== ''
+            ? Number(value.trim().replace(',', '.'))
+            : NaN;
+    return !Number.isFinite(number) || number !== 0;
+}
+
+function parseAircraftAttack(value) {
+    if (typeof value !== 'string') return null;
+    const matches = [...value.trim().matchAll(/(\d+(?:[.,]\d+)?)\s*(AT|AN|A)(?=\s*(?:\/|$))/gi)];
+    if (!matches.length) return null;
+    return new Map(matches.map(([, amount, type]) => [
+        type.toUpperCase(),
+        Number(amount.replace(',', '.'))
+    ]));
+}
+
+function parseDamageChannels(value) {
+    if (typeof value !== 'string') return null;
+    const channels = {};
+    const pattern = /(\d+(?:[.,]\d+)?)\s*\(?([PL])\)?/gi;
+    let match;
+    while ((match = pattern.exec(value))) {
+        channels[match[2].toUpperCase()] = Number(match[1].replace(',', '.'));
+    }
+    return Object.keys(channels).length ? channels : null;
+}
+
+function formatArmamentStatistic(value) {
+    const aircraftAttack = parseAircraftAttack(value);
+    if (aircraftAttack) {
+        return ['A', 'AT', 'AN']
+            .filter(type => aircraftAttack.has(type) && aircraftAttack.get(type) !== 0)
+            .map(type => `${formatStatisticNumber(aircraftAttack.get(type))}${type}`)
+            .join('/');
+    }
+    const channels = parseDamageChannels(value);
+    if (channels) {
+        return ['P', 'L']
+            .filter(channel => channels[channel] !== undefined && channels[channel] !== 0)
+            .map(channel => `${formatStatisticNumber(channels[channel])}(${channel})`)
+            .join(' ');
+    }
+    const number = typeof value === 'number'
+        ? value
+        : typeof value === 'string' && value.trim() !== ''
+            ? Number(value.trim().replace(',', '.'))
+            : NaN;
+    return Number.isFinite(number) ? formatStatisticNumber(number) : String(value);
+}
+
+function formatStatisticNumber(value) {
+    return new Intl.NumberFormat('es', { maximumFractionDigits: 2 }).format(value);
+}
+
+function renderArmamentStatistics(parent, statistics, title) {
+    if (!statistics.length) return null;
+    const container = createElement('div', undefined, 'wiki-armament-statistics');
+    if (title) container.append(createElement('strong', title));
+    const definitions = createElement('dl', undefined, 'wiki-economy-grid');
+    statistics.forEach(({ label, value }) => {
+        definitions.append(createElement('dt', label));
+        definitions.append(createElement('dd', formatArmamentStatistic(value)));
+    });
+    container.append(definitions);
+    parent.append(container);
+    return definitions;
+}
+
 function getTemplatePrice(template) {
     const content = template.content;
     const stats = content?.ficha_unidad?.estadisticas_acumuladas
@@ -482,7 +606,7 @@ function renderArmamentInventory(parent, post, templates) {
     section.append(createElement('h3', 'Armamento en servicio y presupuesto'));
     section.append(createElement(
         'p',
-        'Indica las unidades que posee el país. Puedes comprar barcos y aviones aprobados de otros países; aparecerán aquí, sin agregarse a «Armamento aprobado». No se incluyen tanques ni plantillas de divisiones. El mantenimiento anual se estima en el 10% del precio original.',
+        'Indica las unidades que posee el país. Puedes comprar barcos y aviones aprobados de otros países; aparecerán aquí, sin agregarse a «Armamento aprobado». No se incluyen tanques. El mantenimiento anual se estima en el 10% del precio original.',
         'wiki-empty'
     ));
 
@@ -491,6 +615,11 @@ function renderArmamentInventory(parent, post, templates) {
     const inventory = post.economy?.armament_inventory;
     const storedQuantities = inventory && typeof inventory === 'object' && !Array.isArray(inventory)
         ? inventory
+        : {};
+    const storedSectionNames = post.economy?.armament_section_names
+        && typeof post.economy.armament_section_names === 'object'
+        && !Array.isArray(post.economy.armament_section_names)
+        ? post.economy.armament_section_names
         : {};
     const quantityInputs = [];
     const categoryGroups = new Map();
@@ -503,7 +632,7 @@ function renderArmamentInventory(parent, post, templates) {
     } else {
         const selectableForeignTemplates = foreignTemplates.filter(template => !storedForeignIds.includes(template.id));
         if (selectableForeignTemplates.length) {
-            const purchaseSection = createElement('div', undefined, 'campo');
+            const purchaseSection = createElement('div', undefined, 'campo wiki-armament-purchase');
             const search = document.createElement('input');
             search.type = 'search';
             search.placeholder = 'Buscar por país o nombre';
@@ -512,6 +641,7 @@ function renderArmamentInventory(parent, post, templates) {
             purchaseSection.append(searchLabel);
 
             const select = document.createElement('select');
+            select.className = 'wiki-armament-template-select';
             const placeholder = createElement('option', 'Selecciona un barco o avión aprobado');
             placeholder.value = '';
             select.append(placeholder);
@@ -559,12 +689,35 @@ function renderArmamentInventory(parent, post, templates) {
             if (!categoryGroup) {
                 const group = createElement('section', undefined, 'wiki-armament-category');
                 const categoryLabel = armamentCategories.find(([key]) => key === category)?.[1] || 'Otros';
-                group.append(createElement('h4', categoryLabel));
+                const heading = createElement('h4');
+                const headingInput = document.createElement('input');
+                headingInput.type = 'text';
+                headingInput.maxLength = 80;
+                headingInput.value = String(storedSectionNames[category] || '');
+                headingInput.placeholder = `Nombre de la sección (${categoryLabel})`;
+                headingInput.setAttribute('aria-label', `Nombre personalizado de la sección ${categoryLabel}`);
+                const headingLabel = createElement('label', `Nombre personalizado (${categoryLabel})`);
+                headingLabel.append(headingInput);
+                const headingField = createElement('div', undefined, 'campo');
+                headingField.append(headingLabel);
+                group.append(heading, headingField);
                 const list = createElement('div', undefined, 'wiki-armament-list');
+                const totals = createElement('div', undefined, 'wiki-armament-category-totals');
+                const totalHeading = createElement('strong', 'Estadísticas totales');
                 group.append(list);
-                categoryGroup = { group, list };
+                const hasCategoryTotals = ['naval', 'aircraft', 'infantry'].includes(category);
+                if (hasCategoryTotals) group.append(totalHeading, totals);
+                categoryGroup = {
+                    group,
+                    list,
+                    heading,
+                    headingInput,
+                    totals: hasCategoryTotals ? totals : null,
+                    categoryLabel
+                };
                 categoryGroups.set(category, categoryGroup);
                 inventoryList.append(group);
+                headingInput.addEventListener('input', () => refreshTotals());
             }
 
             const row = createElement('div', undefined, 'wiki-armament-row');
@@ -577,6 +730,7 @@ function renderArmamentInventory(parent, post, templates) {
                 'small',
                 `${detailsText}${template.price === null ? 'Precio original no disponible' : `Precio unitario: ${formatMillions(template.price)}`}`
             ));
+            renderArmamentStatistics(details, getTemplateStatistics(template));
 
             const label = createElement('label', 'Unidades');
             const input = document.createElement('input');
@@ -625,6 +779,56 @@ function renderArmamentInventory(parent, post, templates) {
     refreshTotals = () => {
         let priceTotal = 0;
         let unpricedCount = 0;
+        categoryGroups.forEach(({ heading, headingInput, categoryLabel, totals }, category) => {
+            const customName = headingInput.value.trim();
+            heading.textContent = customName ? `${customName} (${categoryLabel})` : categoryLabel;
+            if (!totals) return;
+            totals.replaceChildren();
+
+            const statisticsByLabel = new Map();
+            quantityInputs
+                .filter(({ template }) => getTemplateCategory(template) === category)
+                .forEach(({ input, template }) => {
+                    const quantity = Math.max(0, Math.floor(Number(input.value) || 0));
+                    getTemplateStatistics(template).forEach(({ label, value }) => {
+                        const channels = parseDamageChannels(value);
+                        const numericValue = typeof value === 'number'
+                            ? value
+                            : typeof value === 'string' && value.trim() !== ''
+                                ? Number(value.trim().replace(',', '.'))
+                                : NaN;
+                        if (channels) {
+                            const total = statisticsByLabel.get(label) || {};
+                            Object.entries(channels).forEach(([channel, amount]) => {
+                                total[channel] = (total[channel] || 0) + amount * quantity;
+                            });
+                            statisticsByLabel.set(label, total);
+                        } else if (Number.isFinite(numericValue)) {
+                            statisticsByLabel.set(
+                                label,
+                                (statisticsByLabel.get(label) || 0) + numericValue * quantity
+                            );
+                        }
+                    });
+                });
+            const totalStatistics = [...statisticsByLabel]
+                .map(([label, value]) => ({
+                    label,
+                    value: typeof value === 'number'
+                        ? value
+                        : ['P', 'L']
+                            .filter(channel => value[channel] !== undefined && value[channel] !== 0)
+                            .map(channel => `${value[channel]}(${channel})`)
+                            .join(' ')
+                }))
+                .filter(({ value }) => hasNonZeroStatistic(value));
+            if (totalStatistics.length) {
+                renderArmamentStatistics(totals, totalStatistics);
+            } else {
+                totals.append(createElement('p', 'No hay estadísticas registradas.', 'wiki-empty'));
+            }
+        });
+
         quantityInputs.forEach(({ input, template }) => {
             const quantity = Math.max(0, Math.floor(Number(input.value) || 0));
             if (quantity && template.price === null) unpricedCount += quantity;
@@ -680,7 +884,14 @@ function renderArmamentInventory(parent, post, templates) {
                     economy: {
                         ...(post.economy && typeof post.economy === 'object' ? post.economy : {}),
                         armament_inventory: updatedInventory,
-                        foreign_armament_template_ids: storedForeignIds
+                        foreign_armament_template_ids: storedForeignIds,
+                        armament_section_names: {
+                            ...storedSectionNames,
+                            ...Object.fromEntries([...categoryGroups].map(([category, group]) => [
+                                category,
+                                group.headingInput.value.trim()
+                            ]))
+                        }
                     }
                 })
                 .eq('id', post.id)
