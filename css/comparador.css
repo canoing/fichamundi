@@ -5,64 +5,175 @@
     background: #fbfdff;
 }
 
-.pagina-comparador .comparador-vehiculos {
+.pagina-comparador .comparador-ejercitos {
+    display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
-    margin: 18px 0;
-}
-
-.pagina-comparador .comparador-vehiculos .campo {
-    min-width: 0;
-    padding: 12px;
-    border: 1px solid #dce4ea;
-    border-radius: 8px;
-    background: #f5f9fc;
-}
-
-.pagina-comparador .comparador-vehiculos .campo select {
-    min-height: 44px;
-}
-
-.pagina-comparador .comparador-chart-card {
+    gap: 14px;
     margin-top: 16px;
 }
 
-.pagina-comparador .comparador-chart-svg {
-    display: block;
-}
-
-.pagina-comparador .comparador-chart-viewport {
-    max-width: 100%;
-}
-
-.pagina-comparador .comparador-chart-metric {
-    fill: #1a3a52;
-}
-
-.pagina-comparador .comparador-chart-value {
-    fill: #333;
-}
-
-.pagina-comparador .comparador-chart-missing {
-    fill: #666;
-}
-
-.pagina-comparador .comparador-chart-axis {
-    stroke: #c7d2dc;
-}
-
-.pagina-comparador .comparador-legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 14px;
-}
-
-.pagina-comparador .comparador-legend-item {
-    padding: 7px 10px;
+.pagina-comparador .comparador-ejercito,
+.pagina-comparador .comparador-resultado {
+    min-width: 0;
+    padding: 14px;
     border: 1px solid #dce4ea;
-    border-radius: 999px;
+    border-radius: 9px;
+    background: #fff;
+}
+
+.pagina-comparador .comparador-ejercito > h3,
+.pagina-comparador .comparador-batalla > h3 {
+    margin: 0 0 12px;
+    color: #1a3a52;
+}
+
+.pagina-comparador .comparador-controles {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: end;
+    gap: 10px;
+}
+
+.pagina-comparador .comparador-campo {
+    min-width: 0;
+}
+
+.pagina-comparador .comparador-campo label,
+.pagina-comparador .comparador-rol label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.pagina-comparador .comparador-campo select,
+.pagina-comparador .comparador-rol select {
+    width: 100%;
+    min-width: 0;
+    min-height: 42px;
+    box-sizing: border-box;
+}
+
+.pagina-comparador .comparador-agregar {
+    min-height: 42px;
+}
+
+.pagina-comparador .comparador-unidades {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.pagina-comparador .comparador-unidad {
+    min-width: 0;
+    padding: 9px;
+    border: 1px solid #dce4ea;
+    border-radius: 7px;
     background: #f5f9fc;
+}
+
+.pagina-comparador .comparador-unidad-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.pagina-comparador .comparador-unidad-header h4 {
+    min-width: 0;
+    margin: 0;
+    color: #1a3a52;
+    overflow-wrap: anywhere;
+}
+
+.pagina-comparador .comparador-unidad-header button {
+    flex: 0 0 auto;
+    padding: 5px 8px;
+}
+
+.pagina-comparador .comparador-tipo,
+.pagina-comparador .comparador-muted,
+.pagina-comparador .comparador-nota {
+    margin: 5px 0;
+    color: #657789;
+    font-size: 0.88em;
+}
+
+.pagina-comparador .comparador-stat-list {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 3px 8px;
+    margin: 7px 0 0;
+    font-size: 0.88em;
+}
+
+.pagina-comparador .comparador-stat-list dt,
+.pagina-comparador .comparador-stat-list dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.pagina-comparador .comparador-stat-list dd {
+    font-weight: 700;
+    text-align: right;
+}
+
+.pagina-comparador .comparador-totales {
+    display: grid;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #dce4ea;
+}
+
+.pagina-comparador .comparador-totales > h4 {
+    margin: 0;
+    color: #1a3a52;
+}
+
+.pagina-comparador .comparador-total-categoria {
+    padding: 8px;
+    border-radius: 6px;
+    background: #f5f9fc;
+}
+
+.pagina-comparador .comparador-resultado {
+    margin-top: 16px;
+}
+
+.pagina-comparador .comparador-enfrentamiento {
+    margin: 10px 0;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.pagina-comparador .comparador-resultado-categoria {
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid #dce4ea;
+    border-radius: 7px;
+    background: #f5f9fc;
+}
+
+.pagina-comparador .comparador-resultado-categoria h4 {
+    margin: 0 0 7px;
+    color: #1a3a52;
+}
+
+.pagina-comparador .comparador-resultado-linea {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 3px 0;
+}
+
+.pagina-comparador .comparador-resultado-linea strong {
+    text-align: right;
+}
+
+.pagina-comparador .comparador-rol {
+    max-width: 320px;
 }
 
 html[data-theme="prinz"] .pagina-comparador .comparador-seccion {
@@ -71,62 +182,85 @@ html[data-theme="prinz"] .pagina-comparador .comparador-seccion {
     box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
 }
 
-html[data-theme="prinz"] .pagina-comparador .comparador-vehiculos .campo {
+html[data-theme="prinz"] .pagina-comparador .comparador-ejercito,
+html[data-theme="prinz"] .pagina-comparador .comparador-resultado {
     border-color: #35485c;
-    background: #17212c;
+    background: #151e28;
+    color: #e6eef7;
 }
 
-html[data-theme="prinz"] .pagina-comparador .comparador-vehiculos .campo label {
+html[data-theme="prinz"] .pagina-comparador .comparador-ejercito > h3,
+html[data-theme="prinz"] .pagina-comparador .comparador-batalla > h3,
+html[data-theme="prinz"] .pagina-comparador .comparador-unidad-header h4,
+html[data-theme="prinz"] .pagina-comparador .comparador-totales > h4,
+html[data-theme="prinz"] .pagina-comparador .comparador-resultado-categoria h4 {
+    color: #c5e2ff;
+}
+
+html[data-theme="prinz"] .pagina-comparador .comparador-campo label,
+html[data-theme="prinz"] .pagina-comparador .comparador-rol label {
     color: #d8eaff;
 }
 
-html[data-theme="prinz"] .pagina-comparador .comparador-vehiculos .campo select {
+html[data-theme="prinz"] .pagina-comparador .comparador-campo select,
+html[data-theme="prinz"] .pagina-comparador .comparador-rol select {
     border-color: #50677f;
     background: #0c131b;
     color: #f1f5f9;
 }
 
-html[data-theme="prinz"] .pagina-comparador .comparador-vehiculos .campo select:focus-visible {
-    border-color: #8fc7f5;
-    outline: 2px solid rgba(143, 199, 245, 0.45);
-    outline-offset: 2px;
-    box-shadow: 0 0 0 4px rgba(91, 157, 211, 0.14);
-}
-
-html[data-theme="prinz"] .pagina-comparador .comparador-chart-card {
-    border-color: #35485c;
-    background: #151e28;
-}
-
-html[data-theme="prinz"] .pagina-comparador .comparador-chart-metric {
-    fill: #c5e2ff;
-}
-
-html[data-theme="prinz"] .pagina-comparador .comparador-chart-value {
-    fill: #f1f5f9;
-}
-
-html[data-theme="prinz"] .pagina-comparador .comparador-chart-missing {
-    fill: #afbdca;
-}
-
-html[data-theme="prinz"] .pagina-comparador .comparador-chart-axis {
-    stroke: #62758a;
-}
-
-html[data-theme="prinz"] .pagina-comparador .comparador-legend-item {
+html[data-theme="prinz"] .pagina-comparador .comparador-unidad,
+html[data-theme="prinz"] .pagina-comparador .comparador-total-categoria,
+html[data-theme="prinz"] .pagina-comparador .comparador-resultado-categoria {
     border-color: #3a4c5f;
     background: #1b2632;
-    color: #e6eef7;
+}
+
+html[data-theme="prinz"] .pagina-comparador .comparador-muted,
+html[data-theme="prinz"] .pagina-comparador .comparador-nota,
+html[data-theme="prinz"] .pagina-comparador .comparador-tipo {
+    color: #afbdca;
+}
+
+@media (max-width: 760px) {
+    .pagina-comparador .comparador-ejercitos {
+        grid-template-columns: minmax(0, 1fr);
+    }
 }
 
 @media (max-width: 640px) {
-    .pagina-comparador .comparador-vehiculos {
-        grid-template-columns: 1fr;
+    .pagina-comparador .comparador-ejercitos {
+        gap: 10px;
+        margin-top: 12px;
     }
 
-    .pagina-comparador .comparador-chart-viewport {
-        overflow-x: hidden;
+    .pagina-comparador .comparador-controles {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 8px;
+    }
+
+    .pagina-comparador .comparador-agregar {
+        width: 100%;
+        min-height: 46px;
+    }
+
+    .pagina-comparador .comparador-unidades {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .pagina-comparador .comparador-campo select,
+    .pagina-comparador .comparador-rol select {
+        min-height: 46px;
+        font-size: 16px;
+    }
+
+    .pagina-comparador .comparador-resultado-linea {
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .pagina-comparador .comparador-resultado-linea strong {
+        max-width: 45%;
     }
 }
 
@@ -135,7 +269,8 @@ html[data-theme="prinz"] .pagina-comparador .comparador-legend-item {
         padding: 12px;
     }
 
-    .pagina-comparador .comparador-vehiculos .campo select {
-        font-size: 16px;
+    .pagina-comparador .comparador-ejercito,
+    .pagina-comparador .comparador-resultado {
+        padding: 10px;
     }
 }

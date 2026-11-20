@@ -21,37 +21,23 @@
 
         <main>
             <section class="seccion comparador-seccion" aria-labelledby="comparador-titulo">
-                <h2 id="comparador-titulo">Comparar vehículos aprobados</h2>
+                <h2 id="comparador-titulo">Enfrentar ejércitos</h2>
                 <p class="legacy-valky-warning" role="note">
-                    Esta herramienta compara únicamente las estadísticas guardadas en plantillas aprobadas.
-                    No aplica las reglas del sistema Mundi, no recalcula valores y no modifica ni guarda datos en la base de datos.
+                    Esta herramienta es solo para comparar estadísticas: la simulación no es fiel al sistema Mundi
+                    ni sustituye sus reglas. Los resultados son orientativos; no se guardan ni modifican las plantillas.
+                    Las unidades de una misma formación suman sus estadísticas y el daño primero reduce la defensa;
+                    el excedente reduce HP cuando exista.
                 </p>
                 <p class="inicio-descripcion">
-                    Elige al menos dos vehículos para ver sus estadísticas en un gráfico comparativo.
-                    Puedes seleccionar hasta cuatro. Cada menú agrupa las plantillas aprobadas por país y clase.
+                    Puedes mezclar unidades del mismo tipo, barcos con aviones o aviones con divisiones.
+                    Los ataques navales solo afectan barcos, el ataque aéreo solo aviones, el terrestre solo divisiones
+                    y las divisiones solo pueden atacar otras divisiones.
                 </p>
-                <div class="formulario comparador-vehiculos">
-                    <div class="campo">
-                        <label for="comparador-vehiculo-1">Vehículo 1</label>
-                        <select id="comparador-vehiculo-1"></select>
-                    </div>
-                    <div class="campo">
-                        <label for="comparador-vehiculo-2">Vehículo 2</label>
-                        <select id="comparador-vehiculo-2"></select>
-                    </div>
-                    <div class="campo">
-                        <label for="comparador-vehiculo-3">Vehículo 3 (opcional)</label>
-                        <select id="comparador-vehiculo-3"></select>
-                    </div>
-                    <div class="campo">
-                        <label for="comparador-vehiculo-4">Vehículo 4 (opcional)</label>
-                        <select id="comparador-vehiculo-4"></select>
-                    </div>
-                </div>
                 <p id="comparador-estado" class="comprobante-modulos" role="status" aria-live="polite">
                     Cargando plantillas aprobadas...
                 </p>
-                <div id="comparador-grafico" aria-live="polite" hidden></div>
+                <div id="comparador-ejercitos" class="comparador-ejercitos"></div>
+                <section id="comparador-resultado" class="comparador-resultado" aria-live="polite" hidden></section>
             </section>
         </main>
     </div>
