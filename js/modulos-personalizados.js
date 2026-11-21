@@ -883,8 +883,6 @@ sourceSelect.addEventListener('change', () => {
 moduleForm.addEventListener('submit', async event => {
     event.preventDefault();
     if (!moduleForm.reportValidity()) return;
-    const selectedSource = sourceSelect.value;
-    const revisionOf = selectedSource.startsWith('approved:') ? selectedSource.slice('approved:'.length) : null;
     let content;
     try {
         content = readContent(fieldsContainer, vehicleSelect.value, typeSelect.value);
@@ -900,7 +898,7 @@ moduleForm.addEventListener('submit', async event => {
             module_type: typeSelect.value,
             country: countryInput.value.trim().toLocaleUpperCase('es'),
             content,
-            revision_of: revisionOf
+            revision_of: null
         });
         if (error) throw error;
         setStatus(submitStatus, 'Módulo enviado a moderación; aparecerá en el generador del país cuando sea aprobado.');

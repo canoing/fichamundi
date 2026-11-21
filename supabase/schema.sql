@@ -359,18 +359,6 @@ begin
         raise exception 'Module not found or no longer pending.' using errcode = 'P0002';
     end if;
 
-    if p_status = 'approved' and pending_module.revision_of is not null then
-        update public.custom_modules
-        set is_current = false
-        where id = pending_module.revision_of
-          and status = 'approved'
-          and is_current;
-
-        if not found then
-            raise exception 'The approved module revision is no longer current.' using errcode = '40001';
-        end if;
-    end if;
-
     update public.custom_modules
     set content = p_content,
         price = p_price,
