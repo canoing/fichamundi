@@ -699,17 +699,24 @@ function renderCountryOptions() {
 
 async function refreshTemplates() {
     showStatus(listStatus, 'Cargando plantillas...');
-    const templatesResult = await supabase
-        .from('templates')
-        .select('id, country, file_name, content, status, created_at, review_comment')
-        .order('created_at', { ascending: false })
-        .limit(500);
+    const loadedTemplates = [];
+    const batchSize = 500;
+    let offset = 0;
+    while (true) {
+        const templatesResult = await supabase
+            .from('templates')
+            .select('id, country, file_name, content, status, created_at, review_comment')
+            .order('created_at', { ascending: false })
+            .range(offset, offset + batchSize - 1);
 
-    if (templatesResult.error) {
-        showStatus(listStatus, `No se pudieron cargar las plantillas: ${templatesResult.error.message}`, true);
-        return false;
+        if (templatesResult.error) {
+            showStatus(listStatus, `No se pudieron cargar las plantillas: ${templatesResult.error.message}`, true);
+            return false;
+        }
+        loadedTemplates.push(...templatesResult.data);
+        if (templatesResult.data.length < batchSize) break;
+        offset += batchSize;
     }
-    const loadedTemplates = templatesResult.data;
     refutationsByTemplate = new Map();
     loadedTemplates.filter(isTemplateRefutation).forEach(refutation => {
         const templateId = refutation.content.plantilla_refutada_id;
@@ -723,8 +730,7 @@ async function refreshTemplates() {
         .map(refutation => refutation.plantilla_refutada_id));
     templates = loadedTemplates
         .filter(template => !isTemplateRefutation(template)
-            && !(template.status === 'rejected' && supersededTemplateIds.has(template.id)))
-        .slice(0, 100);
+            && !(template.status === 'rejected' && supersededTemplateIds.has(template.id)));
 
     const templateIds = templates.map(template => template.id);
     commentsByTemplate = new Map();
